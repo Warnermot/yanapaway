@@ -1,19 +1,27 @@
 ---
+import { Image } from 'astro:assets';
+import fotoImage from '../assets/images/contactos/foto.png';
+import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+
 const contacts = [
 	{
 		name: 'Lorem ipsum',
 		detail: 'Lorem ipsum dolor sit amet consectetur.',
 		position: 'card-1',
+		image: fotoImage,
+		alt: 'Mujer trabajando en su laptop',
 	},
 	{
 		name: 'Lorem ipsum',
 		detail: 'Lorem ipsum dolor sit amet consectetur.',
 		position: 'card-2',
+		placeholderVariant: getPlaceholderVariant(1),
 	},
 	{
 		name: 'Lorem ipsum',
 		detail: 'Lorem ipsum dolor sit amet consectetur.',
 		position: 'card-3',
+		placeholderVariant: getPlaceholderVariant(2),
 	},
 ];
 ---
@@ -25,7 +33,11 @@ const contacts = [
 			{
 				contacts.map((contact) => (
 					<article class={`contact-card ${contact.position}`}>
-						<div class="contact-image img-placeholder" />
+						{contact.image ? (
+							<Image src={contact.image} alt={contact.alt ?? ''} class="contact-image" />
+						) : (
+							<div class={`contact-image img-placeholder ${contact.placeholderVariant}`} />
+						)}
 						<div class="contact-body">
 							<p class="contact-name">{contact.name}</p>
 							<p class="contact-detail">{contact.detail}</p>
@@ -60,9 +72,11 @@ const contacts = [
 	}
 
 	.contact-image {
+		display: block;
+		width: 100%;
+		height: auto;
 		aspect-ratio: 16 / 10;
-		background-color: var(--color-green-light);
-		background-image: none;
+		object-fit: cover;
 	}
 
 	.contact-body {
@@ -84,7 +98,7 @@ const contacts = [
 	}
 
 	.contact-cta {
-		background: var(--color-green);
+		background: var(--color-primary);
 		color: white;
 		padding: 0.5rem 1.4rem;
 		font-size: 0.8rem;

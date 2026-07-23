@@ -1,8 +1,15 @@
 ---
+import { Image } from 'astro:assets';
+import contraImage from '../assets/images/contenido/contra.png';
+import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+
 const items = Array.from({ length: 6 }, (_, index) => ({
 	title: 'Lorem ipsum dolor sit',
 	cta: 'Lorem',
 	id: index,
+	image: index === 0 ? contraImage : undefined,
+	alt: index === 0 ? 'Un puño cerrado frente a una mano abierta en señal de alto' : '',
+	placeholderVariant: getPlaceholderVariant(index),
 }));
 ---
 
@@ -13,7 +20,11 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 			{
 				items.map((item) => (
 					<article class="content-card">
-						<div class="card-image img-placeholder" />
+						{item.image ? (
+							<Image src={item.image} alt={item.alt} class="card-image" />
+						) : (
+							<div class={`card-image img-placeholder ${item.placeholderVariant}`} />
+						)}
 						<div class="card-body">
 							<p class="card-title">{item.title}</p>
 							<a href="#" class="pill-btn card-cta">
@@ -30,6 +41,7 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 <style>
 	.content-section {
 		padding-block: 4.5rem;
+		background: var(--color-support-teal-tint);
 	}
 
 	.content-grid {
@@ -46,7 +58,11 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 	}
 
 	.card-image {
+		display: block;
+		width: 100%;
+		height: auto;
 		aspect-ratio: 4 / 3;
+		object-fit: cover;
 	}
 
 	.card-body {
@@ -64,7 +80,7 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 	}
 
 	.card-cta {
-		background: var(--color-orange);
+		background: var(--color-secondary);
 		color: white;
 		padding: 0.55rem 2.5rem;
 		font-weight: 500;

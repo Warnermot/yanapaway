@@ -20,7 +20,7 @@
 help:
 	@echo "Comandos disponibles:"
 	@echo ""
-	@echo "  ATAJO:"
+	@echo ATAJO:"
 	@echo "    make up           Limpia + construye la imagen + levanta el contenedor (1 comando)"
 	@echo ""
 	@echo "  LOCALES (pnpm/astro):"

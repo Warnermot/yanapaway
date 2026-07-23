@@ -6,6 +6,30 @@ const navLinks = [
 	{ label: 'Blog', href: '#blog' },
 	{ label: 'Contratos', href: '#contactos' },
 ];
+
+const slides = [
+	{
+		badge: 'Estás en un espacio seguro',
+		heading: [{ text: 'No estás sola. ' }, { text: 'No es tu culpa.', accent: true }],
+		text: 'Encuentra apoyo, orientación legal y contención inmediata, las 24 horas.',
+	},
+	{
+		badge: 'Trabajamos junto a la Defensoría',
+		heading: [
+			{ text: 'También cuidamos a ' },
+			{ text: 'niñas, niños y adolescentes.', accent: true },
+		],
+		text: 'Canales y recursos pensados especialmente para NNA, en coordinación con la Defensoría de la Niñez y Adolescencia.',
+	},
+	{
+		badge: 'Para quienes acompañan',
+		heading: [
+			{ text: 'Si conoces a alguien en riesgo, ' },
+			{ text: 'también puedes ayudar.', accent: true },
+		],
+		text: 'Aprende a identificar señales de alerta y cómo actuar de forma segura y a tiempo.',
+	},
+];
 ---
 
 <header class="site-header">
@@ -23,21 +47,112 @@ const navLinks = [
 		<a class="sos-badge" href="#sos" aria-label="Ayuda de emergencia SOS">SOS</a>
 	</div>
 
-	<div class="hero">
+	<div class="hero" aria-roledescription="carousel" aria-label="Mensajes de apoyo">
 		<div class="hero-content wrapper">
-			<h1>No estás sola. No es tu culpa.</h1>
-			<p>Encuentra apoyo seguro, ahora mismo</p>
+			<div class="hero-copy" id="hero-copy" aria-live="polite">
+				<span class="hero-badge">
+					<span class="badge-dot"></span>
+					<span id="hero-badge-text">{slides[0].badge}</span>
+				</span>
+				<h1 id="hero-heading">
+					{
+						slides[0].heading.map((part) =>
+							part.accent ? <span class="accent">{part.text}</span> : part.text
+						)
+					}
+				</h1>
+				<p id="hero-text">{slides[0].text}</p>
+			</div>
+
 			<div class="hero-actions">
-				<input type="text" class="hero-input" placeholder="Lorem ipsum dolor sit amet" />
-				<button type="button" class="hero-input hero-button">Lorem ipsum</button>
+				<a href="#asistente" class="pill-btn hero-cta-primary">Habla con alguien ahora</a>
+				<a href="#recursos" class="pill-btn hero-cta-secondary">Conoce tus opciones</a>
+			</div>
+
+			<div class="hero-dots">
+				{
+					slides.map((_, index) => (
+						<button
+							type="button"
+							class="hero-dot"
+							class:list={[{ active: index === 0 }]}
+							data-index={index}
+							aria-label={`Ir al mensaje ${index + 1}`}
+						/>
+					))
+				}
 			</div>
 		</div>
 	</div>
 </header>
 
+<script type="application/json" id="hero-slides-data" set:html={JSON.stringify(slides)} />
+
+<script>
+	interface HeadingPart {
+		text: string;
+		accent?: boolean;
+	}
+
+	interface Slide {
+		badge: string;
+		heading: HeadingPart[];
+		text: string;
+	}
+
+	const dataEl = document.getElementById('hero-slides-data');
+	const copyEl = document.getElementById('hero-copy');
+	const badgeTextEl = document.getElementById('hero-badge-text');
+	const headingEl = document.getElementById('hero-heading');
+	const textEl = document.getElementById('hero-text');
+	const dots = document.querySelectorAll<HTMLButtonElement>('.hero-dot');
+
+	if (dataEl && copyEl && badgeTextEl && headingEl && textEl && dots.length) {
+		const slides: Slide[] = JSON.parse(dataEl.textContent ?? '[]');
+		let current = 0;
+		let timer: ReturnType<typeof setInterval>;
+
+		function renderHeading(parts: HeadingPart[]) {
+			headingEl!.innerHTML = parts
+				.map((part) => (part.accent ? `<span class="accent">${part.text}</span>` : part.text))
+				.join('');
+		}
+
+		function goTo(index: number) {
+			const next = (index + slides.length) % slides.length;
+			if (next === current) return;
+
+			copyEl!.classList.add('is-fading');
+			setTimeout(() => {
+				current = next;
+				badgeTextEl!.textContent = slides[current].badge;
+				renderHeading(slides[current].heading);
+				textEl!.textContent = slides[current].text;
+				copyEl!.classList.remove('is-fading');
+			}, 250);
+
+			dots.forEach((dot, i) => dot.classList.toggle('active', i === next));
+		}
+
+		function start() {
+			timer = setInterval(() => goTo(current + 1), 6000);
+		}
+
+		dots.forEach((dot, index) => {
+			dot.addEventListener('click', () => {
+				clearInterval(timer);
+				goTo(index);
+				start();
+			});
+		});
+
+		start();
+	}
+</script>
+
 <style>
 	.site-header {
-		background: var(--color-cream);
+		background: var(--color-primary);
 	}
 
 	.navbar {
@@ -51,7 +166,7 @@ const navLinks = [
 		font-size: 1.25rem;
 		font-weight: 600;
 		text-decoration: none;
-		color: var(--color-ink);
+		color: white;
 	}
 
 	.nav-links {
@@ -64,12 +179,12 @@ const navLinks = [
 		text-decoration: none;
 		font-size: 0.95rem;
 		font-weight: 500;
-		color: var(--color-ink);
+		color: rgba(255, 255, 255, 0.85);
 		transition: color 0.2s ease;
 	}
 
 	.nav-links a:hover {
-		color: var(--color-green);
+		color: white;
 	}
 
 	.sos-badge {
@@ -80,16 +195,16 @@ const navLinks = [
 		font-weight: 700;
 		font-size: 0.85rem;
 		letter-spacing: 0.04em;
-		color: var(--color-red);
-		border: 3px double var(--color-red);
+		color: var(--color-accent);
+		border: 3px double var(--color-accent);
 		padding: 0.3rem 0.6rem;
 		border-radius: 4px;
 		transform: rotate(-4deg);
-		background: var(--color-cream);
+		background: var(--color-bg);
 	}
 
 	.hero {
-		background: var(--color-green);
+		background: var(--color-primary-dark);
 		color: white;
 		padding-block: 3.5rem;
 	}
@@ -98,18 +213,55 @@ const navLinks = [
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 0.75rem;
+		gap: 1.5rem;
+	}
+
+	.hero-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.9rem;
 		max-width: 640px;
+		min-height: 12rem;
+		transition: opacity 0.25s ease;
+	}
+
+	.hero-copy.is-fading {
+		opacity: 0;
+	}
+
+	.hero-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+		padding: 0.45rem 1rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.badge-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: var(--color-accent);
+		flex-shrink: 0;
 	}
 
 	.hero h1 {
-		font-size: clamp(1.75rem, 1.3rem + 2vw, 2.5rem);
-		font-weight: 600;
-		line-height: 1.25;
+		font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+		font-weight: 700;
+		line-height: 1.2;
 	}
 
-	.hero p {
+	.hero h1 :global(.accent) {
+		color: var(--color-secondary);
+	}
+
+	.hero-copy p {
 		font-size: 1.05rem;
+		line-height: 1.6;
 		opacity: 0.92;
 	}
 
@@ -117,31 +269,54 @@ const navLinks = [
 		display: flex;
 		flex-wrap: wrap;
 		gap: 1rem;
-		margin-top: 1rem;
-		width: 100%;
 	}
 
-	.hero-input {
-		flex: 1 1 220px;
-		min-width: 200px;
-		border: none;
-		border-radius: 999px;
-		padding: 0.9rem 1.4rem;
-		font-family: inherit;
-		font-size: 0.95rem;
-		background: var(--color-cream-dark);
-		color: var(--color-ink-soft);
-	}
-
-	.hero-button {
-		flex: 0 0 auto;
-		cursor: pointer;
-		font-weight: 500;
+	.hero-cta-primary {
+		background: var(--color-primary);
+		color: white;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
 		transition: background 0.2s ease;
 	}
 
-	.hero-button:hover {
-		background: white;
+	.hero-cta-primary:hover {
+		background: var(--color-primary-light);
+	}
+
+	.hero-cta-secondary {
+		background: var(--color-secondary);
+		color: white;
+		border: none;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.hero-cta-secondary:hover {
+		background: #fda87f;
+	}
+
+	.hero-dots {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.hero-dot {
+		width: 24px;
+		height: 6px;
+		border-radius: 999px;
+		border: none;
+		background: rgba(255, 255, 255, 0.35);
+		cursor: pointer;
+		padding: 0;
+		transition:
+			background 0.2s ease,
+			width 0.2s ease;
+	}
+
+	.hero-dot.active {
+		width: 40px;
+		background: var(--color-secondary);
 	}
 
 	@media (max-width: 720px) {
@@ -156,6 +331,16 @@ const navLinks = [
 			flex-wrap: wrap;
 			gap: 1rem;
 			margin-inline-start: 0;
+		}
+
+		.hero-copy {
+			min-height: 14rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-copy {
+			transition: none;
 		}
 	}
 </style>

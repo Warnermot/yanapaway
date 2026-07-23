@@ -1,19 +1,25 @@
 :root {
-  --color-cream: #f4efe4;
-  --color-cream-dark: #e8e1d1;
-  --color-green: #1c7a5e;
-  --color-green-light: #57bd8a;
-  --color-orange: #e3a63f;
-  --color-red: #c23b3b;
-  --color-ink: #1a1a17;
-  --color-ink-soft: #4b4a45;
-  --color-footer: #17140f;
-  --color-placeholder: #c8c4ba;
-  --color-placeholder-dark: #a9a59a;
+  /* Paleta oficial (guia-paleta-colores.md) */
+  --color-primary: #3eb6fc; /* dominante: header/nav, CTA primario, enlaces activos */
+  --color-primary-dark: #0c4a6b; /* variante oscura para superficies grandes (hero); ~4.2:1 vs --color-primary para que el CTA resalte */
+  --color-primary-light: #6bc8fd; /* hover/estados sobre superficies primarias */
+  --color-secondary: #fc936a; /* CTA secundario, tarjetas destacadas */
+  --color-accent: #fc6a6e; /* uso puntual: badges, puntos, iconos de atencion */
+  --color-support-teal: #79fce6; /* fondos suaves de secciones secundarias */
+  --color-support-teal-tint: #e7fdf9; /* tinte muy claro de soporte 1 para fondos */
+  --color-support-brown: #a86044; /* texto secundario/footer sobre fondos claros */
+
+  --color-bg: #ffffff;
+  --color-bg-soft: #f2f4f7;
+  --color-ink: #1a1d21;
+  --color-ink-soft: #52565c;
+  --color-footer: #14171b;
+  --color-placeholder: #c9cbd1;
+  --color-placeholder-dark: #a6a9b0;
   --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --max-width: 1200px;
 }
-
+  
 *,
 *::before,
 *::after {
@@ -28,7 +34,7 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-ink);
-  background: var(--color-cream);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -72,6 +78,10 @@ p {
 }
 
 .img-placeholder {
+  background-color: var(--color-placeholder);
+}
+
+.img-placeholder--stripes {
   background: repeating-linear-gradient(
     135deg,
     var(--color-placeholder),
@@ -79,6 +89,38 @@ p {
     var(--color-placeholder-dark) 10px,
     var(--color-placeholder-dark) 20px
   );
+}
+
+.img-placeholder--stripes-reverse {
+  background: repeating-linear-gradient(
+    -135deg,
+    var(--color-placeholder),
+    var(--color-placeholder) 10px,
+    var(--color-placeholder-dark) 10px,
+    var(--color-placeholder-dark) 20px
+  );
+}
+
+.img-placeholder--dots {
+  background-color: var(--color-placeholder);
+  background-image: radial-gradient(var(--color-placeholder-dark) 2px, transparent 2px);
+  background-size: 18px 18px;
+}
+
+.img-placeholder--grid {
+  background-color: var(--color-placeholder);
+  background-image:
+    linear-gradient(var(--color-placeholder-dark) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-placeholder-dark) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.img-placeholder--tint-teal {
+  background: linear-gradient(135deg, var(--color-support-teal), var(--color-placeholder));
+}
+
+.img-placeholder--tint-orange {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-placeholder));
 }
 
 .pill-btn {

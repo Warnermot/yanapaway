@@ -1,8 +1,25 @@
 ---
+import { Image } from 'astro:assets';
+import stopViolenceImage from '../assets/images/carousel/stop-violence-against-women-photo.webp';
+import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+
 const slides = [
-	{ eyebrow: 'texto', text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.' },
-	{ eyebrow: 'texto', text: 'Sed do eiusmod tempor incididunt ut labore et dolore magna.' },
-	{ eyebrow: 'texto', text: 'Ut enim ad minim veniam quis nostrud exercitation ullamco.' },
+	{
+		eyebrow: 'texto',
+		text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.',
+		image: stopViolenceImage,
+		alt: 'Mujer con las palmas extendidas hacia la cámara con las palabras "stop" y "violence" escritas en ellas',
+	},
+	{
+		eyebrow: 'texto',
+		text: 'Sed do eiusmod tempor incididunt ut labore et dolore magna.',
+		placeholderVariant: getPlaceholderVariant(1),
+	},
+	{
+		eyebrow: 'texto',
+		text: 'Ut enim ad minim veniam quis nostrud exercitation ullamco.',
+		placeholderVariant: getPlaceholderVariant(2),
+	},
 ];
 ---
 
@@ -10,7 +27,12 @@ const slides = [
 	<div class="carousel-track">
 		{
 			slides.map((slide, index) => (
-				<div class="carousel-slide img-placeholder" class:list={[{ active: index === 0 }]} data-index={index}>
+				<div class="carousel-slide" class:list={[{ active: index === 0 }]} data-index={index}>
+					{slide.image ? (
+						<Image src={slide.image} alt={slide.alt ?? ''} class="slide-img" />
+					) : (
+						<div class={`slide-img img-placeholder ${slide.placeholderVariant}`} />
+					)}
 					<div class="slide-overlay">
 						<div class="slide-content wrapper">
 							<p class="slide-eyebrow">{slide.eyebrow}</p>
@@ -60,12 +82,23 @@ const slides = [
 		transition:
 			opacity 0.7s ease,
 			visibility 0.7s ease;
-		filter: grayscale(1);
 	}
 
 	.carousel-slide.active {
 		opacity: 1;
 		visibility: visible;
+	}
+
+	.slide-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	img.slide-img {
+		filter: grayscale(1);
 	}
 
 	.slide-overlay {
@@ -96,8 +129,8 @@ const slides = [
 	}
 
 	.slide-cta {
-		background: rgba(244, 239, 228, 0.9);
-		color: var(--color-ink);
+		background: var(--color-secondary);
+		color: white;
 		padding: 0.7rem 1.5rem;
 		font-weight: 500;
 	}
