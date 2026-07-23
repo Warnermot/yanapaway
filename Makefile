@@ -1,5 +1,3 @@
-.PHONY: install dev build preview check clean \
-	docker-build docker-dev docker-prod docker-down docker-logs docker-clean
 # ============================================================
 #  Makefile - Proyecto Astro
 #
@@ -8,16 +6,22 @@
 #    2) Docker   -> empaquetan y corren el proyecto en contenedores
 #
 #  Tip: ejecuta `make help` para ver todos los comandos disponibles.
+#
+#  ATAJO: `make up` limpia, construye la imagen y levanta el
+#         contenedor en un solo paso (sin el error del lock de astro).
 # ============================================================
 
 .PHONY: help install dev dev-stop dev-status dev-logs build preview check clean \
-	docker-build docker-dev docker-prod docker-down docker-logs docker-clean
+	up docker-build docker-dev docker-prod docker-down docker-logs docker-clean
 
 # ---- Ayuda -------------------------------------------------
 
 ## Muestra esta lista de comandos
 help:
 	@echo "Comandos disponibles:"
+	@echo ""
+	@echo "  ATAJO:"
+	@echo "    make up           Limpia + construye la imagen + levanta el contenedor (1 comando)"
 	@echo ""
 	@echo "  LOCALES (pnpm/astro):"
 	@echo "    make install      Instala las dependencias del proyecto"
@@ -31,12 +35,30 @@ help:
 	@echo "    make clean        Borra dist, .astro y node_modules"
 	@echo ""
 	@echo "  DOCKER (flujo: build -> dev/prod -> down):"
-	@echo "    make docker-build Construye las imagenes definidas en docker-compose.yml" se genera una imagen local de la app
+	@echo "    make docker-build Construye la imagen local de la app"
 	@echo "    make docker-dev   Levanta el servicio 'dev' (desarrollo local)"
 	@echo "    make docker-prod  Levanta el servicio 'web' con el perfil 'prod' (produccion)"
 	@echo "    make docker-down  Detiene y elimina los contenedores"
 	@echo "    make docker-logs  Muestra los logs en vivo (-f)"
 	@echo "    make docker-clean Limpieza profunda: baja todo, borra imagenes y volumenes"
+
+# ============================================================
+#  ATAJO: generar la imagen y levantar en un solo comando
+#
+#  `make up` ejecuta en orden:
+#    1) docker-down  -> baja cualquier contenedor previo
+#    2) rm -rf .astro -> borra el lock huerfano (evita el error
+#                        "Another astro dev server is already running")
+#    3) docker-build -> genera la imagen local
+#    4) docker-dev   -> levanta el contenedor
+# ============================================================
+
+## Limpia, construye la imagen y levanta el contenedor (todo en uno)
+up: docker-down clean-lock docker-build docker-dev
+
+## Borra solo el lock/estado de astro (uso interno de `up`)
+clean-lock:
+	rm -rf .astro
 
 # ============================================================
 #  1) COMANDOS LOCALES (sin Docker)
@@ -81,14 +103,16 @@ clean:
 # ============================================================
 #  2) COMANDOS DOCKER
 #
-#  Flujo tipico de principio a fin:
+#  Flujo manual paso a paso:
 #     make docker-build   # 1. construir la imagen
 #     make docker-dev     # 2. desarrollar (o docker-prod para produccion)
 #     make docker-logs    # 3. (opcional) vigilar los logs
 #     make docker-down    # 4. apagar al terminar
+#
+#  O simplemente:  make up   (hace 1 y 2 sin el error del lock)
 # ============================================================
 
-## Construye las imagenes definidas en docker-compose.yml
+## Construye la imagen local definida en docker-compose.yml
 docker-build:
 	docker compose build
 
