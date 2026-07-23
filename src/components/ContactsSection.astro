@@ -1,0 +1,149 @@
+---
+const contacts = [
+	{
+		name: 'Lorem ipsum',
+		detail: 'Lorem ipsum dolor sit amet consectetur.',
+		position: 'card-1',
+	},
+	{
+		name: 'Lorem ipsum',
+		detail: 'Lorem ipsum dolor sit amet consectetur.',
+		position: 'card-2',
+	},
+	{
+		name: 'Lorem ipsum',
+		detail: 'Lorem ipsum dolor sit amet consectetur.',
+		position: 'card-3',
+	},
+];
+---
+
+<section class="contacts-section" id="contactos">
+	<div class="wrapper">
+		<h2 class="section-heading">contactos</h2>
+		<div class="contacts-field">
+			{
+				contacts.map((contact) => (
+					<article class={`contact-card ${contact.position}`}>
+						<div class="contact-image img-placeholder" />
+						<div class="contact-body">
+							<p class="contact-name">{contact.name}</p>
+							<p class="contact-detail">{contact.detail}</p>
+							<a href="#" class="pill-btn contact-cta">
+								Contactar
+							</a>
+						</div>
+					</article>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.contacts-section {
+		padding-block: 4.5rem;
+	}
+
+	.contacts-field {
+		position: relative;
+		min-height: 520px;
+	}
+
+	.contact-card {
+		background: white;
+		border-radius: 16px;
+		overflow: hidden;
+		width: min(260px, 80vw);
+		box-shadow: 0 10px 30px rgba(26, 26, 23, 0.1);
+		animation: floaty 6s ease-in-out infinite;
+	}
+
+	.contact-image {
+		aspect-ratio: 16 / 10;
+		background-color: var(--color-green-light);
+		background-image: none;
+	}
+
+	.contact-body {
+		padding: 1.25rem 1.5rem 1.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		align-items: flex-start;
+	}
+
+	.contact-name {
+		font-weight: 600;
+	}
+
+	.contact-detail {
+		font-size: 0.85rem;
+		color: var(--color-ink-soft);
+		line-height: 1.5;
+	}
+
+	.contact-cta {
+		background: var(--color-green);
+		color: white;
+		padding: 0.5rem 1.4rem;
+		font-size: 0.8rem;
+		margin-top: 0.25rem;
+	}
+
+	.card-1 {
+		position: absolute;
+		left: 4%;
+		top: 2%;
+		animation-delay: 0s;
+	}
+
+	.card-2 {
+		position: absolute;
+		left: 54%;
+		top: 16%;
+		animation-delay: 1.4s;
+		animation-duration: 7s;
+	}
+
+	.card-3 {
+		position: absolute;
+		left: 26%;
+		top: 46%;
+		animation-delay: 0.7s;
+		animation-duration: 6.5s;
+	}
+
+	@keyframes floaty {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-16px);
+		}
+	}
+
+	@media (max-width: 760px) {
+		.contacts-field {
+			min-height: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 2rem;
+		}
+
+		.card-1,
+		.card-2,
+		.card-3 {
+			position: static;
+			width: min(320px, 90vw);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.contact-card {
+			animation: none;
+		}
+	}
+</style>
