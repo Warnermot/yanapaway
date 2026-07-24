@@ -1,0 +1,1102 @@
+<title>Directorio institucional — Mockups</title>
+<style>
+  :root {
+    --bg: #F6F3EE;
+    --surface: #FFFFFF;
+    --surface-alt: #EFEAE1;
+    --text: #1E2A2C;
+    --muted: #5C6B6D;
+    --border: #DDD5C8;
+    --primary: #205C63;
+    --primary-strong: #143C41;
+    --primary-soft: #DCEBEA;
+    --accent: #B5732A;
+    --danger: #B23A34;
+    --danger-soft: #F4DEDB;
+    --success: #3F7D52;
+    --shadow: 0 1px 2px rgba(20,30,31,0.06), 0 8px 24px -12px rgba(20,30,31,0.18);
+    --radius-s: 6px;
+    --radius-m: 10px;
+    --radius-l: 16px;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', serif;
+    --font-body: 'Segoe UI', 'Helvetica Neue', 'Public Sans', Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10181A;
+      --surface: #172325;
+      --surface-alt: #1F2C2F;
+      --text: #E7EEEC;
+      --muted: #9BB0AE;
+      --border: #2B3A3C;
+      --primary: #6FC2C9;
+      --primary-strong: #9BDAE0;
+      --primary-soft: #1E3A3C;
+      --accent: #E0A052;
+      --danger: #E2685F;
+      --danger-soft: #3A2224;
+      --success: #6FBF86;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10181A; --surface: #172325; --surface-alt: #1F2C2F; --text: #E7EEEC;
+    --muted: #9BB0AE; --border: #2B3A3C; --primary: #6FC2C9; --primary-strong: #9BDAE0;
+    --primary-soft: #1E3A3C; --accent: #E0A052; --danger: #E2685F; --danger-soft: #3A2224; --success: #6FBF86;
+  }
+  :root[data-theme="light"] {
+    --bg: #F6F3EE; --surface: #FFFFFF; --surface-alt: #EFEAE1; --text: #1E2A2C;
+    --muted: #5C6B6D; --border: #DDD5C8; --primary: #205C63; --primary-strong: #143C41;
+    --primary-soft: #DCEBEA; --accent: #B5732A; --danger: #B23A34; --danger-soft: #F4DEDB; --success: #3F7D52;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* ---- presentation shell ---- */
+  .shell {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+  }
+  .shell-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .shell-head .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .shell-head h1 { font-size: 28px; font-weight: 600; }
+  .shell-head p { margin: 0; color: var(--muted); max-width: 62ch; font-size: 15px; }
+
+  .device-tabs {
+    display: inline-flex;
+    gap: 4px;
+    background: var(--surface-alt);
+    padding: 4px;
+    border-radius: var(--radius-m);
+    margin-bottom: 20px;
+  }
+  .device-tabs button {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: calc(var(--radius-m) - 2px);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .device-tabs button[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--primary-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .screen-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .screen-tabs button {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 10px 4px;
+    margin-right: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .screen-tabs button[aria-selected="true"] {
+    color: var(--primary-strong);
+    border-bottom-color: var(--primary);
+  }
+  .screen-tabs button:focus-visible, .device-tabs button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .device-panel[hidden], .screen-panel[hidden] { display: none; }
+
+  .frame-scroll { overflow-x: auto; padding-bottom: 8px; }
+
+  /* ---- desktop chrome ---- */
+  .browser {
+    width: 1180px;
+    max-width: 1180px;
+    background: var(--surface);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+  }
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); display: block; }
+  .browser-url {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- phone chrome ---- */
+  .phone {
+    width: 375px;
+    background: var(--surface);
+    border-radius: 40px;
+    border: 10px solid var(--surface-alt);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: relative;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 22px;
+    background: var(--surface-alt);
+    border-radius: 0 0 14px 14px;
+    z-index: 5;
+  }
+  .phone-screen { height: 780px; overflow-y: auto; }
+
+  /* ---- app: top nav ---- */
+  .app-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 24px;
+    background: var(--primary-strong);
+    color: #fff;
+  }
+  .app-nav .brand { display: flex; align-items: center; gap: 10px; }
+  .app-nav .brand-mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+  }
+  .app-nav .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .app-nav .brand-text .kicker { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+  .app-nav .brand-text .title { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+  .app-nav-links { display: flex; gap: 22px; font-size: 14px; }
+  .app-nav-links a { color: rgba(255,255,255,0.82); text-decoration: none; }
+  .app-nav-links a.current { color: #fff; font-weight: 600; }
+
+  /* ---- app: search + filters ---- */
+  .toolbar {
+    padding: 20px 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .search-row { display: flex; gap: 10px; }
+  .search-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .search-input svg { flex-shrink: 0; }
+  .toggle-emergency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--danger-soft);
+    color: var(--danger);
+    border: 1px solid transparent;
+    border-radius: var(--radius-m);
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .toggle-emergency input { accent-color: var(--danger); }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-group .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    align-self: center;
+    margin-right: 4px;
+  }
+  .chip {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary-strong);
+    font-weight: 600;
+  }
+  .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ---- app: main layout ---- */
+  .app-main {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 20px;
+    padding: 18px 24px 28px;
+    align-items: start;
+  }
+  .result-count { font-size: 13px; color: var(--muted); margin: 4px 2px 14px; }
+  .card-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .inst-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-l);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .inst-card-top { display: flex; justify-content: space-between; gap: 12px; }
+  .inst-card h3 { font-size: 16.5px; font-weight: 600; font-family: var(--font-body); }
+  .inst-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tag {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--surface-alt);
+    color: var(--muted);
+  }
+  .tag.type { background: var(--primary-soft); color: var(--primary-strong); font-weight: 600; }
+  .tag.emergency { background: var(--danger-soft); color: var(--danger); font-weight: 600; }
+  .distance { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .inst-desc { font-size: 13.5px; color: var(--muted); }
+  .inst-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border-radius: var(--radius-s);
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn.ghost { background: transparent; }
+  .btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ---- app: map ---- */
+  .map-panel {
+    position: sticky;
+    top: 18px;
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .map-canvas {
+    position: relative;
+    height: 420px;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(32,92,99,0.06) 38px, rgba(32,92,99,0.06) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 58px, rgba(32,92,99,0.06) 58px, rgba(32,92,99,0.06) 60px),
+      linear-gradient(160deg, var(--primary-soft), var(--surface-alt));
+  }
+  .pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pin-dot {
+    width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--primary);
+    border: 2px solid var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .pin.emergency .pin-dot { background: var(--danger); }
+  .pin-label {
+    margin-top: 4px;
+    font-size: 10.5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 999px;
+    color: var(--text);
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+  }
+  .you-are-here {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 6px rgba(181,115,42,0.22);
+  }
+  .map-legend {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  .map-legend span { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* ---- floating SOS ---- */
+  .sos-float {
+    position: fixed;
+    right: 26px;
+    bottom: 26px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 13px 20px 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 10px 24px -8px rgba(178,58,52,0.55);
+  }
+  .phone-panel .sos-float { position: absolute; right: 16px; bottom: 20px; padding: 12px 16px; font-size: 12.5px; }
+  .browser-panel .sos-float { position: absolute; right: 22px; bottom: 22px; }
+
+  /* ---- detail screen ---- */
+  .detail-wrap { padding: 24px; display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 24px; }
+  .detail-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 6px; }
+  .detail-head h2 { font-size: 24px; }
+  .detail-section { margin-top: 22px; }
+  .detail-section h4 {
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
+    margin: 0 0 10px; font-family: var(--font-body); font-weight: 700;
+  }
+  .schedule-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .schedule-table td { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .schedule-table td:first-child { color: var(--muted); width: 45%; }
+  .schedule-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .side-card {
+    background: var(--surface-alt);
+    border-radius: var(--radius-l);
+    padding: 18px;
+  }
+  .side-card h4 { margin-top: 0; }
+  .mini-map { height: 140px; border-radius: var(--radius-m); margin-bottom: 12px;
+    background: repeating-linear-gradient(45deg, rgba(32,92,99,0.08), rgba(32,92,99,0.08) 8px, transparent 8px, transparent 16px), var(--primary-soft);
+    position: relative; }
+  .mini-map .pin { top: 55%; left: 50%; }
+
+  /* ---- form screen ---- */
+  .form-wrap { padding: 32px 24px; max-width: 620px; margin: 0 auto; }
+  .form-intro { margin-bottom: 24px; }
+  .form-intro p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+  .field label { font-size: 13px; font-weight: 600; }
+  .field .hint { font-size: 12px; color: var(--muted); }
+  .field select, .field textarea, .field input[type="text"] {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .field select:focus-visible, .field textarea:focus-visible, .field input:focus-visible {
+    outline: 2px solid var(--primary); outline-offset: 1px;
+  }
+  .privacy-note {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--primary-soft); color: var(--primary-strong);
+    padding: 12px 14px; border-radius: var(--radius-m); font-size: 12.5px; margin-bottom: 20px;
+  }
+  .case-chip-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ---- admin screen ---- */
+  .admin-wrap { padding: 22px 24px; }
+  .admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .admin-head .who { font-size: 12.5px; color: var(--muted); }
+  .admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-l); }
+  table.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); }
+  table.admin-table th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface-alt);
+  }
+  table.admin-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.admin-table tr:last-child td { border-bottom: none; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .status-pill.on { background: rgba(63,125,82,0.15); color: var(--success); }
+  .status-pill.off { background: var(--surface-alt); color: var(--muted); }
+  .row-actions { display: flex; gap: 6px; }
+  .row-actions button { border: none; background: transparent; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .row-actions button:hover { color: var(--primary); }
+
+  /* ---- mobile-specific ---- */
+  .m-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px 12px; background: var(--primary-strong); color: #fff;
+  }
+  .m-search { margin: 14px 16px 0; }
+  .m-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px 4px; }
+  .m-chip-scroll .chip { flex-shrink: 0; }
+  .m-map-toggle {
+    margin: 12px 16px 0; display: flex; background: var(--surface-alt); border-radius: var(--radius-m); padding: 3px;
+  }
+  .m-map-toggle button {
+    flex: 1; border: none; background: transparent; padding: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); border-radius: 7px;
+  }
+  .m-map-toggle button.active { background: var(--surface); color: var(--primary-strong); box-shadow: var(--shadow); }
+  .m-card-list { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 90px; }
+  .m-map-canvas { margin: 12px 16px 0; height: 230px; border-radius: var(--radius-l); }
+
+  .m-detail-hero { padding: 18px; background: var(--primary-soft); }
+  .m-back { border: none; background: none; color: var(--primary-strong); font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+  .m-detail-body { padding: 18px; display: flex; flex-direction: column; gap: 22px; }
+  .m-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .m-form-body { padding: 20px 18px 60px; }
+  .m-admin-body { padding: 16px; }
+  .m-admin-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .m-admin-card .name { font-weight: 600; font-size: 13.5px; }
+  .m-admin-card .meta { font-size: 11.5px; color: var(--muted); }
+  .m-fab {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--primary); color: #fff; border: none; border-radius: 999px;
+    padding: 12px 22px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow);
+  }
+
+  .icon { width: 15px; height: 15px; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Plataforma de prevención · módulo directorio institucional</span>
+    <h1>Mockups: escritorio y móvil</h1>
+    <p>Un mismo modelo de interfaz para las cuatro pantallas del módulo: búsqueda con mapa, ficha de institución, solicitud de orientación y panel de administración. Contenido real basado en el esquema de <code>instituciones</code>, <code>tipos_caso</code> y <code>solicitudes_orientacion</code>.</p>
+  </div>
+
+  <div class="device-tabs" role="tablist" aria-label="Elegir dispositivo">
+    <button role="tab" aria-selected="true" data-device="desktop">Escritorio</button>
+    <button role="tab" aria-selected="false" data-device="mobile">Móvil</button>
+  </div>
+
+  <!-- ===================== DESKTOP ===================== -->
+  <div class="device-panel" data-device-panel="desktop">
+    <div class="screen-tabs" role="tablist" aria-label="Elegir pantalla, escritorio">
+      <button role="tab" aria-selected="true" data-screen="d-home">Inicio y búsqueda</button>
+      <button role="tab" aria-selected="false" data-screen="d-detail">Ficha de institución</button>
+      <button role="tab" aria-selected="false" data-screen="d-form">Solicitud de orientación</button>
+      <button role="tab" aria-selected="false" data-screen="d-admin">Panel admin</button>
+    </div>
+
+    <div class="frame-scroll">
+      <!-- D1: HOME -->
+      <div class="screen-panel" data-screen-panel="d-home">
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dots"><span></span><span></span><span></span></div>
+            <div class="browser-url">directorio.plataforma-prevencion.bo/instituciones</div>
+          </div>
+          <div class="browser-panel" style="position:relative;">
+            <nav class="app-nav">
+              <div class="brand">
+                <div class="brand-mark">DI</div>
+                <div class="brand-text"><span class="kicker">Plataforma de prevención</span><span class="title">Directorio institucional</span></div>
+              </div>
+              <div class="app-nav-links">
+                <a href="#" class="current">Buscar</a>
+                <a href="#">Cómo denunciar</a>
+                <a href="#">Preguntas frecuentes</a>
+                <a href="#">Acceso admin</a>
+              </div>
+            </nav>
+
+            <div class="toolbar">
+              <div class="search-row">
+                <div class="search-input">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                  Buscar por nombre, por ejemplo "FELCV" o "Defensoría"
+                </div>
+                <label class="toggle-emergency">
+                  <input type="checkbox" checked>
+                  Solo emergencias 24/7
+                </label>
+              </div>
+              <div class="chip-group">
+                <span class="label">Tipo</span>
+                <button class="chip" aria-pressed="true">Todas</button>
+                <button class="chip" aria-pressed="false">Defensoría</button>
+                <button class="chip" aria-pressed="false">FELCV</button>
+                <button class="chip" aria-pressed="false">Fiscalía</button>
+                <button class="chip" aria-pressed="false">Policía</button>
+                <button class="chip" aria-pressed="false">SLIM</button>
+                <button class="chip" aria-pressed="false">Línea de emergencia</button>
+              </div>
+              <div class="chip-group">
+                <span class="label">Tipo de caso</span>
+                <button class="chip" aria-pressed="true">Grooming</button>
+                <button class="chip" aria-pressed="false">Sextorsión</button>
+                <button class="chip" aria-pressed="false">Control digital</button>
+                <button class="chip" aria-pressed="false">Consentimiento</button>
+                <button class="chip" aria-pressed="false">Violencia en el noviazgo</button>
+              </div>
+            </div>
+
+            <div class="app-main">
+              <div>
+                <p class="result-count">6 instituciones encontradas, ordenadas por cercanía a tu ubicación</p>
+                <div class="card-list">
+
+                  <article class="inst-card">
+                    <div class="inst-card-top">
+                      <div>
+                        <h3>Línea 156 · Atención inmediata</h3>
+                        <div class="inst-meta">
+                          <span class="tag type">Línea de emergencia</span>
+                          <span class="tag emergency">Abierto 24/7</span>
+                        </div>
+                      </div>
+                      <span class="distance">a 0.4 km</span>
+                    </div>
+                    <p class="inst-desc">Atiende grooming, sextorsión y contacto sexual mediante redes sociales. Primera respuesta y derivación a Fiscalía o Policía.</p>
+                    <div class="inst-actions">
+                      <button class="btn danger"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>Llamar 156</button>
+                      <button class="btn ghost">WhatsApp</button>
+                      <button class="btn ghost">Ver ficha</button>
+                    </div>
+                  </article>
+
+                  <article class="inst-card">
+                    <div class="inst-card-top">
+                      <div>
+                        <h3>FELCV Sucre</h3>
+                        <div class="inst-meta">
+                          <span class="tag type">FELCV</span>
+                          <span class="tag">Grooming</span>
+                          <span class="tag">Sextorsión</span>
+                        </div>
+                      </div>
+                      <span class="distance">a 1.2 km</span>
+                    </div>
+                    <p class="inst-desc">Fuerza Especial de Lucha Contra la Violencia. Recepción de denuncias y acompañamiento en casos de violencia digital y de género.</p>
+                    <div class="inst-actions">
+                      <button class="btn primary">Llamar</button>
+                      <button class="btn ghost">WhatsApp</button>
+                      <button class="btn ghost">Ver ficha</button>
+                    </div>
+                  </article>
+
+                  <article class="inst-card">
+                    <div class="inst-card-top">
+                      <div>
+                        <h3>Defensoría de la Niñez y Adolescencia</h3>
+                        <div class="inst-meta">
+                          <span class="tag type">Defensoría</span>
+                          <span class="tag">Consentimiento</span>
+                          <span class="tag">Violencia en el noviazgo</span>
+                        </div>
+                      </div>
+                      <span class="distance">a 1.8 km</span>
+                    </div>
+                    <p class="inst-desc">Orientación, protección y seguimiento de casos que involucran a menores de edad. Primer punto de contacto recomendado.</p>
+                    <div class="inst-actions">
+                      <button class="btn primary">Llamar</button>
+                      <button class="btn ghost">WhatsApp</button>
+                      <button class="btn ghost">Ver ficha</button>
+                    </div>
+                  </article>
+
+                  <article class="inst-card">
+                    <div class="inst-card-top">
+                      <div>
+                        <h3>SLIM Sucre</h3>
+                        <div class="inst-meta">
+                          <span class="tag type">SLIM</span>
+                          <span class="tag">Violencia en el noviazgo</span>
+                        </div>
+                      </div>
+                      <span class="distance">a 2.1 km</span>
+                    </div>
+                    <p class="inst-desc">Servicio Legal Integral Municipal. Orientación legal y psicológica gratuita para adolescentes y sus familias.</p>
+                    <div class="inst-actions">
+                      <button class="btn primary">Llamar</button>
+                      <button class="btn ghost">Ver ficha</button>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <aside class="map-panel">
+                <div class="map-canvas">
+                  <div class="you-are-here" style="top:58%; left:44%;"></div>
+                  <div class="pin emergency" style="top:40%; left:40%;"><div class="pin-dot"></div><span class="pin-label">Línea 156</span></div>
+                  <div class="pin" style="top:30%; left:60%;"><div class="pin-dot"></div><span class="pin-label">FELCV</span></div>
+                  <div class="pin" style="top:65%; left:70%;"><div class="pin-dot"></div><span class="pin-label">Defensoría</span></div>
+                  <div class="pin" style="top:75%; left:30%;"><div class="pin-dot"></div><span class="pin-label">SLIM</span></div>
+                </div>
+                <div class="map-legend">
+                  <span><span class="legend-dot" style="background:var(--accent)"></span>Tu ubicación</span>
+                  <span><span class="legend-dot" style="background:var(--primary)"></span>Institución</span>
+                  <span><span class="legend-dot" style="background:var(--danger)"></span>Emergencia 24/7</span>
+                </div>
+              </aside>
+            </div>
+
+            <button class="sos-float"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>Necesito ayuda ahora</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- D2: DETAIL -->
+      <div class="screen-panel" data-screen-panel="d-detail" hidden>
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dots"><span></span><span></span><span></span></div>
+            <div class="browser-url">directorio.plataforma-prevencion.bo/instituciones/felcv-sucre</div>
+          </div>
+          <div class="browser-panel" style="position:relative;">
+            <nav class="app-nav">
+              <div class="brand">
+                <div class="brand-mark">DI</div>
+                <div class="brand-text"><span class="kicker">Plataforma de prevención</span><span class="title">Directorio institucional</span></div>
+              </div>
+              <div class="app-nav-links">
+                <a href="#">← Volver a la búsqueda</a>
+              </div>
+            </nav>
+            <div class="detail-wrap">
+              <div>
+                <div class="detail-head">
+                  <div>
+                    <span class="tag type">FELCV</span>
+                    <h2 style="margin-top:8px;">FELCV Sucre</h2>
+                  </div>
+                  <button class="btn primary">Solicitar orientación</button>
+                </div>
+                <p class="inst-desc" style="font-size:14.5px;">Fuerza Especial de Lucha Contra la Violencia. Recibe denuncias de violencia digital, sextorsión, grooming y violencia de género, y deriva a Fiscalía cuando corresponde acción penal.</p>
+
+                <div class="detail-section">
+                  <h4>Atiende estos tipos de caso</h4>
+                  <div class="case-chip-picker">
+                    <span class="tag">Grooming</span>
+                    <span class="tag">Sextorsión</span>
+                    <span class="tag">Control digital</span>
+                    <span class="tag">Violencia en el noviazgo</span>
+                  </div>
+                </div>
+
+                <div class="detail-section">
+                  <h4>Horario de atención</h4>
+                  <table class="schedule-table">
+                    <tr><td>Lunes a viernes</td><td>08:00 – 16:00</td></tr>
+                    <tr><td>Sábados</td><td>09:00 – 12:00</td></tr>
+                    <tr><td>Domingos y feriados</td><td>Solo casos urgentes vía línea 156</td></tr>
+                  </table>
+                </div>
+
+                <div class="detail-section">
+                  <h4>Contacto</h4>
+                  <div class="contact-grid">
+                    <button class="btn primary">Llamar: 4 645 1212</button>
+                    <button class="btn">WhatsApp institucional</button>
+                    <button class="btn">Enviar correo</button>
+                    <button class="btn">Ver sitio web</button>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="side-card">
+                <h4>Ubicación</h4>
+                <div class="mini-map"><div class="pin" style="top:55%; left:50%;"><div class="pin-dot"></div></div></div>
+                <p class="inst-desc">Av. Hernando Siles esq. calle Grau, Sucre. A 1.2 km de tu ubicación actual.</p>
+                <h4 style="margin-top:18px;">Registrado por</h4>
+                <p class="inst-desc" style="margin:0;">Equipo admin · última actualización hace 6 días</p>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D3: FORM -->
+      <div class="screen-panel" data-screen-panel="d-form" hidden>
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dots"><span></span><span></span><span></span></div>
+            <div class="browser-url">directorio.plataforma-prevencion.bo/solicitar-orientacion</div>
+          </div>
+          <div class="browser-panel">
+            <nav class="app-nav">
+              <div class="brand">
+                <div class="brand-mark">DI</div>
+                <div class="brand-text"><span class="kicker">Plataforma de prevención</span><span class="title">Directorio institucional</span></div>
+              </div>
+              <div class="app-nav-links"><a href="#">← Volver</a></div>
+            </nav>
+            <div class="form-wrap">
+              <div class="form-intro">
+                <h2>Pide orientación</h2>
+                <p>Cuéntanos qué está pasando. Un equipo humano revisa tu mensaje y te contacta por el medio que elijas. No necesitas saber a qué institución acudir todavía.</p>
+              </div>
+              <div class="privacy-note">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:1px;"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg>
+                Tu solicitud es confidencial. Solo el equipo de orientación puede leerla.
+              </div>
+              <form>
+                <div class="field">
+                  <label for="d-case-type">¿Qué tipo de situación estás viviendo?</label>
+                  <select id="d-case-type">
+                    <option>Aún no lo sé</option>
+                    <option>Grooming</option>
+                    <option selected>Sextorsión</option>
+                    <option>Control digital</option>
+                    <option>Consentimiento</option>
+                    <option>Violencia en el noviazgo</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="d-institution">¿A qué institución prefieres dirigirte?</label>
+                  <select id="d-institution">
+                    <option selected>Que el equipo me recomiende una</option>
+                    <option>FELCV Sucre</option>
+                    <option>Defensoría de la Niñez y Adolescencia</option>
+                    <option>SLIM Sucre</option>
+                  </select>
+                  <span class="hint">Opcional. Si no sabes, el equipo te sugiere la más adecuada.</span>
+                </div>
+                <div class="field">
+                  <label for="d-message">Cuéntanos qué pasó</label>
+                  <textarea id="d-message" rows="4">Alguien está amenazando con compartir fotos mías si no le mando más. No sé qué hacer.</textarea>
+                </div>
+                <div class="field">
+                  <label for="d-contact">¿Cómo te contactamos?</label>
+                  <input type="text" id="d-contact" value="WhatsApp: 700 00 000">
+                  <span class="hint">También puedes dejarlo vacío y volver a esta página más tarde con tu número de solicitud.</span>
+                </div>
+                <button type="submit" class="btn primary" style="padding:11px 22px;">Enviar solicitud</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D4: ADMIN -->
+      <div class="screen-panel" data-screen-panel="d-admin" hidden>
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dots"><span></span><span></span><span></span></div>
+            <div class="browser-url">directorio.plataforma-prevencion.bo/admin/instituciones</div>
+          </div>
+          <div class="browser-panel">
+            <nav class="app-nav">
+              <div class="brand">
+                <div class="brand-mark">DI</div>
+                <div class="brand-text"><span class="kicker">Panel admin · sesión CMS</span><span class="title">Instituciones</span></div>
+              </div>
+              <div class="app-nav-links"><a href="#" class="current">Instituciones</a><a href="#">Solicitudes</a><a href="#">Cerrar sesión</a></div>
+            </nav>
+            <div class="admin-wrap">
+              <div class="admin-head">
+                <div>
+                  <h3 style="font-size:17px;">12 instituciones registradas</h3>
+                  <span class="who">Sesión iniciada como carlos.colque@cms.plataforma-prevencion.bo</span>
+                </div>
+                <button class="btn primary">+ Nueva institución</button>
+              </div>
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr><th>Nombre</th><th>Tipo</th><th>Emergencia</th><th>Estado</th><th>Actualizado</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Línea 156 · Atención inmediata</td><td>Línea de emergencia</td><td><span class="status-pill on">24/7</span></td>
+                      <td><span class="status-pill on">Activa</span></td><td>hace 2 días</td>
+                      <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+                    </tr>
+                    <tr>
+                      <td>FELCV Sucre</td><td>FELCV</td><td><span class="status-pill off">No</span></td>
+                      <td><span class="status-pill on">Activa</span></td><td>hace 6 días</td>
+                      <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+                    </tr>
+                    <tr>
+                      <td>Defensoría de la Niñez y Adolescencia</td><td>Defensoría</td><td><span class="status-pill off">No</span></td>
+                      <td><span class="status-pill on">Activa</span></td><td>hace 1 semana</td>
+                      <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+                    </tr>
+                    <tr>
+                      <td>SLIM Sucre</td><td>SLIM</td><td><span class="status-pill off">No</span></td>
+                      <td><span class="status-pill off">Inactiva</span></td><td>hace 3 semanas</td>
+                      <td class="row-actions"><button>Editar</button><button>Reactivar</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MOBILE ===================== -->
+  <div class="device-panel" data-device-panel="mobile" hidden>
+    <div class="screen-tabs" role="tablist" aria-label="Elegir pantalla, móvil">
+      <button role="tab" aria-selected="true" data-screen="m-home">Inicio</button>
+      <button role="tab" aria-selected="false" data-screen="m-detail">Ficha</button>
+      <button role="tab" aria-selected="false" data-screen="m-form">Solicitud</button>
+      <button role="tab" aria-selected="false" data-screen="m-admin">Admin</button>
+    </div>
+
+    <div class="frame-scroll">
+      <!-- M1: HOME -->
+      <div class="screen-panel" data-screen-panel="m-home">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-panel" style="position:relative; min-height:100%;">
+              <div class="m-nav">
+                <div class="brand"><div class="brand-mark" style="width:24px;height:24px;font-size:12px;">DI</div><span style="font-family:var(--font-display); font-size:15px;">Directorio</span></div>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+              </div>
+              <div class="m-search">
+                <div class="search-input" style="font-size:13px;">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                  Buscar institución
+                </div>
+              </div>
+              <div class="m-chip-scroll">
+                <button class="chip" aria-pressed="true">Todas</button>
+                <button class="chip" aria-pressed="false">FELCV</button>
+                <button class="chip" aria-pressed="false">Defensoría</button>
+                <button class="chip" aria-pressed="false">Policía</button>
+                <button class="chip" aria-pressed="false">SLIM</button>
+              </div>
+              <div class="m-map-toggle">
+                <button class="active">Lista</button>
+                <button>Mapa</button>
+              </div>
+              <div class="m-card-list">
+                <article class="inst-card">
+                  <div class="inst-card-top">
+                    <div>
+                      <h3 style="font-size:14.5px;">Línea 156</h3>
+                      <div class="inst-meta"><span class="tag emergency">24/7</span><span class="distance">0.4 km</span></div>
+                    </div>
+                  </div>
+                  <div class="inst-actions"><button class="btn danger" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
+                </article>
+                <article class="inst-card">
+                  <div class="inst-card-top">
+                    <div>
+                      <h3 style="font-size:14.5px;">FELCV Sucre</h3>
+                      <div class="inst-meta"><span class="tag type">FELCV</span><span class="distance">1.2 km</span></div>
+                    </div>
+                  </div>
+                  <div class="inst-actions"><button class="btn primary" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
+                </article>
+                <article class="inst-card">
+                  <div class="inst-card-top">
+                    <div>
+                      <h3 style="font-size:14.5px;">Defensoría</h3>
+                      <div class="inst-meta"><span class="tag type">Defensoría</span><span class="distance">1.8 km</span></div>
+                    </div>
+                  </div>
+                  <div class="inst-actions"><button class="btn primary" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
+                </article>
+              </div>
+              <button class="sos-float" style="position:absolute;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>SOS</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- M2: DETAIL -->
+      <div class="screen-panel" data-screen-panel="m-detail" hidden>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <button class="m-back">← Volver</button>
+            <div class="m-detail-hero">
+              <span class="tag type">FELCV</span>
+              <h2 style="font-size:20px; margin-top:8px;">FELCV Sucre</h2>
+              <p class="inst-desc" style="margin-top:6px;">Recibe denuncias de violencia digital, sextorsión y grooming.</p>
+            </div>
+            <div class="m-detail-body">
+              <div>
+                <h4 style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Contacto</h4>
+                <div class="m-contact-grid">
+                  <button class="btn primary">Llamar</button>
+                  <button class="btn">WhatsApp</button>
+                  <button class="btn">Correo</button>
+                  <button class="btn">Sitio web</button>
+                </div>
+              </div>
+              <div>
+                <h4 style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Horario</h4>
+                <table class="schedule-table">
+                  <tr><td>Lun a vie</td><td>08:00–16:00</td></tr>
+                  <tr><td>Sábados</td><td>09:00–12:00</td></tr>
+                </table>
+              </div>
+              <div>
+                <h4 style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Ubicación</h4>
+                <div class="mini-map"><div class="pin" style="top:55%; left:50%;"><div class="pin-dot"></div></div></div>
+                <p class="inst-desc">A 1.2 km de tu ubicación</p>
+              </div>
+              <button class="btn primary" style="width:100%; justify-content:center; padding:12px;">Solicitar orientación</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- M3: FORM -->
+      <div class="screen-panel" data-screen-panel="m-form" hidden>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="m-nav"><button class="m-back" style="color:#fff; margin:0;">← Volver</button><span style="font-size:13px;">Solicitud</span></div>
+            <div class="m-form-body">
+              <h2 style="font-size:19px;">Pide orientación</h2>
+              <p class="inst-desc" style="margin:8px 0 16px;">Un equipo humano te contacta pronto.</p>
+              <div class="privacy-note" style="font-size:11.5px;">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg>
+                Tu solicitud es confidencial.
+              </div>
+              <div class="field">
+                <label for="m-case-type">Tipo de situación</label>
+                <select id="m-case-type"><option selected>Sextorsión</option><option>Grooming</option><option>Control digital</option></select>
+              </div>
+              <div class="field">
+                <label for="m-message">Cuéntanos qué pasó</label>
+                <textarea id="m-message" rows="4">Alguien amenaza con compartir fotos mías.</textarea>
+              </div>
+              <div class="field">
+                <label for="m-contact">Tu contacto</label>
+                <input type="text" id="m-contact" value="WhatsApp: 700 00 000">
+              </div>
+              <button class="btn primary" style="width:100%; justify-content:center; padding:12px;">Enviar solicitud</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- M4: ADMIN -->
+      <div class="screen-panel" data-screen-panel="m-admin" hidden>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="m-nav"><span style="font-size:13px;">Panel admin</span><span style="font-size:11px; opacity:0.8;">Carlos M.</span></div>
+            <div class="m-admin-body">
+              <p class="inst-desc" style="margin-bottom:12px;">Gestión completa recomendada desde escritorio. Vista rápida de estado:</p>
+              <div class="m-admin-card">
+                <div><div class="name">Línea 156</div><div class="meta">Línea de emergencia · hace 2 días</div></div>
+                <span class="status-pill on">Activa</span>
+              </div>
+              <div class="m-admin-card">
+                <div><div class="name">FELCV Sucre</div><div class="meta">FELCV · hace 6 días</div></div>
+                <span class="status-pill on">Activa</span>
+              </div>
+              <div class="m-admin-card">
+                <div><div class="name">SLIM Sucre</div><div class="meta">SLIM · hace 3 semanas</div></div>
+                <span class="status-pill off">Inactiva</span>
+              </div>
+              <button class="m-fab">+ Nueva institución</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function wireTabs(tabSelector, panelAttr, keyAttr) {
+    var tabs = document.querySelectorAll(tabSelector);
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var group = tab.closest('[role="tablist"]');
+        group.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+        tab.setAttribute('aria-selected', 'true');
+        var key = tab.getAttribute(keyAttr);
+        var scope = group.parentElement;
+        scope.querySelectorAll('[' + panelAttr + ']').forEach(function (p) {
+          p.hidden = p.getAttribute(panelAttr) !== key;
+        });
+      });
+    });
+  }
+
+  document.querySelectorAll('.device-tabs button').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.device-tabs button').forEach(function (b) { b.setAttribute('aria-selected', 'false'); });
+      tab.setAttribute('aria-selected', 'true');
+      var key = tab.getAttribute('data-device');
+      document.querySelectorAll('[data-device-panel]').forEach(function (p) {
+        p.hidden = p.getAttribute('data-device-panel') !== key;
+      });
+    });
+  });
+
+  wireTabs('.device-panel[data-device-panel="desktop"] .screen-tabs button', 'data-screen-panel', 'data-screen');
+  wireTabs('.device-panel[data-device-panel="mobile"] .screen-tabs button', 'data-screen-panel', 'data-screen');
+
+  document.querySelectorAll('.chip-group .chip, .m-chip-scroll .chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  });
+</script>
