@@ -1,0 +1,10 @@
+node_modules
+dist
+.astro
+.git
+.vscode
+npm-debug.log*
+pnpm-debug.log*
+.env
+.env.production
+.DS_Store

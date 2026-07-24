@@ -1,0 +1,159 @@
+---
+const slides = [
+	{ eyebrow: 'texto', text: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.' },
+	{ eyebrow: 'texto', text: 'Sed do eiusmod tempor incididunt ut labore et dolore magna.' },
+	{ eyebrow: 'texto', text: 'Ut enim ad minim veniam quis nostrud exercitation ullamco.' },
+];
+---
+
+<section class="carousel" aria-roledescription="carousel" aria-label="Historias destacadas">
+	<div class="carousel-track">
+		{
+			slides.map((slide, index) => (
+				<div class="carousel-slide img-placeholder" class:list={[{ active: index === 0 }]} data-index={index}>
+					<div class="slide-overlay">
+						<div class="slide-content wrapper">
+							<p class="slide-eyebrow">{slide.eyebrow}</p>
+							<p class="slide-text">{slide.text}</p>
+							<a href="#recursos" class="pill-btn slide-cta">saber mas</a>
+						</div>
+					</div>
+				</div>
+			))
+		}
+	</div>
+
+	<div class="carousel-dots">
+		{
+			slides.map((_, index) => (
+				<button
+					type="button"
+					class="dot"
+					class:list={[{ active: index === 0 }]}
+					data-index={index}
+					aria-label={`Ir a la diapositiva ${index + 1}`}
+				/>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.carousel {
+		position: relative;
+		width: 100%;
+		height: min(70vh, 560px);
+		overflow: hidden;
+	}
+
+	.carousel-track {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
+
+	.carousel-slide {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.7s ease,
+			visibility 0.7s ease;
+		filter: grayscale(1);
+	}
+
+	.carousel-slide.active {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.slide-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-end;
+		background: linear-gradient(0deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.15) 45%, rgba(0, 0, 0, 0.35) 100%);
+	}
+
+	.slide-content {
+		padding-bottom: 3rem;
+		color: white;
+		max-width: 480px;
+	}
+
+	.slide-eyebrow {
+		font-size: 0.9rem;
+		text-transform: lowercase;
+		opacity: 0.85;
+		margin-bottom: 0.5rem;
+	}
+
+	.slide-text {
+		font-size: 1rem;
+		line-height: 1.5;
+		margin-bottom: 1.5rem;
+	}
+
+	.slide-cta {
+		background: rgba(244, 239, 228, 0.9);
+		color: var(--color-ink);
+		padding: 0.7rem 1.5rem;
+		font-weight: 500;
+	}
+
+	.carousel-dots {
+		position: absolute;
+		bottom: 1.25rem;
+		right: 1.5rem;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 999px;
+		border: none;
+		background: rgba(255, 255, 255, 0.5);
+		cursor: pointer;
+		padding: 0;
+		transition: background 0.2s ease;
+	}
+
+	.dot.active {
+		background: white;
+	}
+</style>
+
+<script>
+	const carousel = document.querySelector('.carousel');
+	if (carousel) {
+		const slides = carousel.querySelectorAll<HTMLElement>('.carousel-slide');
+		const dots = carousel.querySelectorAll<HTMLButtonElement>('.dot');
+		let current = 0;
+		let timer: ReturnType<typeof setInterval>;
+
+		function goTo(index: number) {
+			slides[current]?.classList.remove('active');
+			dots[current]?.classList.remove('active');
+			current = (index + slides.length) % slides.length;
+			slides[current]?.classList.add('active');
+			dots[current]?.classList.add('active');
+		}
+
+		function start() {
+			timer = setInterval(() => goTo(current + 1), 5000);
+		}
+
+		dots.forEach((dot, index) => {
+			dot.addEventListener('click', () => {
+				clearInterval(timer);
+				goTo(index);
+				start();
+			});
+		});
+
+		start();
+	}
+</script>
