@@ -1,82 +1,170 @@
-# Astro Starter Kit: Basics
+# Yanapaway — Plataforma de apoyo a víctimas de violencia de pareja
 
-```sh
-pnpm create astro@latest -- --template basics
+Línea de productos de software que ofrece información y soporte a personas en situación de violencia de pareja.
+
+**Este repositorio contiene dos aplicaciones:**
+- `apps/web` — sitio Astro (información pública)
+- `apps/cms` — backend Strapi (panel para administradores)
+
+---
+
+## 🚀 Guía rápida para desarrolladores: levantar el ambiente
+
+### Requisitos previos
+
+Necesitás tener instalado:
+- **Docker** y **Docker Compose** ([descargar acá](https://www.docker.com/products/docker-desktop))
+- **Node.js ≥22** ([descargar acá](https://nodejs.org/))
+- **pnpm** (gestor de paquetes): `npm install -g pnpm`
+
+Si no sabés si ya lo tenés, abrí una terminal y escribí:
+```bash
+docker --version
+docker compose --version
+node --version
+pnpm --version
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+### Paso 1: Clonar y preparar
 
-## 🚀 Project Structure
+```bash
+# Clonar el repositorio
+git clone https://github.com/Warnermot/yanapaway.git
+cd yanapaway
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+# Copiar el archivo de configuración
+cp env.example .env
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+### Paso 2: Completar los secretos (archivo `.env`)
 
-## 🧞 Commands
+Abrí el archivo `.env` que acabas de crear y buscá estas líneas:
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 🛠️ Make
-
-Este proyecto incluye un `Makefile` para acortar los comandos más usados
-(por ejemplo `make dev` en lugar de `pnpm astro dev --background`, o
-`make docker-build` para levantar los contenedores). `make` sirve para
-ejecutar tareas definidas con nombres cortos y así evitar memorizar
-comandos largos.
-
-En Linux y macOS `make` normalmente ya viene instalado. Si no lo tienes,
-instálalo según tu sistema:
-
-```sh
-# Debian / Ubuntu
-sudo apt install make
-
-# macOS (con Homebrew)
-brew install make
-
-# macOS (Command Line Tools de Xcode)
-xcode-select --install
-
-# Fedora
-sudo dnf install make
-
-# Arch Linux
-sudo pacman -S make
-
-# Windows (con Chocolatey)
-choco install make
+```
+DATABASE_PASSWORD=cambiar-por-una-contrasena-fuerte
+APP_KEYS=clave1,clave2
+API_TOKEN_SALT=
+ADMIN_JWT_SECRET=
+TRANSFER_TOKEN_SALT=
+JWT_SECRET=
+ENCRYPTION_KEY=
 ```
 
-Comprueba que quedó instalado:
+Para generar valores seguros, podés usar este comando en la terminal (repetilo para cada secreto):
 
-```sh
-make --version
+```bash
+node -e "console.log(require('crypto').randomBytes(16).toString('base64'))"
 ```
 
-Luego ejecuta `make help` para ver todos los comandos disponibles del proyecto.
+Copiá y pegá el resultado en lugar de los valores vacíos. Para `APP_KEYS` genera dos valores separados por coma.
 
+**Para desarrollo rápido**, podés simplemente poner valores cualquiera si querés probar (nunca hagas esto en producción):
+
+```
+DATABASE_PASSWORD=desarrollo123
+APP_KEYS=clave1,clave2
+API_TOKEN_SALT=desarrollo
+ADMIN_JWT_SECRET=desarrollo
+TRANSFER_TOKEN_SALT=desarrollo
+JWT_SECRET=desarrollo
+ENCRYPTION_KEY=0123456789abcdef0123456789abcdef
+```
+
+### Paso 3: Levantar todo con Docker
+
+Una sola línea levanta la base de datos + CMS + sitio web:
+
+```bash
+make up
+```
+
+**¿Qué está pasando?**
+- Se descarga la imagen de PostgreSQL 16 (base de datos)
+- Se compila el CMS Strapi
+- Se compila el sitio Astro
+- Todo arranca en segundo plano
+
+Esperar 30-60 segundos a que todo esté listo. Verás mensajes así:
+
+```
+cms_1  | Strapi started successfully
+web_1  | ┌─────────────────────────────────────────┐
+web_1  | │ Local:    http://localhost:4321       │
+web_1  | └─────────────────────────────────────────┘
+```
+
+### Paso 4: Acceder a las aplicaciones
+
+Abrí el navegador:
+
+- **Sitio web**: http://localhost:4321
+- **Panel CMS**: http://localhost:1337/admin
+
+### Primer acceso al CMS
+
+La primera vez que entres en http://localhost:1337/admin, te va a pedir crear el administrador principal.
+
+**Importante:** Este es el único admin que deberías crear localmente. Completá:
+- **Email** — cualquiera: `admin@test.local`
+- **Nombre** — cualquiera: `Admin Local`
+- **Contraseña** — lo que quieras para desarrollo
+
+Cuando termines, ¡estás adentro! El panel está en **español**.
+
+### Comandos útiles
+
+```bash
+# Ver los logs de lo que está pasando
+make cms-logs
+
+# Detener todo
+make cms-down
+
+# Reiniciar el CMS (sin perder datos)
+make cms-down && make cms-up
+
+# Cargar datos de prueba en la base de datos
+pnpm --filter cms seed
+```
+
+### Datos de prueba
+
+Si querés cargar instituciones y páginas de ejemplo, ejecutá:
+
+```bash
+pnpm --filter cms seed
+```
+
+Esto agrega contenido claramente marcado como `[DATOS DE PRUEBA]` — teléfonos ficticios, nombres con prefijo, todo para que no haya confusion con datos reales.
+
+---
+
+## 📚 Más información
+
+- **CMS:** ver [apps/cms/README.md](apps/cms/README.md)
+- **Sitio web:** ver [apps/web/README.md](apps/web/README.md)
+- **API:** ver [docs/api-contract.md](docs/api-contract.md)
+
+---
+
+## ❓ ¿Algo no funciona?
+
+**Docker no inicia:**
+- Asegurate de que Docker Desktop está corriendo (en Mac/Windows, mirá en el dock)
+- En Linux, probá: `sudo systemctl start docker`
+
+**Puertos ocupados:**
+- Si algo usa ya el puerto 1337 o 4321, podés cambiarlos en `docker-compose.yml`
+
+**Base de datos lenta:**
+- La primera vez tarda un poco. Esperá 1-2 minutos.
+
+**¿Necesitás borrar todo y empezar de cero?**
+```bash
+make cms-clean
+make up
+```
+
+---
+
+Cualquier duda, preguntá. ¡Bienvenido al equipo! 🚀
