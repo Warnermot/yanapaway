@@ -1,0 +1,144 @@
+---
+---
+
+<aside class="mapa-panel" id="mapa-instituciones">
+  <div class="mapa-estado" id="mapa-estado">
+    <p>Activa tu ubicación para ver las instituciones más cercanas a ti.</p>
+    <button type="button" id="btn-ubicacion" class="btn-ubicacion">Usar mi ubicación</button>
+  </div>
+  <ul class="mapa-lista" id="mapa-lista" hidden></ul>
+</aside>
+
+<style>
+  .mapa-panel {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mapa-estado {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: linear-gradient(160deg, var(--color-green-soft), var(--color-cream-dark));
+    border-radius: var(--radius-m);
+    padding: 1.5rem;
+  }
+
+  .mapa-estado p {
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+  }
+
+  .btn-ubicacion {
+    background: var(--color-green);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.4rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .btn-ubicacion:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .mapa-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mapa-lista li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-m);
+    background: var(--color-cream);
+  }
+
+  .mapa-lista .nombre {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .mapa-lista .distancia {
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  const boton = document.getElementById('btn-ubicacion') as HTMLButtonElement | null;
+  const estado = document.getElementById('mapa-estado');
+  const lista = document.getElementById('mapa-lista') as HTMLUListElement | null;
+
+  boton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      if (estado) estado.innerHTML = '<p>Tu navegador no permite compartir ubicación.</p>';
+      return;
+    }
+
+    boton.disabled = true;
+    boton.textContent = 'Buscando tu ubicación…';
+
+    navigator.geolocation.getCurrentPosition(
+      async (posicion) => {
+        const { latitude, longitude } = posicion.coords;
+
+        try {
+          const respuesta = await fetch(
+            `/api/instituciones/cercanas?lat=${latitude}&lng=${longitude}`,
+          );
+
+          if (!respuesta.ok) throw new Error('No se pudo obtener instituciones cercanas.');
+
+          const datos = await respuesta.json();
+
+          if (!lista) return;
+
+          if (datos.instituciones.length === 0) {
+            if (estado) estado.innerHTML = '<p>No encontramos instituciones cercanas registradas.</p>';
+            return;
+          }
+
+          lista.innerHTML = datos.instituciones
+            .slice(0, 6)
+            .map(
+              (item: { institucion: { id: string; nombre: string }; distanciaKm: number }) => `
+                <li>
+                  <a href="/instituciones/${item.institucion.id}" class="nombre">${item.institucion.nombre}</a>
+                  <span class="distancia">${item.distanciaKm.toFixed(1)} km</span>
+                </li>
+              `,
+            )
+            .join('');
+
+          lista.hidden = false;
+          if (estado) estado.hidden = true;
+        } catch {
+          if (estado) estado.innerHTML = '<p>No se pudo cargar instituciones cercanas. Intenta de nuevo.</p>';
+          boton.disabled = false;
+          boton.textContent = 'Usar mi ubicación';
+        }
+      },
+      () => {
+        if (estado) estado.innerHTML = '<p>No pudimos acceder a tu ubicación. Revisa los permisos del navegador.</p>';
+      },
+    );
+  });
+</script>

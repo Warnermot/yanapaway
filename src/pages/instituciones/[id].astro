@@ -1,0 +1,242 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
+import { obtenerInstitucionPorId } from '../../db/queries/instituciones';
+import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
+import { esUuidValido } from '../../lib/validation';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+if (!id || !esUuidValido(id)) {
+  return new Response(null, { status: 404 });
+}
+
+const institucion = await obtenerInstitucionPorId(id);
+
+if (!institucion) {
+  return new Response(null, { status: 404 });
+}
+
+const horario =
+  institucion.horario && typeof institucion.horario === 'object'
+    ? Object.entries(institucion.horario as Record<string, string>)
+    : [];
+---
+
+<Layout title={`${institucion.nombre} — Directorio institucional`} description={institucion.descripcion ?? undefined}>
+  <Header />
+
+  <div class="wrapper pagina-ficha">
+    <a class="volver" href="/instituciones">← Volver al directorio</a>
+
+    <div class="ficha-grid">
+      <article class="ficha-principal">
+        <div class="ficha-encabezado">
+          <h1>{institucion.nombre}</h1>
+          <div class="tags">
+            <span class="tag tipo">{TIPO_INSTITUCION_LABELS[institucion.tipo]}</span>
+            {institucion.esEmergencia && <span class="tag emergencia">Abierto 24/7</span>}
+          </div>
+        </div>
+
+        {institucion.descripcion && <p class="descripcion">{institucion.descripcion}</p>}
+
+        {
+          institucion.tiposCaso.length > 0 && (
+            <div class="seccion">
+              <h2>Atiende casos de</h2>
+              <div class="tags">
+                {institucion.tiposCaso.map((tipoCaso) => (
+                  <span class="tag">{etiquetaTipoCaso(tipoCaso.nombre)}</span>
+                ))}
+              </div>
+            </div>
+          )
+        }
+
+        <div class="seccion contacto-grid">
+          {institucion.direccion && (
+            <div><h3>Dirección</h3><p>{institucion.direccion}</p></div>
+          )}
+          {institucion.telefono && (
+            <div><h3>Teléfono</h3><p><a href={`tel:${institucion.telefono}`}>{institucion.telefono}</a></p></div>
+          )}
+          {institucion.whatsapp && (
+            <div><h3>WhatsApp</h3><p><a href={`https://wa.me/${institucion.whatsapp.replace(/\D/g, '')}`}>{institucion.whatsapp}</a></p></div>
+          )}
+          {institucion.correo && (
+            <div><h3>Correo</h3><p><a href={`mailto:${institucion.correo}`}>{institucion.correo}</a></p></div>
+          )}
+          {institucion.sitioWeb && (
+            <div><h3>Sitio web</h3><p><a href={institucion.sitioWeb} target="_blank" rel="noopener noreferrer">{institucion.sitioWeb}</a></p></div>
+          )}
+        </div>
+
+        {
+          horario.length > 0 && (
+            <div class="seccion">
+              <h2>Horario</h2>
+              <dl class="horario">
+                {horario.map(([dia, franja]) => (
+                  <>
+                    <dt>{dia}</dt>
+                    <dd>{franja}</dd>
+                  </>
+                ))}
+              </dl>
+            </div>
+          )
+        }
+
+        <a class="btn-solicitar" href={`/solicitar-orientacion?institucion=${institucion.id}`}>
+          Solicitar orientación
+        </a>
+      </article>
+
+      <MapaInstituciones />
+    </div>
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  .pagina-ficha {
+    padding-block: 2rem 3.5rem;
+  }
+
+  .volver {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+  }
+
+  .volver:hover {
+    color: var(--color-green);
+  }
+
+  .ficha-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .ficha-principal {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .ficha-encabezado h1 {
+    font-size: clamp(1.4rem, 1.1rem + 1.2vw, 1.9rem);
+    font-weight: 700;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-cream-dark);
+    color: var(--color-ink-soft);
+  }
+
+  .tag.tipo {
+    background: var(--color-green-soft);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  .tag.emergencia {
+    background: var(--color-red-soft);
+    color: var(--color-red);
+    font-weight: 600;
+  }
+
+  .descripcion {
+    color: var(--color-ink-soft);
+    line-height: 1.6;
+  }
+
+  .seccion h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+
+  .contacto-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    border-top: 1px solid rgba(26, 26, 23, 0.08);
+    padding-top: 1.25rem;
+  }
+
+  .contacto-grid h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-ink-soft);
+    margin-bottom: 0.2rem;
+  }
+
+  .contacto-grid a {
+    color: var(--color-green);
+    font-weight: 500;
+  }
+
+  .horario {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 1rem;
+    font-size: 0.88rem;
+  }
+
+  .horario dt {
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .horario dd {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+
+  .btn-solicitar {
+    align-self: flex-start;
+    background: var(--color-green);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.75rem 1.75rem;
+    border-radius: 999px;
+  }
+
+  @media (max-width: 900px) {
+    .ficha-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .contacto-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

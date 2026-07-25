@@ -1,0 +1,136 @@
+---
+import { tipoInstitucionEnum } from '../../db/schema';
+import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
+
+interface Props {
+  tiposCaso: { id: string; nombre: string }[];
+  tipoSeleccionado?: string;
+  tipoCasoSeleccionado?: string;
+}
+
+const { tiposCaso, tipoSeleccionado, tipoCasoSeleccionado } = Astro.props;
+const tiposInstitucion = tipoInstitucionEnum.enumValues;
+---
+
+<form class="buscador" method="get" action="/instituciones">
+  <fieldset class="grupo-chips">
+    <legend>Tipo de institución</legend>
+    <label class="chip">
+      <input type="radio" name="tipo" value="" checked={!tipoSeleccionado} />
+      Todas
+    </label>
+    {
+      tiposInstitucion.map((tipo) => (
+        <label class="chip">
+          <input type="radio" name="tipo" value={tipo} checked={tipoSeleccionado === tipo} />
+          {TIPO_INSTITUCION_LABELS[tipo]}
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <fieldset class="grupo-chips">
+    <legend>Tipo de caso</legend>
+    <label class="chip">
+      <input
+        type="radio"
+        name="tipo_caso"
+        value=""
+        checked={!tipoCasoSeleccionado}
+      />
+      Todos
+    </label>
+    {
+      tiposCaso.map((tipoCaso) => (
+        <label class="chip">
+          <input
+            type="radio"
+            name="tipo_caso"
+            value={tipoCaso.id}
+            checked={tipoCasoSeleccionado === tipoCaso.id}
+          />
+          {etiquetaTipoCaso(tipoCaso.nombre)}
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <button type="submit" class="btn-buscar">Buscar</button>
+</form>
+
+<style>
+  .buscador {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem 1.5rem;
+    margin-top: -2.5rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .grupo-chips {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .grupo-chips legend {
+    width: 100%;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-soft);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .chip {
+    cursor: pointer;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(26, 26, 23, 0.12);
+    color: var(--color-ink);
+    transition: background 0.2s ease;
+  }
+
+  .chip:has(input:checked) {
+    background: var(--color-green-soft);
+    border-color: var(--color-green);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  .chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .btn-buscar {
+    align-self: flex-start;
+    background: var(--color-green);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.65rem 1.75rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 640px) {
+    .buscador {
+      margin-top: -1.5rem;
+      padding: 1rem;
+    }
+  }
+</style>

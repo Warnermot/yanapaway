@@ -29,7 +29,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return jsonError(400, 'Cuerpo de la solicitud inválido.');
   }
 
-  const { institucionId, tipoCasoId, mensaje, infoContacto } = cuerpo as Record<string, unknown>;
+  const cuerpoRecibido = cuerpo as Record<string, unknown>;
+  const institucionId = cuerpoRecibido.institucionId ?? undefined;
+  const tipoCasoId = cuerpoRecibido.tipoCasoId ?? undefined;
+  const mensaje = cuerpoRecibido.mensaje;
+  const infoContacto = cuerpoRecibido.infoContacto ?? undefined;
 
   if (
     institucionId !== undefined &&
