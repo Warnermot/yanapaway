@@ -1,0 +1,386 @@
+{
+  "id": "5b28fd46-8cd5-4fbe-ab7b-49e993183249",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.instituciones": {
+      "name": "instituciones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_institucion",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "direccion": {
+          "name": "direccion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whatsapp": {
+          "name": "whatsapp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sitio_web": {
+          "name": "sitio_web",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "horario": {
+          "name": "horario",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latitud": {
+          "name": "latitud",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longitud": {
+          "name": "longitud",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "es_emergencia": {
+          "name": "es_emergencia",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "esta_activo": {
+          "name": "esta_activo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_instituciones_ubicacion": {
+          "name": "idx_instituciones_ubicacion",
+          "columns": [
+            {
+              "expression": "latitud",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "longitud",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_instituciones_tipo": {
+          "name": "idx_instituciones_tipo",
+          "columns": [
+            {
+              "expression": "tipo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_instituciones_emergencia": {
+          "name": "idx_instituciones_emergencia",
+          "columns": [
+            {
+              "expression": "es_emergencia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"instituciones\".\"es_emergencia\" = true",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.instituciones_tipos_caso": {
+      "name": "instituciones_tipos_caso",
+      "schema": "",
+      "columns": {
+        "institucion_id": {
+          "name": "institucion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_caso_id": {
+          "name": "tipo_caso_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "instituciones_tipos_caso_institucion_id_instituciones_id_fk": {
+          "name": "instituciones_tipos_caso_institucion_id_instituciones_id_fk",
+          "tableFrom": "instituciones_tipos_caso",
+          "tableTo": "instituciones",
+          "columnsFrom": [
+            "institucion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "instituciones_tipos_caso_tipo_caso_id_tipos_caso_id_fk": {
+          "name": "instituciones_tipos_caso_tipo_caso_id_tipos_caso_id_fk",
+          "tableFrom": "instituciones_tipos_caso",
+          "tableTo": "tipos_caso",
+          "columnsFrom": [
+            "tipo_caso_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "instituciones_tipos_caso_institucion_id_tipo_caso_id_pk": {
+          "name": "instituciones_tipos_caso_institucion_id_tipo_caso_id_pk",
+          "columns": [
+            "institucion_id",
+            "tipo_caso_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.solicitudes_orientacion": {
+      "name": "solicitudes_orientacion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "institucion_id": {
+          "name": "institucion_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tipo_caso_id": {
+          "name": "tipo_caso_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mensaje": {
+          "name": "mensaje",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "info_contacto": {
+          "name": "info_contacto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendiente'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "solicitudes_orientacion_institucion_id_instituciones_id_fk": {
+          "name": "solicitudes_orientacion_institucion_id_instituciones_id_fk",
+          "tableFrom": "solicitudes_orientacion",
+          "tableTo": "instituciones",
+          "columnsFrom": [
+            "institucion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "solicitudes_orientacion_tipo_caso_id_tipos_caso_id_fk": {
+          "name": "solicitudes_orientacion_tipo_caso_id_tipos_caso_id_fk",
+          "tableFrom": "solicitudes_orientacion",
+          "tableTo": "tipos_caso",
+          "columnsFrom": [
+            "tipo_caso_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tipos_caso": {
+      "name": "tipos_caso",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tipos_caso_nombre_unique": {
+          "name": "tipos_caso_nombre_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nombre"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.tipo_institucion": {
+      "name": "tipo_institucion",
+      "schema": "public",
+      "values": [
+        "defensoria",
+        "felcv",
+        "fiscalia",
+        "policia",
+        "slim",
+        "linea_emergencia",
+        "otro"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
