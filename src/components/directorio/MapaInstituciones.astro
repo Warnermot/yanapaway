@@ -116,17 +116,26 @@
             return;
           }
 
-          lista.innerHTML = datos.instituciones
-            .slice(0, 6)
-            .map(
-              (item: { id: string; nombre: string; distanciaKm: number }) => `
-                <li>
-                  <a href="/instituciones/${item.id}" class="nombre">${item.nombre}</a>
-                  <span class="distancia">${item.distanciaKm.toFixed(1)} km</span>
-                </li>
-              `,
-            )
-            .join('');
+          lista.innerHTML = '';
+          for (const item of datos.instituciones.slice(0, 6) as {
+            id: string;
+            nombre: string;
+            distanciaKm: number;
+          }[]) {
+            const elementoLista = document.createElement('li');
+
+            const enlace = document.createElement('a');
+            enlace.href = `/instituciones/${item.id}`;
+            enlace.className = 'nombre';
+            enlace.textContent = item.nombre;
+
+            const distancia = document.createElement('span');
+            distancia.className = 'distancia';
+            distancia.textContent = `${item.distanciaKm.toFixed(1)} km`;
+
+            elementoLista.append(enlace, distancia);
+            lista.append(elementoLista);
+          }
 
           lista.hidden = false;
           if (estado) estado.hidden = true;

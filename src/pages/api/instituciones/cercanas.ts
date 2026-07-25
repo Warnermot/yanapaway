@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { listarInstitucionesCercanas } from '../../../db/queries/instituciones';
-import { jsonError, jsonOk } from '../../../lib/http';
+import { jsonError, jsonOk, registrarError } from '../../../lib/http';
 
 export const prerender = false;
 
@@ -27,10 +27,7 @@ export const GET: APIRoute = async ({ url }) => {
     const instituciones = await listarInstitucionesCercanas(lat, lng, soloEmergencia);
     return jsonOk({ instituciones });
   } catch (error) {
-    console.error(
-      'Error al listar instituciones cercanas:',
-      error instanceof Error ? error.message : error,
-    );
+    registrarError('Error al listar instituciones cercanas:', error);
     return jsonError(500, 'No se pudo obtener instituciones cercanas.');
   }
 };

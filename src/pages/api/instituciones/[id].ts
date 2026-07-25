@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { obtenerInstitucionPorId } from '../../../db/queries/instituciones';
-import { jsonError, jsonOk } from '../../../lib/http';
+import { jsonError, jsonOk, registrarError } from '../../../lib/http';
 import { esUuidValido } from '../../../lib/validation';
 
 export const prerender = false;
@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ params }) => {
 
     return jsonOk({ institucion });
   } catch (error) {
-    console.error('Error al obtener institución:', error instanceof Error ? error.message : error);
+    registrarError('Error al obtener institución:', error);
     return jsonError(500, 'No se pudo obtener la institución.');
   }
 };

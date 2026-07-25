@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { crearSolicitudOrientacion } from '../../db/queries/solicitudes';
-import { jsonError, jsonOk } from '../../lib/http';
+import { crearSolicitudOrientacion, type DatosSolicitudOrientacion } from '../../db/queries/solicitudes';
+import { jsonError, jsonOk, registrarError } from '../../lib/http';
 import { excedeLimite } from '../../lib/rate-limit';
 import { esUuidValido } from '../../lib/validation';
 
@@ -25,8 +25,34 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return jsonError(400, 'El cuerpo de la solicitud debe ser JSON válido.');
   }
 
+  const resultado = validarSolicitud(cuerpo);
+  if (!resultado.valido) {
+    return jsonError(400, resultado.error);
+  }
+
+  try {
+    // No se registra el mensaje ni la info de contacto en logs del servidor.
+    const solicitud = await crearSolicitudOrientacion(resultado.datos);
+    return jsonOk({ solicitud }, 201);
+  } catch (error) {
+    // 23503 = foreign_key_violation: el institucionId o tipoCasoId tiene
+    // formato válido pero no existe. Es un error del cliente, no del servidor.
+    if (esErrorDeClavesForaneas(error)) {
+      return jsonError(400, 'La institución o el tipo de caso indicado no existe.');
+    }
+
+    registrarError('Error al crear solicitud de orientación:', error);
+    return jsonError(500, 'No se pudo registrar la solicitud.');
+  }
+};
+
+type ResultadoValidacion =
+  | { valido: true; datos: DatosSolicitudOrientacion }
+  | { valido: false; error: string };
+
+function validarSolicitud(cuerpo: unknown): ResultadoValidacion {
   if (typeof cuerpo !== 'object' || cuerpo === null) {
-    return jsonError(400, 'Cuerpo de la solicitud inválido.');
+    return { valido: false, error: 'Cuerpo de la solicitud inválido.' };
   }
 
   const cuerpoRecibido = cuerpo as Record<string, unknown>;
@@ -39,11 +65,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     institucionId !== undefined &&
     (typeof institucionId !== 'string' || !esUuidValido(institucionId))
   ) {
-    return jsonError(400, 'El identificador de institución no es válido.');
+    return { valido: false, error: 'El identificador de institución no es válido.' };
   }
 
   if (tipoCasoId !== undefined && (typeof tipoCasoId !== 'string' || !esUuidValido(tipoCasoId))) {
-    return jsonError(400, 'El identificador de tipo de caso no es válido.');
+    return { valido: false, error: 'El identificador de tipo de caso no es válido.' };
   }
 
   if (
@@ -51,33 +77,29 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     mensaje.trim().length < MENSAJE_MIN ||
     mensaje.length > MENSAJE_MAX
   ) {
-    return jsonError(400, `El mensaje debe tener entre ${MENSAJE_MIN} y ${MENSAJE_MAX} caracteres.`);
+    return {
+      valido: false,
+      error: `El mensaje debe tener entre ${MENSAJE_MIN} y ${MENSAJE_MAX} caracteres.`,
+    };
   }
 
-  if (infoContacto !== undefined && (typeof infoContacto !== 'string' || infoContacto.length > CONTACTO_MAX)) {
-    return jsonError(400, 'La información de contacto no es válida.');
+  if (
+    infoContacto !== undefined &&
+    (typeof infoContacto !== 'string' || infoContacto.length > CONTACTO_MAX)
+  ) {
+    return { valido: false, error: 'La información de contacto no es válida.' };
   }
 
-  try {
-    // No se registra el mensaje ni la info de contacto en logs del servidor.
-    const solicitud = await crearSolicitudOrientacion({
-      institucionId,
-      tipoCasoId,
+  return {
+    valido: true,
+    datos: {
+      institucionId: institucionId as string | undefined,
+      tipoCasoId: tipoCasoId as string | undefined,
       mensaje: mensaje.trim(),
-      infoContacto,
-    });
-    return jsonOk({ solicitud }, 201);
-  } catch (error) {
-    // 23503 = foreign_key_violation: el institucionId o tipoCasoId tiene
-    // formato válido pero no existe. Es un error del cliente, no del servidor.
-    if (esErrorDeClavesForaneas(error)) {
-      return jsonError(400, 'La institución o el tipo de caso indicado no existe.');
-    }
-
-    console.error('Error al crear solicitud de orientación:', error instanceof Error ? error.name : 'desconocido');
-    return jsonError(500, 'No se pudo registrar la solicitud.');
-  }
-};
+      infoContacto: infoContacto as string | undefined,
+    },
+  };
+}
 
 function esErrorDeClavesForaneas(error: unknown): boolean {
   // Drizzle envuelve el error real de `pg` en `.cause`; el código de

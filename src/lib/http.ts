@@ -11,3 +11,7 @@ export function jsonError(status: number, message: string) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+
+export function registrarError(mensaje: string, error: unknown) {
+  console.error(mensaje, error instanceof Error ? error.message : error);
+}

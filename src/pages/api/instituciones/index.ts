@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { listarInstituciones, type TipoInstitucion } from '../../../db/queries/instituciones';
 import { tipoInstitucionEnum } from '../../../db/schema';
-import { jsonError, jsonOk } from '../../../lib/http';
+import { jsonError, jsonOk, registrarError } from '../../../lib/http';
 import { esUuidValido } from '../../../lib/validation';
 
 export const prerender = false;
@@ -27,7 +27,7 @@ export const GET: APIRoute = async ({ url }) => {
     });
     return jsonOk({ instituciones });
   } catch (error) {
-    console.error('Error al listar instituciones:', error instanceof Error ? error.message : error);
+    registrarError('Error al listar instituciones:', error);
     return jsonError(500, 'No se pudo obtener el listado de instituciones.');
   }
 };
