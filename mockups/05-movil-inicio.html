@@ -1,586 +1,192 @@
-<title>Móvil · Inicio y búsqueda</title>
-<script>document.documentElement.dataset.theme='light';</script>
+<title>Móvil · Directorio institucional — Inicio y búsqueda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #F6F3EE;
-    --surface: #FFFFFF;
-    --surface-alt: #EFEAE1;
-    --text: #1E2A2C;
-    --muted: #5C6B6D;
-    --border: #DDD5C8;
-    --primary: #205C63;
-    --primary-strong: #143C41;
-    --primary-soft: #DCEBEA;
-    --accent: #B5732A;
-    --danger: #B23A34;
-    --danger-soft: #F4DEDB;
-    --success: #3F7D52;
-    --shadow: 0 1px 2px rgba(20,30,31,0.06), 0 8px 24px -12px rgba(20,30,31,0.18);
-    --radius-s: 6px;
-    --radius-m: 10px;
-    --radius-l: 16px;
-    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', serif;
-    --font-body: 'Segoe UI', 'Helvetica Neue', 'Public Sans', Roboto, sans-serif;
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --red-soft: color-mix(in srgb, var(--color-red) 11%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 8px 20px -14px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 20px 44px -24px rgba(26,26,23,.30);
+    --ring-green: 0 0 0 4px color-mix(in srgb, var(--color-green) 22%, transparent);
+    --radius-s: 14px; --radius-m: 18px; --radius-l: 24px;
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #10181A;
-      --surface: #172325;
-      --surface-alt: #1F2C2F;
-      --text: #E7EEEC;
-      --muted: #9BB0AE;
-      --border: #2B3A3C;
-      --primary: #6FC2C9;
-      --primary-strong: #9BDAE0;
-      --primary-soft: #1E3A3C;
-      --accent: #E0A052;
-      --danger: #E2685F;
-      --danger-soft: #3A2224;
-      --success: #6FBF86;
-      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6);
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #10181A; --surface: #172325; --surface-alt: #1F2C2F; --text: #E7EEEC;
-    --muted: #9BB0AE; --border: #2B3A3C; --primary: #6FC2C9; --primary-strong: #9BDAE0;
-    --primary-soft: #1E3A3C; --accent: #E0A052; --danger: #E2685F; --danger-soft: #3A2224; --success: #6FBF86;
-  }
-  :root[data-theme="light"] {
-    --bg: #F6F3EE; --surface: #FFFFFF; --surface-alt: #EFEAE1; --text: #1E2A2C;
-    --muted: #5C6B6D; --border: #DDD5C8; --primary: #205C63; --primary-strong: #143C41;
-    --primary-soft: #DCEBEA; --accent: #B5732A; --danger: #B23A34; --danger-soft: #F4DEDB; --success: #3F7D52;
-  }
-
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    line-height: 1.5;
-  }
-  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
-  button { font-family: inherit; cursor: pointer; }
-  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-
-  /* ---- presentation shell ---- */
-  .shell {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 40px 24px 96px;
-  }
-  .shell-head {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 28px;
-  }
-  .shell-head .eyebrow {
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--primary);
-    font-weight: 600;
-  }
-  .shell-head h1 { font-size: 28px; font-weight: 600; }
-  .shell-head p { margin: 0; color: var(--muted); max-width: 62ch; font-size: 15px; }
-
-  .device-tabs {
-    display: inline-flex;
-    gap: 4px;
-    background: var(--surface-alt);
-    padding: 4px;
-    border-radius: var(--radius-m);
-    margin-bottom: 20px;
-  }
-  .device-tabs button {
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    padding: 8px 16px;
-    border-radius: calc(var(--radius-m) - 2px);
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .device-tabs button[aria-selected="true"] {
-    background: var(--surface);
-    color: var(--primary-strong);
-    box-shadow: var(--shadow);
-  }
-
-  .screen-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .screen-tabs button {
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    padding: 10px 4px;
-    margin-right: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-  }
-  .screen-tabs button[aria-selected="true"] {
-    color: var(--primary-strong);
-    border-bottom-color: var(--primary);
-  }
-  .screen-tabs button:focus-visible, .device-tabs button:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-
-  .device-panel[hidden], .screen-panel[hidden] { display: none; }
-
-  .frame-scroll { overflow-x: auto; padding-bottom: 8px; }
-
-  /* ---- desktop chrome ---- */
-  .browser {
-    width: 1180px;
-    max-width: 1180px;
-    background: var(--surface);
-    border-radius: var(--radius-l);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .browser-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: var(--surface-alt);
-    border-bottom: 1px solid var(--border);
-  }
-  .browser-dots { display: flex; gap: 6px; }
-  .browser-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); display: block; }
-  .browser-url {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 5px 14px;
-    font-size: 12px;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ---- phone chrome ---- */
-  .phone {
-    width: 375px;
-    background: var(--surface);
-    border-radius: 40px;
-    border: 10px solid var(--surface-alt);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    position: relative;
-  }
-  .phone-notch {
-    position: absolute;
-    top: 0; left: 50%; transform: translateX(-50%);
-    width: 130px; height: 22px;
-    background: var(--surface-alt);
-    border-radius: 0 0 14px 14px;
-    z-index: 5;
-  }
-  .phone-screen { height: 780px; overflow-y: auto; }
-
-  /* ---- app: top nav ---- */
-  .app-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 14px 24px;
-    background: var(--primary-strong);
-    color: #fff;
-  }
-  .app-nav .brand { display: flex; align-items: center; gap: 10px; }
-  .app-nav .brand-mark {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: var(--primary-soft);
-    color: var(--primary-strong);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-display); font-weight: 700; font-size: 15px;
-  }
-  .app-nav .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
-  .app-nav .brand-text .kicker { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
-  .app-nav .brand-text .title { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
-  .app-nav-links { display: flex; gap: 22px; font-size: 14px; }
-  .app-nav-links a { color: rgba(255,255,255,0.82); text-decoration: none; }
-  .app-nav-links a.current { color: #fff; font-weight: 600; }
-
-  /* ---- app: search + filters ---- */
-  .toolbar {
-    padding: 20px 24px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .search-row { display: flex; gap: 10px; }
-  .search-input {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-m);
-    padding: 10px 14px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  .search-input svg { flex-shrink: 0; }
-  .toggle-emergency {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--danger-soft);
-    color: var(--danger);
-    border: 1px solid transparent;
-    border-radius: var(--radius-m);
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .toggle-emergency input { accent-color: var(--danger); }
-
-  .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip-group .label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    align-self: center;
-    margin-right: 4px;
-  }
-  .chip {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    padding: 6px 13px;
-    border-radius: 999px;
-    font-size: 13px;
-  }
-  .chip[aria-pressed="true"] {
-    background: var(--primary-soft);
-    border-color: var(--primary);
-    color: var(--primary-strong);
-    font-weight: 600;
-  }
-  .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-  /* ---- app: main layout ---- */
-  .app-main {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 20px;
-    padding: 18px 24px 28px;
-    align-items: start;
-  }
-  .result-count { font-size: 13px; color: var(--muted); margin: 4px 2px 14px; }
-  .card-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .inst-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-l);
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .inst-card-top { display: flex; justify-content: space-between; gap: 12px; }
-  .inst-card h3 { font-size: 16.5px; font-weight: 600; font-family: var(--font-body); }
-  .inst-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .tag {
-    font-size: 11.5px;
-    padding: 3px 9px;
-    border-radius: 999px;
-    background: var(--surface-alt);
-    color: var(--muted);
-  }
-  .tag.type { background: var(--primary-soft); color: var(--primary-strong); font-weight: 600; }
-  .tag.emergency { background: var(--danger-soft); color: var(--danger); font-weight: 600; }
-  .distance { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .inst-desc { font-size: 13.5px; color: var(--muted); }
-  .inst-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .btn {
-    border-radius: var(--radius-s);
-    padding: 8px 13px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .btn.ghost { background: transparent; }
-  .btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
-  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-  /* ---- app: map ---- */
-  .map-panel {
-    position: sticky;
-    top: 18px;
-    border-radius: var(--radius-l);
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .map-canvas {
-    position: relative;
-    height: 420px;
+  body { margin: 0;
     background:
-      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(32,92,99,0.06) 38px, rgba(32,92,99,0.06) 40px),
-      repeating-linear-gradient(90deg, transparent, transparent 58px, rgba(32,92,99,0.06) 58px, rgba(32,92,99,0.06) 60px),
-      linear-gradient(160deg, var(--primary-soft), var(--surface-alt));
-  }
-  .pin {
-    position: absolute;
-    transform: translate(-50%, -100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .pin-dot {
-    width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    background: var(--primary);
-    border: 2px solid var(--surface);
-    box-shadow: var(--shadow);
-  }
-  .pin.emergency .pin-dot { background: var(--danger); }
-  .pin-label {
-    margin-top: 4px;
-    font-size: 10.5px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    border-radius: 999px;
-    color: var(--text);
-    white-space: nowrap;
-    box-shadow: var(--shadow);
-  }
-  .you-are-here {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 6px rgba(181,115,42,0.22);
-  }
-  .map-legend {
-    display: flex;
-    gap: 16px;
-    padding: 12px 16px;
-    font-size: 12px;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-  }
-  .map-legend span { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+      radial-gradient(900px 460px at 50% -220px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
 
-  /* ---- floating SOS ---- */
-  .sos-float {
-    position: fixed;
-    right: 26px;
-    bottom: 26px;
-    background: var(--danger);
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 13px 20px 13px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 14px;
-    box-shadow: 0 10px 24px -8px rgba(178,58,52,0.55);
-  }
-  .phone-panel .sos-float { position: absolute; right: 16px; bottom: 20px; padding: 12px 16px; font-size: 12.5px; }
-  .browser-panel .sos-float { position: absolute; right: 22px; bottom: 22px; }
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; align-items: center; }
+  .shell-head { max-width: 640px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; text-align: center; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 23px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); font-size: 14px; }
 
-  /* ---- detail screen ---- */
-  .detail-wrap { padding: 24px; display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 24px; }
-  .detail-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 6px; }
-  .detail-head h2 { font-size: 24px; }
-  .detail-section { margin-top: 22px; }
-  .detail-section h4 {
-    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
-    margin: 0 0 10px; font-family: var(--font-body); font-weight: 700;
-  }
-  .schedule-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  .schedule-table td { padding: 6px 0; border-bottom: 1px solid var(--border); }
-  .schedule-table td:first-child { color: var(--muted); width: 45%; }
-  .schedule-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .side-card {
-    background: var(--surface-alt);
-    border-radius: var(--radius-l);
-    padding: 18px;
-  }
-  .side-card h4 { margin-top: 0; }
-  .mini-map { height: 140px; border-radius: var(--radius-m); margin-bottom: 12px;
-    background: repeating-linear-gradient(45deg, rgba(32,92,99,0.08), rgba(32,92,99,0.08) 8px, transparent 8px, transparent 16px), var(--primary-soft);
-    position: relative; }
-  .mini-map .pin { top: 55%; left: 50%; }
+  .phone { width: 390px; background: var(--surface); border-radius: 46px; border: 11px solid var(--color-footer); box-shadow: var(--shadow-md), 0 40px 80px -40px rgba(26,26,23,.5); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 24px; background: var(--color-footer); border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone-screen { height: 820px; overflow-y: auto; position: relative; background: var(--surface-warm); }
 
-  /* ---- form screen ---- */
-  .form-wrap { padding: 32px 24px; max-width: 620px; margin: 0 auto; }
-  .form-intro { margin-bottom: 24px; }
-  .form-intro p { color: var(--muted); font-size: 14px; margin-top: 8px; }
-  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-  .field label { font-size: 13px; font-weight: 600; }
-  .field .hint { font-size: 12px; color: var(--muted); }
-  .field select, .field textarea, .field input[type="text"] {
-    font-family: inherit;
-    font-size: 14px;
-    padding: 10px 12px;
-    border-radius: var(--radius-s);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-  }
-  .field select:focus-visible, .field textarea:focus-visible, .field input:focus-visible {
-    outline: 2px solid var(--primary); outline-offset: 1px;
-  }
-  .privacy-note {
-    display: flex; gap: 10px; align-items: flex-start;
-    background: var(--primary-soft); color: var(--primary-strong);
-    padding: 12px 14px; border-radius: var(--radius-m); font-size: 12.5px; margin-bottom: 20px;
-  }
-  .case-chip-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+  .m-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 16px; background: color-mix(in srgb, var(--color-cream) 60%, #fff); }
+  .m-logo { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+  .sos-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: .04em; color: var(--color-red); border: 2.5px double var(--color-red); padding: 3px 9px; border-radius: 7px; transform: rotate(-4deg); background: color-mix(in srgb, var(--color-red) 6%, #fff); box-shadow: var(--shadow-sm); }
 
-  /* ---- admin screen ---- */
-  .admin-wrap { padding: 22px 24px; }
-  .admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .admin-head .who { font-size: 12.5px; color: var(--muted); }
-  .admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-l); }
-  table.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--surface); }
-  table.admin-table th {
-    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface-alt);
-  }
-  table.admin-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  table.admin-table tr:last-child td { border-bottom: none; }
-  .status-pill {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
-    padding: 3px 9px; border-radius: 999px;
-  }
-  .status-pill.on { background: rgba(63,125,82,0.15); color: var(--success); }
-  .status-pill.off { background: var(--surface-alt); color: var(--muted); }
-  .row-actions { display: flex; gap: 6px; }
-  .row-actions button { border: none; background: transparent; color: var(--muted); font-size: 12.5px; font-weight: 600; }
-  .row-actions button:hover { color: var(--primary); }
+  .hero-search { position: relative; color: #fff; padding: 20px 18px 50px; overflow: hidden;
+    background:
+      radial-gradient(320px 180px at 90% -30px, color-mix(in srgb, var(--color-green-light) 55%, transparent), transparent 70%),
+      linear-gradient(135deg, var(--color-green), var(--green-deep)); }
+  .hero-search h1 { font-size: 20px; line-height: 1.28; font-weight: 700; position: relative; z-index: 1; }
+  .hero-search p { margin-top: 7px; font-size: 12.5px; color: color-mix(in srgb, #fff 88%, transparent); position: relative; z-index: 1; }
 
-  /* ---- mobile-specific ---- */
-  .m-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 18px 12px; background: var(--primary-strong); color: #fff;
-  }
-  .m-search { margin: 14px 16px 0; }
-  .m-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px 4px; }
-  .m-chip-scroll .chip { flex-shrink: 0; }
-  .m-map-toggle {
-    margin: 12px 16px 0; display: flex; background: var(--surface-alt); border-radius: var(--radius-m); padding: 3px;
-  }
-  .m-map-toggle button {
-    flex: 1; border: none; background: transparent; padding: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); border-radius: 7px;
-  }
-  .m-map-toggle button.active { background: var(--surface); color: var(--primary-strong); box-shadow: var(--shadow); }
-  .m-card-list { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 90px; }
-  .m-map-canvas { margin: 12px 16px 0; height: 230px; border-radius: var(--radius-l); }
+  .search-panel { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-md); margin: -32px 16px 0; padding: 18px; position: relative; z-index: 2; }
+  .search-input { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 12px 15px; font-size: 13px; color: var(--color-ink-soft); transition: box-shadow .2s ease, border-color .2s ease; }
+  .search-input:focus-within { border-color: var(--color-green); box-shadow: var(--ring-green); }
+  .search-input input { border: none; background: none; font: inherit; color: var(--color-ink); flex: 1; outline: none; }
+  .search-input svg { color: var(--color-green); }
+  .toggle-emergency { display: flex; align-items: center; gap: 9px; background: var(--red-soft); color: var(--color-red); border: 1px solid color-mix(in srgb, var(--color-red) 24%, transparent); border-radius: 999px; padding: 11px 15px; font-size: 12px; font-weight: 700; margin-top: 11px; }
+  .toggle-emergency input { accent-color: var(--color-red); width: 15px; height: 15px; }
 
-  .m-detail-hero { padding: 18px; background: var(--primary-soft); }
-  .m-back { border: none; background: none; color: var(--primary-strong); font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
-  .m-detail-body { padding: 18px; display: flex; flex-direction: column; gap: 22px; }
-  .m-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .m-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 14px 16px 2px; }
+  .m-chip-scroll .label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-ink-soft); font-weight: 700; align-self: center; flex-shrink: 0; }
+  .chip { flex-shrink: 0; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 500; transition: all .18s ease; }
+  .chip[aria-pressed="true"] { background: var(--green-soft); border-color: color-mix(in srgb, var(--color-green) 40%, transparent); color: var(--green-text); font-weight: 600; box-shadow: var(--ring-green); }
 
-  .m-form-body { padding: 20px 18px 60px; }
-  .m-admin-body { padding: 16px; }
-  .m-admin-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .m-admin-card .name { font-weight: 600; font-size: 13.5px; }
-  .m-admin-card .meta { font-size: 11.5px; color: var(--muted); }
-  .m-fab {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: var(--primary); color: #fff; border: none; border-radius: 999px;
-    padding: 12px 22px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px;
-    box-shadow: var(--shadow);
-  }
+  .m-map-toggle { margin: 16px 16px 0; display: flex; background: color-mix(in srgb, var(--color-cream-dark) 65%, #fff); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+  .m-map-toggle button { flex: 1; border: none; background: transparent; padding: 9px; font-size: 12.5px; font-weight: 600; color: var(--color-ink-soft); border-radius: 999px; transition: all .2s ease; }
+  .m-map-toggle button.active { background: var(--surface); color: var(--color-green); box-shadow: var(--shadow-sm); }
 
-  .icon { width: 15px; height: 15px; flex-shrink: 0; }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  .m-card-list { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 100px; }
+  .inst-card { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 16px 18px; display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow-sm); }
+  .inst-card.is-emergency { border-color: color-mix(in srgb, var(--color-red) 26%, transparent); }
+  .inst-card-top { display: flex; justify-content: space-between; gap: 8px; }
+  .inst-card h3 { font-size: 15px; font-weight: 600; }
+  .inst-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .tag { font-size: 10.5px; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--color-cream-dark) 60%, #fff); color: var(--color-ink-soft); font-weight: 500; border: 1px solid var(--border); }
+  .tag.type { background: var(--green-soft); color: var(--green-text); font-weight: 600; border-color: color-mix(in srgb, var(--color-green) 26%, transparent); }
+  .tag.emergency { background: var(--red-soft); color: var(--color-red); font-weight: 600; border-color: color-mix(in srgb, var(--color-red) 24%, transparent); }
+  .distance { font-size: 11px; color: var(--green-text); white-space: nowrap; font-weight: 600; }
+  .inst-desc { font-size: 12px; color: var(--color-ink-soft); line-height: 1.55; }
+  .inst-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn { border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-green) 60%, transparent); }
+  .btn.danger { background: linear-gradient(180deg, color-mix(in srgb, var(--color-red) 88%, #fff), var(--color-red)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-red) 60%, transparent); }
+  .btn.ghost { background: transparent; }
+
+  .m-map-canvas { margin: 14px 16px 0; height: 220px; border-radius: var(--radius-l); position: relative; overflow: hidden; border: 1px solid var(--border);
+    background: repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(28,122,94,.06) 30px, rgba(28,122,94,.06) 32px),
+      radial-gradient(240px 150px at 48% 55%, color-mix(in srgb, var(--color-green) 16%, #fff), transparent 70%),
+      linear-gradient(160deg, var(--green-soft), var(--color-cream-dark)); }
+  .pin { position: absolute; transform: translate(-50%, -100%); }
+  .pin-dot { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: linear-gradient(135deg, var(--color-green-light), var(--color-green)); border: 2.5px solid #fff; box-shadow: var(--shadow-md); }
+  .pin.emergency .pin-dot { background: linear-gradient(135deg, color-mix(in srgb, var(--color-red) 80%, #fff), var(--color-red)); }
+  .you-are-here { position: absolute; transform: translate(-50%,-50%); width: 14px; height: 14px; border-radius: 50%; background: var(--color-orange); border: 2px solid #fff; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-orange) 24%, transparent); }
+
+  .m-fab { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, color-mix(in srgb, var(--color-red) 86%, #fff), var(--color-red)); color: #fff; border: none; border-radius: 999px; padding: 12px 22px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; box-shadow: 0 14px 28px -10px color-mix(in srgb, var(--color-red) 70%, transparent); }
+  .icon { width: 14px; height: 14px; flex-shrink: 0; }
 </style>
-<div class="shell" style="padding-top:32px;">
-      <div class="screen-panel" data-screen-panel="m-home">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-screen">
-            <div class="phone-panel" style="position:relative; min-height:100%;">
-              <div class="m-nav">
-                <div class="brand"><div class="brand-mark" style="width:24px;height:24px;font-size:12px;">DI</div><span style="font-family:var(--font-display); font-size:15px;">Directorio</span></div>
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-              </div>
-              <div class="m-search">
-                <div class="search-input" style="font-size:13px;">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                  Buscar institución
-                </div>
-              </div>
-              <div class="m-chip-scroll">
-                <button class="chip" aria-pressed="true">Todas</button>
-                <button class="chip" aria-pressed="false">FELCV</button>
-                <button class="chip" aria-pressed="false">Defensoría</button>
-                <button class="chip" aria-pressed="false">Policía</button>
-                <button class="chip" aria-pressed="false">SLIM</button>
-              </div>
-              <div class="m-map-toggle">
-                <button class="active">Lista</button>
-                <button>Mapa</button>
-              </div>
-              <div class="m-card-list">
-                <article class="inst-card">
-                  <div class="inst-card-top">
-                    <div>
-                      <h3 style="font-size:14.5px;">Línea 156</h3>
-                      <div class="inst-meta"><span class="tag emergency">24/7</span><span class="distance">0.4 km</span></div>
-                    </div>
-                  </div>
-                  <div class="inst-actions"><button class="btn danger" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
-                </article>
-                <article class="inst-card">
-                  <div class="inst-card-top">
-                    <div>
-                      <h3 style="font-size:14.5px;">FELCV Sucre</h3>
-                      <div class="inst-meta"><span class="tag type">FELCV</span><span class="distance">1.2 km</span></div>
-                    </div>
-                  </div>
-                  <div class="inst-actions"><button class="btn primary" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
-                </article>
-                <article class="inst-card">
-                  <div class="inst-card-top">
-                    <div>
-                      <h3 style="font-size:14.5px;">Defensoría</h3>
-                      <div class="inst-meta"><span class="tag type">Defensoría</span><span class="distance">1.8 km</span></div>
-                    </div>
-                  </div>
-                  <div class="inst-actions"><button class="btn primary" style="font-size:12px; padding:7px 11px;">Llamar</button><button class="btn ghost" style="font-size:12px; padding:7px 11px;">Ficha</button></div>
-                </article>
-              </div>
-              <button class="sos-float" style="position:absolute;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>SOS</button>
-            </div>
-          </div>
-        </div>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · alta fidelidad</span>
+    <h1>Móvil — Directorio institucional: inicio y búsqueda</h1>
+    <p>Misma pantalla que la versión de escritorio, adaptada a un layout de una sola columna con mapa/lista alternables.</p>
+  </div>
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="m-nav">
+        <span class="m-logo">yanapaway</span>
+        <a class="sos-badge" href="#">SOS</a>
       </div>
+      <section class="hero-search">
+        <h1>Encuentra apoyo cerca de ti</h1>
+        <p>Instituciones verificadas para grooming, sextorsión y violencia digital.</p>
+      </section>
+      <div class="search-panel">
+        <label class="search-input">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Buscar institución" value="Sucre" />
+        </label>
+        <label class="toggle-emergency"><input type="checkbox" checked /> Solo emergencia 24/7</label>
+      </div>
+      <div class="m-chip-scroll">
+        <span class="label">Tipo</span>
+        <button class="chip" aria-pressed="true">Todas</button>
+        <button class="chip">Defensoría</button>
+        <button class="chip">FELCV</button>
+        <button class="chip">Fiscalía</button>
+        <button class="chip">Policía</button>
+        <button class="chip">SLIM</button>
+      </div>
+      <div class="m-chip-scroll">
+        <span class="label">Caso</span>
+        <button class="chip" aria-pressed="true">Grooming</button>
+        <button class="chip">Sextorsión</button>
+        <button class="chip">Control digital</button>
+        <button class="chip">Noviazgo</button>
+        <button class="chip">Consentimiento</button>
+      </div>
+      <div class="m-map-toggle">
+        <button class="active">Lista</button>
+        <button>Mapa</button>
+      </div>
+
+      <div class="m-map-canvas" style="display:none;">
+        <div class="you-are-here" style="top:58%; left:44%;"></div>
+        <div class="pin emergency" style="top:35%; left:38%;"><div class="pin-dot"></div></div>
+        <div class="pin" style="top:28%; left:62%;"><div class="pin-dot"></div></div>
+        <div class="pin" style="top:68%; left:70%;"><div class="pin-dot"></div></div>
+      </div>
+
+      <div class="m-card-list">
+        <article class="inst-card is-emergency">
+          <div class="inst-card-top">
+            <div><h3>Línea 156</h3><div class="inst-meta"><span class="tag type">Línea de emergencia</span><span class="tag emergency">24/7</span></div></div>
+            <span class="distance">0.4 km</span>
+          </div>
+          <p class="inst-desc">Atención inmediata a grooming y sextorsión, deriva a Fiscalía o Policía.</p>
+          <div class="inst-actions"><button class="btn danger">Llamar 156</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>FELCV Sucre</h3><div class="inst-meta"><span class="tag type">FELCV</span></div></div>
+            <span class="distance">1.2 km</span>
+          </div>
+          <p class="inst-desc">Recepción de denuncias de violencia digital y de género.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>Defensoría de la Niñez</h3><div class="inst-meta"><span class="tag type">Defensoría</span></div></div>
+            <span class="distance">1.8 km</span>
+          </div>
+          <p class="inst-desc">Protección y seguimiento de casos con menores de edad.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>SLIM Sucre</h3><div class="inst-meta"><span class="tag type">SLIM</span></div></div>
+            <span class="distance">2.1 km</span>
+          </div>
+          <p class="inst-desc">Orientación legal y psicológica gratuita para adolescentes.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+      </div>
+
+      <button class="m-fab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>Ayuda ahora</button>
+    </div>
+  </div>
 </div>

@@ -119,9 +119,9 @@
           lista.innerHTML = datos.instituciones
             .slice(0, 6)
             .map(
-              (item: { institucion: { id: string; nombre: string }; distanciaKm: number }) => `
+              (item: { id: string; nombre: string; distanciaKm: number }) => `
                 <li>
-                  <a href="/instituciones/${item.institucion.id}" class="nombre">${item.institucion.nombre}</a>
+                  <a href="/instituciones/${item.id}" class="nombre">${item.nombre}</a>
                   <span class="distancia">${item.distanciaKm.toFixed(1)} km</span>
                 </li>
               `,

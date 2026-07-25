@@ -143,6 +143,41 @@ El asistente SOS no lee las tablas directo. Consume estos endpoints:
 
 Las escrituras (`POST`, `PUT`, `DELETE` sobre `instituciones`) requieren la sesión/token que emite el módulo CMS de Miguel; los `GET` son públicos.
 
+### Forma real de la respuesta de `/api/instituciones/cercanas` (para Mauricio)
+
+Probado el 2026-07-25 contra datos reales. Cada institución viene "aplanada" (no anidada bajo una clave `institucion`), con `distanciaKm` al mismo nivel:
+
+```json
+{
+  "instituciones": [
+    {
+      "id": "340aacba-74bd-49ee-965b-aaab18223f62",
+      "nombre": "Policia EPI Sucre",
+      "tipo": "policia",
+      "descripcion": null,
+      "direccion": "Calle Junin",
+      "telefono": null,
+      "whatsapp": null,
+      "correo": null,
+      "sitioWeb": null,
+      "horario": null,
+      "latitud": -19.042,
+      "longitud": -65.251,
+      "esEmergencia": true,
+      "estaActivo": true,
+      "creadoPor": null,
+      "creadoEn": "2026-07-25T22:32:22.709Z",
+      "actualizadoEn": "2026-07-25T22:32:22.709Z",
+      "distanciaKm": 0.111
+    }
+  ]
+}
+```
+
+Ya viene ordenado por `distanciaKm` ascendente. Con `emergencia=true` solo incluye las que tienen `esEmergencia: true`. Si `lat`/`lng` faltan o están fuera de rango (`-90..90` / `-180..180`), responde `400` con `{ "error": "..." }`.
+
+Mauricio: si esta forma no te sirve tal cual (por ejemplo si prefieres los campos en snake_case, o menos campos), avisa y la ajustamos — todavía no hay nadie más consumiéndola.
+
 ## Pendiente de confirmar con el equipo
 
 - Nombre exacto y columnas de la tabla `usuarios` que va a crear Miguel (se asume `usuarios.id` como `UUID`).

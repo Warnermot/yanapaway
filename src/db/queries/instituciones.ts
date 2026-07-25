@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, getTableColumns, sql } from 'drizzle-orm';
 import { db } from '../client';
 import { institucionesTiposCaso, instituciones, tiposCaso, tipoInstitucionEnum } from '../schema';
 
@@ -61,7 +61,7 @@ export async function listarInstitucionesCercanas(
 
   return db
     .select({
-      institucion: instituciones,
+      ...getTableColumns(instituciones),
       distanciaKm,
     })
     .from(instituciones)
