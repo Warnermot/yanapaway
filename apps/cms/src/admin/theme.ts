@@ -15,17 +15,29 @@
  * https://github.com/strapi/design-system/blob/main/packages/design-system/src/themes/lightTheme/light-colors.ts
  *
  * ── Nota de contraste ────────────────────────────────────────────────────
- * El azul dominante de la paleta (#3eb6fc) es demasiado claro para cargar
- * texto o controles sobre blanco: da 1.9:1 contra blanco, por debajo del
- * 4.5:1 (texto) y del 3:1 (componentes de UI) que pide WCAG AA. Por eso en el
- * tema claro los tokens que sostienen texto y botones usan versiones más
- * profundas del mismo tono (H≈202°), y el color de marca tal cual aparece
- * donde sí funciona: como color de texto/acento sobre el fondo oscuro.
+ * La guía sugiere texto blanco sobre los colores de la paleta, pero medido
+ * contra WCAG (que la propia guía manda validar) eso no se sostiene: el azul
+ * dominante #3eb6fc da 2.26:1 contra blanco, muy por debajo del 4.5:1 que
+ * pide el texto y del 3:1 que piden los componentes de UI. Los cinco colores
+ * de la paleta, contra blanco: azul 2.26:1, naranja 2.21:1, coral 2.83:1,
+ * turquesa 1.24:1, marrón 4.75:1 — solo el marrón pasa.
+ *
+ * Contra texto oscuro, en cambio, rinden muy bien (7.49:1 el azul). Pero el
+ * panel fija el texto de los botones primarios en blanco (`buttonNeutral0:
+ * #ffffff`, no configurable por tema), así que los tokens que cargan texto
+ * usan versiones más profundas del mismo tono (H≈202° para el azul, H≈17°
+ * para el naranja) y el color de marca tal cual aparece donde sí funciona:
+ * como color de texto y acento sobre el fondo oscuro.
  *
  * Los colores semánticos (success / warning / danger) se dejan en el default
- * de Strapi a propósito. En este CMS un aviso de "institución por vencer" o
- * un error de la regla de 180 días tiene que leerse como aviso o como error
- * al instante; teñirlos con la paleta de marca los volvería ambiguos.
+ * de Strapi a propósito, siguiendo la sección 4 de la guía ("para errores
+ * reales usar un rojo semántico aparte, distinto de #fc6a6e"). En este CMS un
+ * aviso de "institución por vencer" o un error de la regla de 180 días tiene
+ * que leerse como aviso o como error al instante.
+ *
+ * El turquesa (#79fce6) y el marrón (#a86044) quedan sin usar: la guía los
+ * define como soporte al 10% y 5-10%, "nunca protagonistas", y el panel no
+ * tiene un slot de token donde entren sin pisar un estado semántico.
  */
 
 /** Azul dominante de la paleta. Ancla del tema oscuro y de los tintes. */

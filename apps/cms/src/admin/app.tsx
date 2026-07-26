@@ -1,5 +1,8 @@
 import type { StrapiApp } from '@strapi/strapi/admin';
 
+import favicon from './extensions/favicon.png';
+import logoAuth from './extensions/logo-auth.png';
+import logoMenu from './extensions/logo-menu.png';
 import { theme } from './theme';
 import { es } from './translations/es';
 
@@ -27,6 +30,14 @@ export default {
     locales: [IDIOMA_POR_DEFECTO],
     translations: { es },
     theme,
+
+    // Marca institucional en lugar de la de Strapi. Se usan dos piezas
+    // distintas a propósito: en la barra lateral el logo se muestra a ~32px,
+    // donde el texto "Defensoría de la Niñez y Adolescencia" sería una mancha
+    // ilegible, así que ahí va solo el símbolo.
+    auth: { logo: logoAuth },
+    menu: { logo: logoMenu },
+    head: { favicon },
     // El panel es una herramienta interna del proyecto, no un entorno de
     // aprendizaje de Strapi: los tutoriales y los avisos de nuevas versiones
     // solo distraen a quien viene a cargar una institución de contacto.
