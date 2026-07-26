@@ -7,19 +7,26 @@ import MapaInstituciones from '../../components/directorio/MapaInstituciones.ast
 import TarjetaInstitucion from '../../components/directorio/TarjetaInstitucion.astro';
 import { db } from '../../db/client';
 import { tiposCaso as tablaTiposCaso } from '../../db/schema';
-import { listarInstituciones, type TipoInstitucion } from '../../db/queries/instituciones';
+import {
+  listarInstituciones,
+  listarPuntosMapa,
+  type TipoInstitucion,
+} from '../../db/queries/instituciones';
 
 export const prerender = false;
 
 const tipoParam = Astro.url.searchParams.get('tipo') || undefined;
 const tipoCasoParam = Astro.url.searchParams.get('tipo_caso') || undefined;
 
-const [instituciones, tiposCaso] = await Promise.all([
-  listarInstituciones({
-    tipo: tipoParam as TipoInstitucion | undefined,
-    tipoCasoId: tipoCasoParam,
-  }),
+const filtros = {
+  tipo: tipoParam as TipoInstitucion | undefined,
+  tipoCasoId: tipoCasoParam,
+};
+
+const [instituciones, tiposCaso, puntosMapa] = await Promise.all([
+  listarInstituciones(filtros),
   db.select().from(tablaTiposCaso),
+  listarPuntosMapa(filtros),
 ]);
 ---
 
@@ -68,7 +75,7 @@ const [instituciones, tiposCaso] = await Promise.all([
         }
       </div>
 
-      <MapaInstituciones instituciones={instituciones} />
+      <MapaInstituciones puntos={puntosMapa} />
     </div>
   </div>
 

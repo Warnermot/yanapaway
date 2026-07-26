@@ -55,6 +55,25 @@ export const instituciones = pgTable(
   ],
 );
 
+export const sedesInstitucion = pgTable(
+  'sedes_institucion',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    institucionId: uuid('institucion_id')
+      .notNull()
+      .references(() => instituciones.id, { onDelete: 'cascade' }),
+    nombre: text('nombre').notNull(),
+    direccion: text('direccion'),
+    latitud: doublePrecision('latitud'),
+    longitud: doublePrecision('longitud'),
+    creadoEn: timestamp('creado_en', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_sedes_institucion_id').on(table.institucionId),
+    index('idx_sedes_ubicacion').on(table.latitud, table.longitud),
+  ],
+);
+
 export const tiposCaso = pgTable('tipos_caso', {
   id: uuid('id').primaryKey().defaultRandom(),
   nombre: text('nombre').notNull().unique(),

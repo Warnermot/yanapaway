@@ -25,6 +25,25 @@ const horario =
   institucion.horario && typeof institucion.horario === 'object'
     ? Object.entries(institucion.horario as Record<string, string>)
     : [];
+
+const puntosMapa =
+  institucion.sedes.length > 0
+    ? institucion.sedes.map((sede) => ({
+        institucionId: institucion.id,
+        nombre: `${institucion.nombre} · ${sede.nombre}`,
+        latitud: sede.latitud,
+        longitud: sede.longitud,
+        esEmergencia: institucion.esEmergencia,
+      }))
+    : [
+        {
+          institucionId: institucion.id,
+          nombre: institucion.nombre,
+          latitud: institucion.latitud,
+          longitud: institucion.longitud,
+          esEmergencia: institucion.esEmergencia,
+        },
+      ];
 ---
 
 <Layout title={`${institucion.nombre} — Directorio institucional`} description={institucion.descripcion ?? undefined}>
@@ -77,6 +96,22 @@ const horario =
         </div>
 
         {
+          institucion.sedes.length > 0 && (
+            <div class="seccion">
+              <h2>Sedes</h2>
+              <ul class="lista-sedes">
+                {institucion.sedes.map((sede) => (
+                  <li>
+                    <strong>{sede.nombre}</strong>
+                    {sede.direccion && <span> — {sede.direccion}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {
           horario.length > 0 && (
             <div class="seccion">
               <h2>Horario</h2>
@@ -97,7 +132,7 @@ const horario =
         </a>
       </article>
 
-      <MapaInstituciones instituciones={[institucion]} />
+      <MapaInstituciones puntos={puntosMapa} />
     </div>
   </div>
 
@@ -201,6 +236,21 @@ const horario =
   .contacto-grid a {
     color: var(--color-green);
     font-weight: 500;
+  }
+
+  .lista-sedes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    color: var(--color-ink-soft);
+  }
+
+  .lista-sedes strong {
+    color: var(--color-ink);
   }
 
   .horario {

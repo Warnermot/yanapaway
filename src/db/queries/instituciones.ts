@@ -1,6 +1,12 @@
-import { and, eq, getTableColumns, sql } from 'drizzle-orm';
+import { and, eq, getTableColumns, inArray, sql } from 'drizzle-orm';
 import { db } from '../client';
-import { institucionesTiposCaso, instituciones, tiposCaso, tipoInstitucionEnum } from '../schema';
+import {
+  institucionesTiposCaso,
+  instituciones,
+  sedesInstitucion,
+  tiposCaso,
+  tipoInstitucionEnum,
+} from '../schema';
 
 const RADIO_TIERRA_KM = 6371;
 
@@ -76,14 +82,67 @@ export async function obtenerInstitucionPorId(id: string) {
     return null;
   }
 
-  const filasTiposCaso = await db
-    .select({ tipoCaso: tiposCaso })
-    .from(tiposCaso)
-    .innerJoin(institucionesTiposCaso, eq(institucionesTiposCaso.tipoCasoId, tiposCaso.id))
-    .where(eq(institucionesTiposCaso.institucionId, id));
+  const [filasTiposCaso, sedes] = await Promise.all([
+    db
+      .select({ tipoCaso: tiposCaso })
+      .from(tiposCaso)
+      .innerJoin(institucionesTiposCaso, eq(institucionesTiposCaso.tipoCasoId, tiposCaso.id))
+      .where(eq(institucionesTiposCaso.institucionId, id)),
+    db.select().from(sedesInstitucion).where(eq(sedesInstitucion.institucionId, id)),
+  ]);
 
   return {
     ...institucion,
     tiposCaso: filasTiposCaso.map((fila) => fila.tipoCaso),
+    sedes,
   };
+}
+
+export type PuntoMapa = {
+  institucionId: string;
+  nombre: string;
+  latitud: number;
+  longitud: number;
+  esEmergencia: boolean;
+};
+
+export async function listarPuntosMapa(filtros: FiltrosInstituciones = {}): Promise<PuntoMapa[]> {
+  const listado = await listarInstituciones(filtros);
+
+  const puntosDirectos: PuntoMapa[] = listado
+    .filter((institucion) => institucion.latitud !== null && institucion.longitud !== null)
+    .map((institucion) => ({
+      institucionId: institucion.id,
+      nombre: institucion.nombre,
+      latitud: institucion.latitud as number,
+      longitud: institucion.longitud as number,
+      esEmergencia: institucion.esEmergencia,
+    }));
+
+  const idsInstituciones = listado.map((institucion) => institucion.id);
+  if (idsInstituciones.length === 0) {
+    return puntosDirectos;
+  }
+
+  const sedes = await db
+    .select()
+    .from(sedesInstitucion)
+    .where(inArray(sedesInstitucion.institucionId, idsInstituciones));
+
+  const institucionesPorId = new Map(listado.map((institucion) => [institucion.id, institucion]));
+
+  const puntosSedes: PuntoMapa[] = sedes
+    .filter((sede) => sede.latitud !== null && sede.longitud !== null)
+    .map((sede) => {
+      const institucion = institucionesPorId.get(sede.institucionId)!;
+      return {
+        institucionId: sede.institucionId,
+        nombre: `${institucion.nombre} · ${sede.nombre}`,
+        latitud: sede.latitud as number,
+        longitud: sede.longitud as number,
+        esEmergencia: institucion.esEmergencia,
+      };
+    });
+
+  return [...puntosDirectos, ...puntosSedes];
 }

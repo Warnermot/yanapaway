@@ -15,11 +15,16 @@ describe('consultas de instituciones', () => {
 
   beforeEach(async () => {
     const { db } = await import('../client');
-    const { instituciones, tiposCaso, institucionesTiposCaso, solicitudesOrientacion } = await import(
-      '../schema'
-    );
+    const {
+      instituciones,
+      tiposCaso,
+      institucionesTiposCaso,
+      solicitudesOrientacion,
+      sedesInstitucion,
+    } = await import('../schema');
     await db.delete(solicitudesOrientacion);
     await db.delete(institucionesTiposCaso);
+    await db.delete(sedesInstitucion);
     await db.delete(instituciones);
     await db.delete(tiposCaso);
   });
@@ -138,5 +143,60 @@ describe('consultas de instituciones', () => {
     const resultado = await obtenerInstitucionPorId('00000000-0000-0000-0000-000000000000');
 
     expect(resultado).toBeNull();
+  });
+
+  it('obtenerInstitucionPorId incluye las sedes de la institucion', async () => {
+    const { db } = await import('../client');
+    const { instituciones, sedesInstitucion } = await import('../schema');
+    const { obtenerInstitucionPorId } = await import('./instituciones');
+
+    const [felcv] = await db
+      .insert(instituciones)
+      .values({ nombre: 'FELCV Sucre', tipo: 'felcv' })
+      .returning();
+    await db.insert(sedesInstitucion).values([
+      { institucionId: felcv.id, nombre: 'EPI Patacón', latitud: -19.0283, longitud: -65.266 },
+      { institucionId: felcv.id, nombre: 'EPI Villa Armonía', latitud: -19.0179, longitud: -65.266 },
+    ]);
+
+    const resultado = await obtenerInstitucionPorId(felcv.id);
+
+    expect(resultado?.sedes.map((s) => s.nombre).sort()).toEqual([
+      'EPI Patacón',
+      'EPI Villa Armonía',
+    ]);
+  });
+
+  it('listarPuntosMapa combina coordenadas directas y de sedes', async () => {
+    const { db } = await import('../client');
+    const { instituciones, sedesInstitucion } = await import('../schema');
+    const { listarPuntosMapa } = await import('./instituciones');
+
+    const [conCoordenadaDirecta] = await db
+      .insert(instituciones)
+      .values({ nombre: 'Linea 156', tipo: 'linea_emergencia', latitud: -19.04, longitud: -65.25 })
+      .returning();
+
+    const [conSedes] = await db
+      .insert(instituciones)
+      .values({ nombre: 'FELCV Sucre', tipo: 'felcv' })
+      .returning();
+    await db.insert(sedesInstitucion).values([
+      { institucionId: conSedes.id, nombre: 'EPI Patacón', latitud: -19.0283, longitud: -65.266 },
+      { institucionId: conSedes.id, nombre: 'EPI Villa Armonía', latitud: -19.0179, longitud: -65.266 },
+    ]);
+
+    await db.insert(instituciones).values({ nombre: 'Sin ubicacion', tipo: 'otro' });
+
+    const puntos = await listarPuntosMapa();
+
+    expect(puntos).toHaveLength(3);
+    expect(puntos.find((p) => p.institucionId === conCoordenadaDirecta.id)?.nombre).toBe(
+      'Linea 156',
+    );
+    expect(puntos.filter((p) => p.institucionId === conSedes.id).map((p) => p.nombre).sort()).toEqual([
+      'FELCV Sucre · EPI Patacón',
+      'FELCV Sucre · EPI Villa Armonía',
+    ]);
   });
 });
