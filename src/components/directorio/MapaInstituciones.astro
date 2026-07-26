@@ -1,12 +1,31 @@
 ---
+export interface InstitucionMapa {
+  id: string;
+  nombre: string;
+  latitud: number | null;
+  longitud: number | null;
+  esEmergencia: boolean;
+}
+
+interface Props {
+  instituciones?: InstitucionMapa[];
+}
+
+const { instituciones = [] } = Astro.props;
+
+const pinesIniciales = instituciones.filter(
+  (institucion): institucion is InstitucionMapa & { latitud: number; longitud: number } =>
+    institucion.latitud !== null && institucion.longitud !== null,
+);
 ---
 
 <aside class="mapa-panel" id="mapa-instituciones">
-  <div class="mapa-estado" id="mapa-estado">
-    <p>Activa tu ubicación para ver las instituciones más cercanas a ti.</p>
-    <button type="button" id="btn-ubicacion" class="btn-ubicacion">Usar mi ubicación</button>
+  <div id="mapa-leaflet" class="mapa-leaflet" data-instituciones={JSON.stringify(pinesIniciales)}>
   </div>
-  <ul class="mapa-lista" id="mapa-lista" hidden></ul>
+  <div class="mapa-acciones">
+    <button type="button" id="btn-ubicacion" class="btn-ubicacion">Usar mi ubicación</button>
+    <p id="mapa-mensaje" class="mapa-mensaje" hidden></p>
+  </div>
 </aside>
 
 <style>
@@ -14,25 +33,25 @@
     background: #fff;
     border-radius: var(--radius-l);
     box-shadow: var(--shadow-soft);
-    padding: 1.25rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .mapa-estado {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-    background: linear-gradient(160deg, var(--color-green-soft), var(--color-cream-dark));
+  .mapa-leaflet {
+    height: 380px;
+    width: 100%;
     border-radius: var(--radius-m);
-    padding: 1.5rem;
+    overflow: hidden;
+    background: var(--color-cream-dark);
   }
 
-  .mapa-estado p {
-    font-size: 0.85rem;
-    color: var(--color-ink-soft);
+  .mapa-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
 
   .btn-ubicacion {
@@ -52,102 +71,217 @@
     cursor: default;
   }
 
-  .mapa-lista {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .mapa-mensaje {
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+  }
+
+  :global(.pin-institucion) {
+    width: 26px;
+    height: 26px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--color-green);
+    border: 2px solid #fff;
+    box-shadow: var(--shadow-soft);
+  }
+
+  :global(.pin-institucion.emergencia) {
+    background: var(--color-red);
+  }
+
+  :global(.pin-usuario) {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-orange);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(227, 166, 63, 0.35);
+  }
+
+  :global(.popup-institucion) {
+    font-family: var(--font-sans);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.2rem;
   }
 
-  .mapa-lista li {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-    font-size: 0.82rem;
-    padding: 0.6rem 0.8rem;
-    border-radius: var(--radius-m);
-    background: var(--color-cream);
-  }
-
-  .mapa-lista .nombre {
+  :global(.popup-institucion .popup-nombre) {
     font-weight: 600;
     color: var(--color-ink);
+    text-decoration: none;
   }
 
-  .mapa-lista .distancia {
+  :global(.popup-institucion .popup-distancia) {
+    font-size: 0.78rem;
     color: var(--color-ink-soft);
-    white-space: nowrap;
   }
 </style>
 
 <script>
-  const boton = document.getElementById('btn-ubicacion') as HTMLButtonElement | null;
-  const estado = document.getElementById('mapa-estado');
-  const lista = document.getElementById('mapa-lista') as HTMLUListElement | null;
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
 
-  boton?.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-      if (estado) estado.innerHTML = '<p>Tu navegador no permite compartir ubicación.</p>';
-      return;
+  type InstitucionMapa = {
+    id: string;
+    nombre: string;
+    latitud: number;
+    longitud: number;
+    esEmergencia: boolean;
+  };
+
+  type InstitucionCercana = InstitucionMapa & { distanciaKm: number };
+
+  const CENTRO_POR_DEFECTO: L.LatLngTuple = [-16.5, -64.0]; // centro aproximado de Bolivia
+
+  function crearIcono(esEmergencia: boolean) {
+    return L.divIcon({
+      className: '',
+      html: `<div class="pin-institucion${esEmergencia ? ' emergencia' : ''}"></div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
+    });
+  }
+
+  function crearContenidoPopup(institucion: InstitucionMapa | InstitucionCercana) {
+    const contenedor = document.createElement('div');
+    contenedor.className = 'popup-institucion';
+
+    const enlace = document.createElement('a');
+    enlace.href = `/instituciones/${institucion.id}`;
+    enlace.className = 'popup-nombre';
+    enlace.textContent = institucion.nombre;
+    contenedor.append(enlace);
+
+    if ('distanciaKm' in institucion) {
+      const distancia = document.createElement('span');
+      distancia.className = 'popup-distancia';
+      distancia.textContent = `${institucion.distanciaKm.toFixed(1)} km`;
+      contenedor.append(distancia);
     }
 
-    boton.disabled = true;
-    boton.textContent = 'Buscando tu ubicación…';
+    return contenedor;
+  }
 
-    navigator.geolocation.getCurrentPosition(
-      async (posicion) => {
-        const { latitude, longitude } = posicion.coords;
+  const contenedorMapa = document.getElementById('mapa-leaflet');
+  const boton = document.getElementById('btn-ubicacion') as HTMLButtonElement | null;
+  const mensaje = document.getElementById('mapa-mensaje');
 
-        try {
-          const respuesta = await fetch(
-            `/api/instituciones/cercanas?lat=${latitude}&lng=${longitude}`,
-          );
+  if (contenedorMapa) {
+    const pinesIniciales: InstitucionMapa[] = JSON.parse(
+      contenedorMapa.dataset.instituciones ?? '[]',
+    );
 
-          if (!respuesta.ok) throw new Error('No se pudo obtener instituciones cercanas.');
+    const mapa = L.map(contenedorMapa);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(mapa);
 
-          const datos = await respuesta.json();
+    let capaInstituciones = L.layerGroup().addTo(mapa);
+    let capaUsuario = L.layerGroup().addTo(mapa);
 
-          if (!lista) return;
+    function dibujarInstituciones(lista: (InstitucionMapa | InstitucionCercana)[]) {
+      capaInstituciones.clearLayers();
+      for (const institucion of lista) {
+        L.marker([institucion.latitud, institucion.longitud], {
+          icon: crearIcono(institucion.esEmergencia),
+        })
+          .bindPopup(crearContenidoPopup(institucion))
+          .addTo(capaInstituciones);
+      }
+    }
 
-          if (datos.instituciones.length === 0) {
-            if (estado) estado.innerHTML = '<p>No encontramos instituciones cercanas registradas.</p>';
-            return;
+    dibujarInstituciones(pinesIniciales);
+
+    if (pinesIniciales.length === 1) {
+      mapa.setView([pinesIniciales[0].latitud, pinesIniciales[0].longitud], 14);
+    } else if (pinesIniciales.length > 1) {
+      mapa.fitBounds(
+        L.latLngBounds(pinesIniciales.map((i) => [i.latitud, i.longitud] as L.LatLngTuple)),
+        { padding: [24, 24] },
+      );
+    } else {
+      mapa.setView(CENTRO_POR_DEFECTO, 5);
+    }
+
+    boton?.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        if (mensaje) {
+          mensaje.textContent = 'Tu navegador no permite compartir ubicación.';
+          mensaje.hidden = false;
+        }
+        return;
+      }
+
+      boton.disabled = true;
+      boton.textContent = 'Buscando tu ubicación…';
+
+      navigator.geolocation.getCurrentPosition(
+        async (posicion) => {
+          const { latitude, longitude } = posicion.coords;
+
+          capaUsuario.clearLayers();
+          L.marker([latitude, longitude], {
+            icon: L.divIcon({
+              className: '',
+              html: '<div class="pin-usuario"></div>',
+              iconSize: [16, 16],
+              iconAnchor: [8, 8],
+            }),
+          }).addTo(capaUsuario);
+
+          try {
+            const respuesta = await fetch(
+              `/api/instituciones/cercanas?lat=${latitude}&lng=${longitude}`,
+            );
+
+            if (!respuesta.ok) throw new Error('No se pudo obtener instituciones cercanas.');
+
+            const datos: { instituciones: InstitucionCercana[] } = await respuesta.json();
+            const cercanas = datos.instituciones.slice(0, 8);
+
+            if (cercanas.length === 0) {
+              if (mensaje) {
+                mensaje.textContent = 'No encontramos instituciones cercanas registradas.';
+                mensaje.hidden = false;
+              }
+              mapa.setView([latitude, longitude], 12);
+              boton.disabled = false;
+              boton.textContent = 'Usar mi ubicación';
+              return;
+            }
+
+            dibujarInstituciones(cercanas);
+            mapa.fitBounds(
+              L.latLngBounds([
+                [latitude, longitude],
+                ...cercanas.map((i) => [i.latitud, i.longitud] as L.LatLngTuple),
+              ]),
+              { padding: [32, 32] },
+            );
+
+            if (mensaje) mensaje.hidden = true;
+            boton.disabled = false;
+            boton.textContent = 'Actualizar mi ubicación';
+          } catch {
+            if (mensaje) {
+              mensaje.textContent = 'No se pudo cargar instituciones cercanas. Intenta de nuevo.';
+              mensaje.hidden = false;
+            }
+            boton.disabled = false;
+            boton.textContent = 'Usar mi ubicación';
           }
-
-          lista.innerHTML = '';
-          for (const item of datos.instituciones.slice(0, 6) as {
-            id: string;
-            nombre: string;
-            distanciaKm: number;
-          }[]) {
-            const elementoLista = document.createElement('li');
-
-            const enlace = document.createElement('a');
-            enlace.href = `/instituciones/${item.id}`;
-            enlace.className = 'nombre';
-            enlace.textContent = item.nombre;
-
-            const distancia = document.createElement('span');
-            distancia.className = 'distancia';
-            distancia.textContent = `${item.distanciaKm.toFixed(1)} km`;
-
-            elementoLista.append(enlace, distancia);
-            lista.append(elementoLista);
+        },
+        () => {
+          if (mensaje) {
+            mensaje.textContent = 'No pudimos acceder a tu ubicación. Revisa los permisos del navegador.';
+            mensaje.hidden = false;
           }
-
-          lista.hidden = false;
-          if (estado) estado.hidden = true;
-        } catch {
-          if (estado) estado.innerHTML = '<p>No se pudo cargar instituciones cercanas. Intenta de nuevo.</p>';
           boton.disabled = false;
           boton.textContent = 'Usar mi ubicación';
-        }
-      },
-      () => {
-        if (estado) estado.innerHTML = '<p>No pudimos acceder a tu ubicación. Revisa los permisos del navegador.</p>';
-      },
-    );
-  });
+        },
+      );
+    });
+  }
 </script>
