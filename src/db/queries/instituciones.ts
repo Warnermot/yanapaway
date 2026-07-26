@@ -104,6 +104,10 @@ export type PuntoMapa = {
   latitud: number;
   longitud: number;
   esEmergencia: boolean;
+  // true si el punto viene de `sedes_institucion` (la institución no tiene
+  // coordenada propia). GET /api/instituciones/cercanas no conoce las sedes,
+  // así que estos puntos no deben perderse cuando se actualiza por geolocalización.
+  esSede: boolean;
 };
 
 export async function listarPuntosMapa(filtros: FiltrosInstituciones = {}): Promise<PuntoMapa[]> {
@@ -117,6 +121,7 @@ export async function listarPuntosMapa(filtros: FiltrosInstituciones = {}): Prom
       latitud: institucion.latitud as number,
       longitud: institucion.longitud as number,
       esEmergencia: institucion.esEmergencia,
+      esSede: false,
     }));
 
   const idsInstituciones = listado.map((institucion) => institucion.id);
@@ -141,6 +146,7 @@ export async function listarPuntosMapa(filtros: FiltrosInstituciones = {}): Prom
         latitud: sede.latitud as number,
         longitud: sede.longitud as number,
         esEmergencia: institucion.esEmergencia,
+        esSede: true,
       };
     });
 

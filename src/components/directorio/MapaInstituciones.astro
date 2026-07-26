@@ -5,6 +5,7 @@ export interface PuntoMapa {
   latitud: number | null;
   longitud: number | null;
   esEmergencia: boolean;
+  esSede: boolean;
 }
 
 interface Props {
@@ -129,6 +130,8 @@ const pinesIniciales = puntos.filter(
     esEmergencia: boolean;
   };
 
+  type PuntoInicial = PuntoMapa & { esSede: boolean };
+
   type PuntoCercano = PuntoMapa & { distanciaKm: number };
 
   const CENTRO_POR_DEFECTO: L.LatLngTuple = [-16.5, -64.0]; // centro aproximado de Bolivia
@@ -167,7 +170,12 @@ const pinesIniciales = puntos.filter(
   const mensaje = document.getElementById('mapa-mensaje');
 
   if (contenedorMapa) {
-    const pinesIniciales: PuntoMapa[] = JSON.parse(contenedorMapa.dataset.puntos ?? '[]');
+    const pinesIniciales: PuntoInicial[] = JSON.parse(contenedorMapa.dataset.puntos ?? '[]');
+    // Los puntos de sede (sin coordenada propia en `instituciones`) no los
+    // conoce GET /api/instituciones/cercanas: van en una capa aparte que
+    // nunca se borra, para que no desaparezcan al buscar la ubicación.
+    const pinesDeSede = pinesIniciales.filter((punto) => punto.esSede);
+    const pinesDirectos = pinesIniciales.filter((punto) => !punto.esSede);
 
     const mapa = L.map(contenedorMapa);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -175,21 +183,23 @@ const pinesIniciales = puntos.filter(
       maxZoom: 19,
     }).addTo(mapa);
 
+    let capaSedes = L.layerGroup().addTo(mapa);
     let capaInstituciones = L.layerGroup().addTo(mapa);
     let capaUsuario = L.layerGroup().addTo(mapa);
 
-    function dibujarInstituciones(lista: (PuntoMapa | PuntoCercano)[]) {
-      capaInstituciones.clearLayers();
+    function dibujarPuntos(capa: L.LayerGroup, lista: (PuntoMapa | PuntoCercano)[]) {
+      capa.clearLayers();
       for (const punto of lista) {
         L.marker([punto.latitud, punto.longitud], {
           icon: crearIcono(punto.esEmergencia),
         })
           .bindPopup(crearContenidoPopup(punto))
-          .addTo(capaInstituciones);
+          .addTo(capa);
       }
     }
 
-    dibujarInstituciones(pinesIniciales);
+    dibujarPuntos(capaSedes, pinesDeSede);
+    dibujarPuntos(capaInstituciones, pinesDirectos);
 
     if (pinesIniciales.length === 1) {
       mapa.setView([pinesIniciales[0].latitud, pinesIniciales[0].longitud], 14);
@@ -269,7 +279,7 @@ function solicitarUbicacion() {
               return;
             }
 
-            dibujarInstituciones(cercanas);
+            dibujarPuntos(capaInstituciones, cercanas);
             mapa.fitBounds(
               L.latLngBounds([
                 [latitude, longitude],

@@ -34,6 +34,7 @@ const puntosMapa =
         latitud: sede.latitud,
         longitud: sede.longitud,
         esEmergencia: institucion.esEmergencia,
+        esSede: true,
       }))
     : [
         {
@@ -42,6 +43,7 @@ const puntosMapa =
           latitud: institucion.latitud,
           longitud: institucion.longitud,
           esEmergencia: institucion.esEmergencia,
+          esSede: false,
         },
       ];
 ---
