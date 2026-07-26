@@ -10,9 +10,13 @@ export interface PuntoMapa {
 
 interface Props {
   puntos?: PuntoMapa[];
+  // false en la ficha de una sola institución: ahí el mapa solo debe mostrar
+  // los puntos de esa institución, nunca mezclarlos con otras instituciones
+  // cercanas que devuelva la geolocalización.
+  mostrarCercania?: boolean;
 }
 
-const { puntos = [] } = Astro.props;
+const { puntos = [], mostrarCercania = true } = Astro.props;
 
 const pinesIniciales = puntos.filter(
   (punto): punto is PuntoMapa & { latitud: number; longitud: number } =>
@@ -22,10 +26,16 @@ const pinesIniciales = puntos.filter(
 
 <aside class="mapa-panel" id="mapa-instituciones">
   <div id="mapa-leaflet" class="mapa-leaflet" data-puntos={JSON.stringify(pinesIniciales)}></div>
-  <div class="mapa-acciones">
-    <button type="button" id="btn-ubicacion" class="btn-ubicacion">Usar mi ubicación</button>
-    <p id="mapa-mensaje" class="mapa-mensaje" hidden></p>
-  </div>
+  {
+    mostrarCercania && (
+      <div class="mapa-acciones">
+        <button type="button" id="btn-ubicacion" class="btn-ubicacion">
+          Usar mi ubicación
+        </button>
+        <p id="mapa-mensaje" class="mapa-mensaje" hidden />
+      </div>
+    )
+  }
 </aside>
 
 <style>
@@ -317,7 +327,9 @@ function solicitarUbicacion() {
       );
     }
 
-    solicitarUbicacion();
-    boton?.addEventListener('click', solicitarUbicacion);
+    if (boton) {
+      solicitarUbicacion();
+      boton.addEventListener('click', solicitarUbicacion);
+    }
   }
 </script>
