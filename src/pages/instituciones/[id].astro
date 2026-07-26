@@ -83,7 +83,7 @@ const horario =
               <dl class="horario">
                 {horario.map(([dia, franja]) => (
                   <>
-                    <dt>{dia}</dt>
+                    <dt>{dia.replaceAll('_', ' ')}</dt>
                     <dd>{franja}</dd>
                   </>
                 ))}
