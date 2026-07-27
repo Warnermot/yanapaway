@@ -22,7 +22,7 @@ const MENSAJE_MAX = 2000;
 ---
 
 <Layout title="Solicitar orientación — yanapaway" description="Cuéntanos tu caso de forma confidencial.">
-  <Header />
+  <Header mostrarHero={false} rutaActiva="/instituciones" />
 
   <div class="wrapper pagina-solicitud">
     <div class="tarjeta-formulario">
@@ -203,6 +203,27 @@ const MENSAJE_MAX = 2000;
 
   .mensaje-resultado.error {
     color: var(--color-red);
+  }
+
+  @media (max-width: 640px) {
+    .pagina-solicitud {
+      padding-block: 1.5rem 2.5rem;
+    }
+
+    .tarjeta-formulario {
+      padding: 1.35rem 1.25rem;
+    }
+
+    /* 16px evita que iOS haga zoom automático al enfocar el campo. */
+    .campo select,
+    .campo textarea,
+    .campo input {
+      font-size: 1rem;
+    }
+
+    .btn-enviar {
+      padding-block: 0.9rem;
+    }
   }
 </style>
 

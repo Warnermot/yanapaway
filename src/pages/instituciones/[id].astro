@@ -49,7 +49,7 @@ const puntosMapa =
 ---
 
 <Layout title={`${institucion.nombre} — Directorio institucional`} description={institucion.descripcion ?? undefined}>
-  <Header />
+  <Header mostrarHero={false} rutaActiva="/instituciones" />
 
   <div class="wrapper pagina-ficha">
     <a class="volver" href="/instituciones">← Volver al directorio</a>
@@ -286,9 +286,28 @@ const puntosMapa =
     .ficha-grid {
       grid-template-columns: 1fr;
     }
+  }
 
+  @media (max-width: 640px) {
+    .pagina-ficha {
+      padding-block: 1.25rem 2.5rem;
+    }
+
+    .ficha-principal {
+      padding: 1.35rem 1.25rem;
+      gap: 1rem;
+    }
+
+    /* Una sola columna: dos columnas de contacto quedaban demasiado
+       estrechas para direcciones y correos largos. */
     .contacto-grid {
       grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .btn-solicitar {
+      align-self: stretch;
+      text-align: center;
     }
   }
 </style>
