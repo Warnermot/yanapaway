@@ -32,6 +32,35 @@ const hayVariosDestinos = pinesIniciales.length > 1;
 <aside class="mapa-panel" id="mapa-instituciones">
   <div class="mapa-envoltorio">
     <div id="mapa-leaflet" class="mapa-leaflet" data-puntos={JSON.stringify(pinesIniciales)}></div>
+
+    {/* Overlays sobre el mapa, no bloques debajo: así la indicación se ve de
+        entrada, sin scrollear, tanto en el tamaño normal como ampliado. */}
+    {
+      permitirRuta && pinesIniciales.length > 0 && (
+        <>
+          <div class="nav-actual" id="nav-actual" hidden>
+            <div class="nav-principal">
+              <span class="nav-flecha" id="nav-flecha" aria-hidden="true">
+                ↑
+              </span>
+              <div class="nav-texto">
+                <p class="nav-distancia" id="nav-distancia" />
+                <p class="nav-instruccion" id="nav-instruccion" aria-live="polite" />
+              </div>
+            </div>
+            <p class="nav-luego" id="nav-luego" hidden />
+          </div>
+
+          {/* Vive aparte de nav-actual a propósito: ese aviso se oculta en
+              los tramos rectos, pero mientras se navega siempre tiene que
+              haber forma de detenerla, sin depender de que se muestre. */}
+          <button type="button" id="btn-detener-nav" class="btn-detener-persistente" hidden>
+            Detener navegación
+          </button>
+        </>
+      )
+    }
+
     <button type="button" id="btn-expandir" class="btn-mapa-flotante" aria-expanded="false">
       <span id="texto-expandir">Ampliar mapa</span>
     </button>
@@ -71,27 +100,6 @@ const hayVariosDestinos = pinesIniciales.length > 1;
         )}
 
         <p id="ruta-mensaje" class="mapa-mensaje" hidden />
-
-        {/* Durante el seguimiento manda una sola indicación: la maniobra que
-            viene, como en un navegador. La lista completa queda para
-            planificar antes de salir. */}
-        <div class="nav-actual" id="nav-actual" hidden>
-          <div class="nav-principal">
-            <span class="nav-flecha" id="nav-flecha" aria-hidden="true">↑</span>
-            <div class="nav-texto">
-              <p class="nav-distancia" id="nav-distancia"></p>
-              <p class="nav-instruccion" id="nav-instruccion" aria-live="polite"></p>
-            </div>
-          </div>
-          <p class="nav-luego" id="nav-luego" hidden></p>
-        </div>
-
-        {/* Vive fuera de nav-actual a propósito: ese panel se oculta en los
-            tramos rectos, pero mientras se navega siempre tiene que haber
-            forma de detenerla. */}
-        <button type="button" id="btn-detener-nav" class="btn-detener-persistente" hidden>
-          Detener navegación
-        </button>
 
         <div class="panel-pasos" id="panel-pasos" hidden>
           <div class="pasos-cabecera">
@@ -183,10 +191,14 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     min-height: 55vh;
   }
 
-  /* Indicación en curso: tiene que leerse de un vistazo y en movimiento,
-     así que domina el panel y usa el verde de marca a contraste alto. */
+  /* Indicación en curso: flota sobre el mapa (como un navegador real), no
+     debajo — así se ve de entrada, sin scrollear, en cualquier tamaño. */
   .nav-actual {
-    width: 100%;
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    right: 0.6rem;
+    z-index: 1000;
     background: linear-gradient(135deg, var(--color-green), #156049);
     color: #fff;
     border-radius: var(--radius-m);
@@ -194,6 +206,7 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    box-shadow: 0 10px 30px -8px rgba(16, 40, 30, 0.45);
   }
 
   .nav-principal {
@@ -237,7 +250,10 @@ const hayVariosDestinos = pinesIniciales.length > 1;
   }
 
   .btn-detener-persistente {
-    align-self: flex-start;
+    position: absolute;
+    left: 0.6rem;
+    bottom: 0.6rem;
+    z-index: 1001;
     background: #fff;
     border: 1px solid rgba(26, 26, 23, 0.14);
     border-radius: 999px;
@@ -247,6 +263,7 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     font-weight: 600;
     color: var(--color-ink-soft);
     cursor: pointer;
+    box-shadow: var(--shadow-soft);
   }
 
   .btn-detener-persistente:hover {
@@ -631,11 +648,14 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     const pinesDeSede = pinesIniciales.filter((punto) => punto.esSede);
     const pinesDirectos = pinesIniciales.filter((punto) => !punto.esSede);
 
-    const mapa = L.map(contenedorMapa);
+    const mapa = L.map(contenedorMapa, { zoomControl: false });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(mapa);
+    // Arriba a la derecha: el aviso de giro ocupa arriba a la izquierda, y
+    // abajo quedan el botón de detener y el de ampliar mapa.
+    L.control.zoom({ position: 'topright' }).addTo(mapa);
 
     let capaSedes = L.layerGroup().addTo(mapa);
     let capaInstituciones = L.layerGroup().addTo(mapa);
