@@ -14,18 +14,24 @@ interface Props {
   // los puntos de esa institución, nunca mezclarlos con otras instituciones
   // cercanas que devuelva la geolocalización.
   mostrarCercania?: boolean;
+  // true en la ficha: habilita trazar el recorrido desde la ubicación actual
+  // hasta la institución (o hasta la sede que se elija).
+  permitirRuta?: boolean;
 }
 
-const { puntos = [], mostrarCercania = true } = Astro.props;
+const { puntos = [], mostrarCercania = true, permitirRuta = false } = Astro.props;
 
 const pinesIniciales = puntos.filter(
   (punto): punto is PuntoMapa & { latitud: number; longitud: number } =>
     punto.latitud !== null && punto.longitud !== null,
 );
+
+const hayVariosDestinos = pinesIniciales.length > 1;
 ---
 
 <aside class="mapa-panel" id="mapa-instituciones">
   <div id="mapa-leaflet" class="mapa-leaflet" data-puntos={JSON.stringify(pinesIniciales)}></div>
+
   {
     mostrarCercania && (
       <div class="mapa-acciones">
@@ -36,9 +42,46 @@ const pinesIniciales = puntos.filter(
       </div>
     )
   }
+
+  {
+    permitirRuta && pinesIniciales.length > 0 && (
+      <div class="mapa-acciones" data-varios-destinos={hayVariosDestinos ? 'si' : 'no'}>
+        <button type="button" id="btn-ruta" class="btn-ubicacion">
+          Cómo llegar
+        </button>
+
+        <div id="resumen-ruta" class="resumen-ruta" hidden>
+          <p class="ruta-destino" id="ruta-destino" />
+          <p class="ruta-datos" id="ruta-datos" />
+          <button type="button" id="btn-quitar-ruta" class="enlace-accion">
+            Quitar recorrido
+          </button>
+        </div>
+
+        {hayVariosDestinos && (
+          <div class="selector-sedes" id="selector-sedes" hidden>
+            <p class="selector-titulo">Elegir otra sede</p>
+            <ul class="lista-sedes-mapa" id="lista-sedes-mapa" />
+          </div>
+        )}
+
+        <p id="ruta-mensaje" class="mapa-mensaje" hidden />
+        <p class="nota-privacidad">
+          Para trazar el recorrido, tu ubicación se envía al servicio de mapas OpenStreetMap.
+        </p>
+      </div>
+    )
+  }
 </aside>
 
 <style>
+  /* Las clases de abajo definen `display`, lo que gana por especificidad
+     sobre el `[hidden] { display: none }` del navegador y dejaba visibles
+     bloques vacíos. Esta regla restituye el comportamiento de `hidden`. */
+  [hidden] {
+    display: none !important;
+  }
+
   .mapa-panel {
     background: #fff;
     border-radius: var(--radius-l);
@@ -74,6 +117,96 @@ const pinesIniciales = puntos.filter(
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
+  }
+
+  .resumen-ruta {
+    width: 100%;
+    background: var(--color-green-soft);
+    border-radius: var(--radius-m);
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .ruta-destino {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #10553f;
+  }
+
+  .ruta-datos {
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+  }
+
+  .enlace-accion {
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: var(--color-ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .enlace-accion:hover {
+    color: var(--color-green);
+  }
+
+  .selector-sedes {
+    width: 100%;
+  }
+
+  .selector-titulo {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-ink-soft);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .lista-sedes-mapa {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .btn-sede {
+    background: transparent;
+    border: 1px solid rgba(26, 26, 23, 0.14);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .btn-sede:hover {
+    background: var(--color-cream);
+  }
+
+  .btn-sede[aria-pressed='true'] {
+    background: var(--color-green-soft);
+    border-color: var(--color-green);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  .nota-privacidad {
+    font-size: 0.72rem;
+    color: var(--color-ink-soft);
+    line-height: 1.45;
   }
 
   .btn-ubicacion:disabled {
@@ -221,6 +354,223 @@ const pinesIniciales = puntos.filter(
     } else {
       mapa.setView(CENTRO_POR_DEFECTO, 5);
     }
+
+    // ---- Recorrido hasta la institución (OSRM) --------------------------
+    const botonRuta = document.getElementById('btn-ruta') as HTMLButtonElement | null;
+    const botonQuitarRuta = document.getElementById('btn-quitar-ruta') as HTMLButtonElement | null;
+    const resumenRuta = document.getElementById('resumen-ruta');
+    const rutaDestino = document.getElementById('ruta-destino');
+    const rutaDatos = document.getElementById('ruta-datos');
+    const rutaMensaje = document.getElementById('ruta-mensaje');
+    const selectorSedes = document.getElementById('selector-sedes');
+    const listaSedes = document.getElementById('lista-sedes-mapa');
+
+    const capaRuta = L.layerGroup().addTo(mapa);
+    let ubicacionActual: { lat: number; lng: number } | null = null;
+    let destinoElegido: PuntoInicial | null = null;
+
+    function mostrarMensajeRuta(texto: string) {
+      if (!rutaMensaje) return;
+      rutaMensaje.textContent = texto;
+      rutaMensaje.hidden = false;
+    }
+
+    function limpiarMensajeRuta() {
+      if (rutaMensaje) rutaMensaje.hidden = true;
+    }
+
+    function distanciaAproxKm(desde: { lat: number; lng: number }, hasta: PuntoInicial) {
+      const RADIO_TIERRA_KM = 6371;
+      const dLat = ((hasta.latitud - desde.lat) * Math.PI) / 180;
+      const dLng = ((hasta.longitud - desde.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((desde.lat * Math.PI) / 180) *
+          Math.cos((hasta.latitud * Math.PI) / 180) *
+          Math.sin(dLng / 2) ** 2;
+      return RADIO_TIERRA_KM * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+    }
+
+    function formatearDistancia(metros: number) {
+      return metros < 1000
+        ? `${Math.round(metros)} m`
+        : `${(metros / 1000).toFixed(1).replace('.', ',')} km`;
+    }
+
+    function formatearDuracion(segundos: number) {
+      const minutos = Math.max(1, Math.round(segundos / 60));
+      if (minutos < 60) return `${minutos} min`;
+      const horas = Math.floor(minutos / 60);
+      const resto = minutos % 60;
+      return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
+    }
+
+    function marcarSedeActiva() {
+      if (!listaSedes) return;
+      for (const boton of listaSedes.querySelectorAll('button')) {
+        boton.setAttribute(
+          'aria-pressed',
+          boton.dataset.nombre === destinoElegido?.nombre ? 'true' : 'false',
+        );
+      }
+    }
+
+    function construirSelectorSedes() {
+      if (!listaSedes || !selectorSedes) return;
+      listaSedes.replaceChildren();
+
+      for (const punto of pinesIniciales) {
+        const item = document.createElement('li');
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'btn-sede';
+        boton.dataset.nombre = punto.nombre;
+        // Solo la parte propia de la sede: el nombre de la institución ya
+        // encabeza la ficha y repetirlo en cada botón satura el espacio.
+        boton.textContent = punto.nombre.split(' · ').pop() ?? punto.nombre;
+        boton.addEventListener('click', () => trazarRutaHasta(punto));
+        item.append(boton);
+        listaSedes.append(item);
+      }
+
+      selectorSedes.hidden = false;
+    }
+
+    async function trazarRutaHasta(destino: PuntoInicial) {
+      if (!ubicacionActual) return;
+
+      destinoElegido = destino;
+      marcarSedeActiva();
+      limpiarMensajeRuta();
+
+      if (botonRuta) {
+        botonRuta.disabled = true;
+        botonRuta.textContent = 'Calculando recorrido…';
+      }
+
+      const origen = `${ubicacionActual.lng},${ubicacionActual.lat}`;
+      const llegada = `${destino.longitud},${destino.latitud}`;
+
+      try {
+        const respuesta = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${origen};${llegada}?overview=full&geometries=geojson`,
+        );
+
+        if (!respuesta.ok) throw new Error('El servicio de rutas no respondió.');
+
+        const datos = await respuesta.json();
+        const ruta = datos?.routes?.[0];
+
+        if (datos?.code !== 'Ok' || !ruta?.geometry?.coordinates?.length) {
+          throw new Error('No se encontró un recorrido.');
+        }
+
+        // GeoJSON viene como [lng, lat]; Leaflet espera [lat, lng].
+        const trazado: L.LatLngTuple[] = ruta.geometry.coordinates.map(
+          ([lng, lat]: [number, number]) => [lat, lng] as L.LatLngTuple,
+        );
+
+        capaRuta.clearLayers();
+        L.polyline(trazado, {
+          color: '#1c7a5e',
+          weight: 5,
+          opacity: 0.85,
+        }).addTo(capaRuta);
+
+        mapa.fitBounds(L.latLngBounds(trazado), { padding: [32, 32] });
+
+        if (rutaDestino) {
+          rutaDestino.textContent = `Hasta ${destino.nombre}`;
+        }
+        if (rutaDatos) {
+          rutaDatos.textContent = `${formatearDistancia(ruta.distance)} · ${formatearDuracion(
+            ruta.duration,
+          )} en auto`;
+        }
+        if (resumenRuta) resumenRuta.hidden = false;
+        if (botonRuta) botonRuta.hidden = true;
+      } catch {
+        mostrarMensajeRuta('No pudimos calcular el recorrido. Intenta de nuevo en un momento.');
+      } finally {
+        if (botonRuta) {
+          botonRuta.disabled = false;
+          botonRuta.textContent = 'Cómo llegar';
+        }
+      }
+    }
+
+    function iniciarRuta() {
+      if (!navigator.geolocation) {
+        mostrarMensajeRuta('Tu navegador no permite compartir ubicación.');
+        return;
+      }
+
+      if (botonRuta) {
+        botonRuta.disabled = true;
+        botonRuta.textContent = 'Buscando tu ubicación…';
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (posicion) => {
+          ubicacionActual = {
+            lat: posicion.coords.latitude,
+            lng: posicion.coords.longitude,
+          };
+
+          capaUsuario.clearLayers();
+          L.marker([ubicacionActual.lat, ubicacionActual.lng], {
+            icon: L.divIcon({
+              className: '',
+              html: '<div class="pin-usuario"></div>',
+              iconSize: [16, 16],
+              iconAnchor: [8, 8],
+            }),
+          })
+            .bindPopup('Tu ubicación')
+            .addTo(capaUsuario);
+
+          // Se rutea a la sede más cercana, pero el selector queda disponible
+          // para elegir otra.
+          const masCercana = [...pinesIniciales].sort(
+            (a, b) => distanciaAproxKm(ubicacionActual!, a) - distanciaAproxKm(ubicacionActual!, b),
+          )[0];
+
+          if (pinesIniciales.length > 1) construirSelectorSedes();
+          trazarRutaHasta(masCercana);
+        },
+        () => {
+          mostrarMensajeRuta(
+            'No pudimos acceder a tu ubicación. Revisa los permisos del navegador.',
+          );
+          if (botonRuta) {
+            botonRuta.disabled = false;
+            botonRuta.textContent = 'Cómo llegar';
+          }
+        },
+      );
+    }
+
+    botonRuta?.addEventListener('click', iniciarRuta);
+
+    botonQuitarRuta?.addEventListener('click', () => {
+      capaRuta.clearLayers();
+      capaUsuario.clearLayers();
+      destinoElegido = null;
+      ubicacionActual = null;
+      if (resumenRuta) resumenRuta.hidden = true;
+      if (selectorSedes) selectorSedes.hidden = true;
+      if (botonRuta) botonRuta.hidden = false;
+      limpiarMensajeRuta();
+
+      if (pinesIniciales.length === 1) {
+        mapa.setView([pinesIniciales[0].latitud, pinesIniciales[0].longitud], 14);
+      } else if (pinesIniciales.length > 1) {
+        mapa.fitBounds(
+          L.latLngBounds(pinesIniciales.map((i) => [i.latitud, i.longitud] as L.LatLngTuple)),
+          { padding: [24, 24] },
+        );
+      }
+    });
 
 function solicitarUbicacion() {
       if (!navigator.geolocation) {
