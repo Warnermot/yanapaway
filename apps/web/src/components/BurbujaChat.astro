@@ -1,0 +1,71 @@
+---
+interface Props {
+	mensaje: string;
+	remitente: 'usuario' | 'ia';
+	timestamp: string;
+}
+
+const { mensaje, remitente, timestamp } = Astro.props;
+
+const hora = new Date(timestamp).toLocaleTimeString('es-ES', {
+	hour: '2-digit',
+	minute: '2-digit',
+});
+---
+
+<div class="burbuja-wrapper" class:list={[remitente === 'ia' ? 'es-ia' : 'es-usuario']}>
+	<div class="burbuja">
+		<p class="burbuja-texto">{mensaje}</p>
+	</div>
+	<span class="burbuja-hora">{hora}</span>
+</div>
+
+<style is:global>
+	.burbuja-wrapper {
+		display: flex;
+		flex-direction: column;
+		max-width: 78%;
+		margin-bottom: 0.9rem;
+	}
+
+	.es-ia {
+		align-self: flex-start;
+		align-items: flex-start;
+	}
+
+	.es-usuario {
+		align-self: flex-end;
+		align-items: flex-end;
+	}
+
+	.burbuja {
+		padding: 0.75rem 1.1rem;
+		border-radius: 1rem;
+		color: #ffffff;
+		line-height: 1.5;
+		font-size: 0.95rem;
+		overflow-wrap: break-word;
+		white-space: pre-wrap;
+	}
+
+	.es-ia .burbuja {
+		background: var(--color-primary);
+		border-bottom-left-radius: 0.25rem;
+	}
+
+	.es-usuario .burbuja {
+		background: var(--color-secondary);
+		border-bottom-right-radius: 0.25rem;
+	}
+
+	.burbuja-texto {
+		margin: 0;
+	}
+
+	.burbuja-hora {
+		font-size: 0.72rem;
+		color: var(--color-support-brown);
+		margin-top: 0.25rem;
+		padding-inline: 0.35rem;
+	}
+</style>

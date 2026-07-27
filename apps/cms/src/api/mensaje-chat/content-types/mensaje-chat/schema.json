@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "mensajes_chat",
+  "info": {
+    "singularName": "mensaje-chat",
+    "pluralName": "mensajes-chat",
+    "displayName": "Mensaje de Chat",
+    "description": "Mensaje individual dentro de una sesión de chat. Puede ser del usuario o de la IA."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "sesion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sesion-chat.sesion-chat",
+      "required": true,
+      "description": "Sesión a la que pertenece este mensaje."
+    },
+    "remitente": {
+      "type": "enumeration",
+      "enum": ["usuario", "ia"],
+      "required": true,
+      "description": "Quién escribió el mensaje."
+    },
+    "mensaje": {
+      "type": "text",
+      "required": true,
+      "description": "Contenido textual del mensaje."
+    },
+    "timestamp": {
+      "type": "datetime",
+      "required": true,
+      "description": "Momento exacto en que se envió o recibió el mensaje."
+    }
+  }
+}

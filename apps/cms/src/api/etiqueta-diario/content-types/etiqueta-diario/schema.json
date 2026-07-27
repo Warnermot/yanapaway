@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "etiquetas_diario",
+  "info": {
+    "singularName": "etiqueta-diario",
+    "pluralName": "etiquetas-diario",
+    "displayName": "Etiqueta de Diario",
+    "description": "Catálogo de etiquetas disponibles para clasificar las entradas del diario personal."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "Nombre de la etiqueta. Ej: tristeza, logro, gratitud, ansiedad, progreso."
+    },
+    "color": {
+      "type": "string",
+      "required": false,
+      "description": "Color hex suave asignado a la etiqueta para mostrar en la UI. Ej: #e7fdf9"
+    }
+  }
+}

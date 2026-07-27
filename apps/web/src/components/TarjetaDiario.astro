@@ -1,0 +1,257 @@
+---
+interface EtiquetaDiario {
+	documentId: string;
+	nombre: string;
+	color?: string;
+}
+
+interface EntradaDiario {
+	documentId: string;
+	fecha: string;
+	emocion: 'muy_bien' | 'bien' | 'neutral' | 'mal' | 'muy_mal';
+	texto: string;
+	etiquetas?: EtiquetaDiario[];
+}
+
+interface Props {
+	entrada: EntradaDiario;
+}
+
+const { entrada } = Astro.props;
+
+const EMOJIS: Record<EntradaDiario['emocion'], string> = {
+	muy_bien: '😊',
+	bien: '🙂',
+	neutral: '😐',
+	mal: '😔',
+	muy_mal: '😢',
+};
+
+const fechaLegible = new Date(entrada.fecha).toLocaleDateString('es-ES', {
+	weekday: 'long',
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+
+// Extracto de las primeras 100 palabras (el texto puede venir en richtext/HTML)
+const textoPlano = entrada.texto.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const palabras = textoPlano.split(' ');
+const extracto = palabras.length > 100 ? palabras.slice(0, 100).join(' ') + '…' : textoPlano;
+
+const modalId = `modal-eliminar-${entrada.documentId}`;
+---
+
+<article class="tarjeta-diario" data-document-id={entrada.documentId}>
+	<header class="tarjeta-cabecera">
+		<span class="tarjeta-emoji" aria-hidden="true">{EMOJIS[entrada.emocion]}</span>
+		<time class="tarjeta-fecha" datetime={entrada.fecha}>{fechaLegible}</time>
+		<button
+			type="button"
+			class="btn-eliminar"
+			aria-label="Eliminar esta entrada"
+			data-abrir-modal={modalId}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="18"
+				height="18"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M3 6h18"></path>
+				<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+				<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+				<line x1="10" x2="10" y1="11" y2="17"></line>
+				<line x1="14" x2="14" y1="11" y2="17"></line>
+			</svg>
+		</button>
+	</header>
+
+	<p class="tarjeta-extracto">{extracto}</p>
+
+	{
+		entrada.etiquetas && entrada.etiquetas.length > 0 && (
+			<ul class="tarjeta-etiquetas">
+				{entrada.etiquetas.map((et) => (
+					<li class="chip-etiqueta" style={et.color ? `background: ${et.color};` : undefined}>
+						{et.nombre}
+					</li>
+				))}
+			</ul>
+		)
+	}
+
+	<div class="modal-eliminar" id={modalId} hidden role="dialog" aria-modal="true" aria-label="Confirmar eliminación">
+		<div class="modal-caja">
+			<p class="modal-texto">¿Eliminar esta entrada? Esta acción no se puede deshacer.</p>
+			<div class="modal-acciones">
+				<button type="button" class="btn-cancelar" data-cerrar-modal={modalId}>Cancelar</button>
+				<button
+					type="button"
+					class="btn-confirmar"
+					data-confirmar-eliminar={entrada.documentId}
+					data-cerrar-modal={modalId}
+				>
+					Eliminar
+				</button>
+			</div>
+		</div>
+	</div>
+</article>
+
+<script is:inline>
+	(function () {
+		// Abrir modal (delegado, funciona con cualquier tarjeta)
+		document.addEventListener('click', (ev) => {
+			const abrir = ev.target.closest('[data-abrir-modal]');
+			if (abrir) {
+				const modal = document.getElementById(abrir.dataset.abrirModal);
+				if (modal) modal.hidden = false;
+				return;
+			}
+
+			const cerrar = ev.target.closest('[data-cerrar-modal]');
+			if (cerrar) {
+				const modal = document.getElementById(cerrar.dataset.cerrarModal);
+				if (modal) modal.hidden = true;
+			}
+
+			const confirmar = ev.target.closest('[data-confirmar-eliminar]');
+			if (confirmar && typeof window.onConfirmEliminarEntrada === 'function') {
+				window.onConfirmEliminarEntrada(confirmar.dataset.confirmarEliminar);
+			}
+		});
+	})();
+</script>
+
+<style>
+	.tarjeta-diario {
+		background: var(--color-bg);
+		border-radius: 1rem;
+		padding: 1rem 1.25rem;
+		box-shadow: 0 1px 4px rgba(26, 29, 33, 0.08);
+	}
+
+	.tarjeta-cabecera {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.tarjeta-emoji {
+		font-size: 1.3rem;
+		line-height: 1;
+	}
+
+	.tarjeta-fecha {
+		font-size: 0.82rem;
+		color: var(--color-support-brown);
+		text-transform: capitalize;
+	}
+
+	.btn-eliminar {
+		margin-inline-start: auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		background: transparent;
+		color: var(--color-ink-soft);
+		cursor: pointer;
+		padding: 0.35rem;
+		border-radius: 0.5rem;
+		transition: background 0.15s ease;
+	}
+
+	.btn-eliminar:hover {
+		background: var(--color-bg-soft);
+	}
+
+	.tarjeta-extracto {
+		font-size: 0.9rem;
+		line-height: 1.55;
+		color: var(--color-ink);
+	}
+
+	.tarjeta-etiquetas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 0.6rem;
+	}
+
+	.chip-etiqueta {
+		font-size: 0.72rem;
+		padding: 0.2rem 0.65rem;
+		border-radius: 999px;
+		background: var(--color-support-teal-tint);
+		color: var(--color-ink-soft);
+	}
+
+	/* Modal de confirmación — tonos neutros, sin rojos (RD-01) */
+	.modal-eliminar {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(26, 29, 33, 0.45);
+		padding: 1.5rem;
+	}
+
+	.modal-eliminar[hidden] {
+		display: none;
+	}
+
+	.modal-caja {
+		background: var(--color-bg);
+		border-radius: 1.5rem;
+		padding: 1.75rem;
+		max-width: 22rem;
+		width: 100%;
+		box-shadow: 0 8px 30px rgba(26, 29, 33, 0.18);
+	}
+
+	.modal-texto {
+		font-size: 0.95rem;
+		line-height: 1.55;
+		color: var(--color-ink);
+		margin-bottom: 1.25rem;
+	}
+
+	.modal-acciones {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.75rem;
+	}
+
+	.btn-cancelar {
+		border: none;
+		background: var(--color-bg-soft);
+		color: var(--color-ink-soft);
+		padding: 0.6rem 1.2rem;
+		border-radius: 999px;
+		font-family: inherit;
+		font-size: 0.88rem;
+		cursor: pointer;
+	}
+
+	.btn-confirmar {
+		border: none;
+		background: var(--color-ink-soft);
+		color: #ffffff;
+		padding: 0.6rem 1.2rem;
+		border-radius: 999px;
+		font-family: inherit;
+		font-size: 0.88rem;
+		cursor: pointer;
+	}
+</style>
