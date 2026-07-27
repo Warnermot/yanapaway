@@ -72,11 +72,28 @@ const hayVariosDestinos = pinesIniciales.length > 1;
 
         <p id="ruta-mensaje" class="mapa-mensaje" hidden />
 
+        {/* Durante el seguimiento manda una sola indicación: la maniobra que
+            viene, como en un navegador. La lista completa queda para
+            planificar antes de salir. */}
+        <div class="nav-actual" id="nav-actual" hidden>
+          <div class="nav-principal">
+            <span class="nav-flecha" id="nav-flecha" aria-hidden="true">↑</span>
+            <div class="nav-texto">
+              <p class="nav-distancia" id="nav-distancia"></p>
+              <p class="nav-instruccion" id="nav-instruccion" aria-live="polite"></p>
+            </div>
+          </div>
+          <p class="nav-luego" id="nav-luego" hidden></p>
+          <button type="button" id="btn-detener-nav" class="enlace-accion">
+            Detener navegación
+          </button>
+        </div>
+
         <div class="panel-pasos" id="panel-pasos" hidden>
           <div class="pasos-cabecera">
             <p class="selector-titulo">Indicaciones</p>
             <button type="button" id="btn-seguimiento" class="btn-seguimiento">
-              Seguir mi avance
+              Iniciar navegación
             </button>
           </div>
           <ol class="lista-pasos" id="lista-pasos"></ol>
@@ -160,6 +177,68 @@ const hayVariosDestinos = pinesIniciales.length > 1;
   .mapa-panel.expandido .mapa-leaflet {
     height: 100%;
     min-height: 55vh;
+  }
+
+  /* Indicación en curso: tiene que leerse de un vistazo y en movimiento,
+     así que domina el panel y usa el verde de marca a contraste alto. */
+  .nav-actual {
+    width: 100%;
+    background: linear-gradient(135deg, var(--color-green), #156049);
+    color: #fff;
+    border-radius: var(--radius-m);
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav-principal {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .nav-flecha {
+    flex: 0 0 2.6rem;
+    height: 2.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .nav-texto {
+    min-width: 0;
+  }
+
+  .nav-distancia {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .nav-instruccion {
+    font-size: 0.92rem;
+    line-height: 1.35;
+    margin-top: 0.15rem;
+  }
+
+  .nav-luego {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    padding-top: 0.5rem;
+  }
+
+  .nav-actual .enlace-accion {
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 0;
+  }
+
+  .nav-actual .enlace-accion:hover {
+    color: #fff;
   }
 
   .panel-pasos {
@@ -651,6 +730,12 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     const panelPasos = document.getElementById('panel-pasos');
     const listaPasos = document.getElementById('lista-pasos');
     const botonSeguimiento = document.getElementById('btn-seguimiento') as HTMLButtonElement | null;
+    const navActual = document.getElementById('nav-actual');
+    const navFlecha = document.getElementById('nav-flecha');
+    const navDistancia = document.getElementById('nav-distancia');
+    const navInstruccion = document.getElementById('nav-instruccion');
+    const navLuego = document.getElementById('nav-luego');
+    const botonDetenerNav = document.getElementById('btn-detener-nav') as HTMLButtonElement | null;
 
     type PasoConPosicion = PasoOsrm & { lat: number; lng: number };
 
@@ -738,18 +823,92 @@ const hayVariosDestinos = pinesIniciales.length > 1;
       botonesPaso[indice]?.scrollIntoView({ block: 'nearest' });
     }
 
-    function resaltarPasoMasCercano(lat: number, lng: number) {
-      if (pasosActuales.length === 0) return;
+    // El avance se mide sobre el trazado de la ruta, no por cercanía a cada
+    // maniobra: si se midiera así, bastaba no pasar justo por el punto de giro
+    // para que la indicación quedara trabada en el mismo paso para siempre.
+    let trazadoActual: L.LatLngTuple[] = [];
+    let indiceTrazadoDePaso: number[] = [];
+    let progresoTrazado = 0;
+    let indiceManiobra = 1;
+    const METROS_FUERA_DE_RUTA = 60;
+
+    function indiceMasCercanoDelTrazado(lat: number, lng: number) {
       let mejor = 0;
-      let mejorDistancia = Infinity;
-      pasosActuales.forEach((paso, indice) => {
-        const d = distanciaAproxKm({ lat, lng }, { lat: paso.lat, lng: paso.lng });
-        if (d < mejorDistancia) {
-          mejorDistancia = d;
+      let mejorKm = Infinity;
+      trazadoActual.forEach(([latPunto, lngPunto], indice) => {
+        const km = distanciaAproxKm({ lat, lng }, { lat: latPunto, lng: lngPunto });
+        if (km < mejorKm) {
+          mejorKm = km;
           mejor = indice;
         }
       });
-      resaltarPaso(mejor);
+      return { indice: mejor, metros: mejorKm * 1000 };
+    }
+
+    /** Distancia real siguiendo la ruta, no en línea recta. */
+    function metrosPorLaRuta(desdeIndice: number, hastaIndice: number) {
+      let metros = 0;
+      for (let i = desdeIndice; i < hastaIndice && i + 1 < trazadoActual.length; i += 1) {
+        const [lat1, lng1] = trazadoActual[i];
+        const [lat2, lng2] = trazadoActual[i + 1];
+        metros += distanciaAproxKm({ lat: lat1, lng: lng1 }, { lat: lat2, lng: lng2 }) * 1000;
+      }
+      return metros;
+    }
+
+    function prepararSeguimientoDeRuta(trazado: L.LatLngTuple[]) {
+      trazadoActual = trazado;
+      progresoTrazado = 0;
+      indiceManiobra = 1;
+      // Cada maniobra se ancla a su punto más cercano dentro del trazado.
+      indiceTrazadoDePaso = pasosActuales.map(
+        (paso) => indiceMasCercanoDelTrazado(paso.lat, paso.lng).indice,
+      );
+    }
+
+    function actualizarNavegacion(lat: number, lng: number) {
+      if (pasosActuales.length === 0 || trazadoActual.length === 0) return;
+
+      const { indice, metros: metrosAlTrazado } = indiceMasCercanoDelTrazado(lat, lng);
+      // El progreso nunca retrocede: evita que la indicación salte de un lado
+      // a otro con cada lectura imprecisa del GPS.
+      progresoTrazado = Math.max(progresoTrazado, indice);
+
+      // La maniobra vigente es la primera que todavía queda por delante.
+      let siguienteIndice = indiceTrazadoDePaso.findIndex(
+        (indiceDelPaso, posicion) => posicion > 0 && indiceDelPaso > progresoTrazado,
+      );
+      if (siguienteIndice === -1) siguienteIndice = pasosActuales.length - 1;
+      indiceManiobra = siguienteIndice;
+
+      const actual = pasosActuales[indiceManiobra];
+      const siguiente = pasosActuales[indiceManiobra + 1];
+      const metrosRestantes = metrosPorLaRuta(progresoTrazado, indiceTrazadoDePaso[indiceManiobra]);
+
+      if (navFlecha) navFlecha.textContent = flechaDePaso(actual);
+      if (navDistancia) {
+        navDistancia.textContent =
+          metrosRestantes < 20 ? 'Ahora' : `En ${formatearMetros(metrosRestantes)}`;
+      }
+      if (navInstruccion) navInstruccion.textContent = describirManiobra(actual);
+
+      if (navLuego) {
+        if (siguiente) {
+          navLuego.textContent = `Luego: ${describirManiobra(siguiente)}`;
+          navLuego.hidden = false;
+        } else {
+          navLuego.hidden = true;
+        }
+      }
+
+      // Alejarse del trazado significa que la ruta ya no sirve como guía.
+      if (metrosAlTrazado > METROS_FUERA_DE_RUTA) {
+        mostrarMensajeRuta('Parece que te saliste del recorrido. Vuelve a calcularlo si hace falta.');
+      } else {
+        limpiarMensajeRuta();
+      }
+
+      resaltarPaso(indiceManiobra);
     }
 
     function dibujarUsuario(lat: number, lng: number) {
@@ -772,7 +931,10 @@ const hayVariosDestinos = pinesIniciales.length > 1;
         idSeguimiento = null;
       }
       botonSeguimiento?.setAttribute('aria-pressed', 'false');
-      if (botonSeguimiento) botonSeguimiento.textContent = 'Seguir mi avance';
+      if (botonSeguimiento) botonSeguimiento.textContent = 'Iniciar navegación';
+      // Al salir de navegación vuelve la lista completa para repasar el camino.
+      if (navActual) navActual.hidden = true;
+      if (panelPasos) panelPasos.hidden = pasosActuales.length === 0;
     }
 
     function alternarSeguimiento() {
@@ -788,7 +950,7 @@ const hayVariosDestinos = pinesIniciales.length > 1;
           const { latitude, longitude } = posicion.coords;
           ubicacionActual = { lat: latitude, lng: longitude };
           dibujarUsuario(latitude, longitude);
-          resaltarPasoMasCercano(latitude, longitude);
+          actualizarNavegacion(latitude, longitude);
           mapa.panTo([latitude, longitude]);
           limpiarMensajeRuta();
         },
@@ -807,10 +969,19 @@ const hayVariosDestinos = pinesIniciales.length > 1;
       );
 
       botonSeguimiento?.setAttribute('aria-pressed', 'true');
-      if (botonSeguimiento) botonSeguimiento.textContent = 'Detener seguimiento';
+      if (botonSeguimiento) botonSeguimiento.textContent = 'Detener navegación';
+
+      // En navegación manda la maniobra en curso; la lista completa estorba.
+      if (navActual) navActual.hidden = false;
+      if (panelPasos) panelPasos.hidden = true;
+
+      if (ubicacionActual) {
+        actualizarNavegacion(ubicacionActual.lat, ubicacionActual.lng);
+      }
     }
 
     botonSeguimiento?.addEventListener('click', alternarSeguimiento);
+    botonDetenerNav?.addEventListener('click', detenerSeguimiento);
 
     // ---- Mapa ampliado --------------------------------------------------
     const panelMapa = document.getElementById('mapa-instituciones');
@@ -915,6 +1086,7 @@ const hayVariosDestinos = pinesIniciales.length > 1;
         if (botonRuta) botonRuta.hidden = true;
 
         dibujarPasos(ruta.legs?.flatMap((tramo: { steps?: PasoOsrm[] }) => tramo.steps ?? []) ?? []);
+        prepararSeguimientoDeRuta(trazado);
       } catch {
         mostrarMensajeRuta('No pudimos calcular el recorrido. Intenta de nuevo en un momento.');
       } finally {
@@ -978,8 +1150,10 @@ const hayVariosDestinos = pinesIniciales.length > 1;
       ubicacionActual = null;
       pasosActuales = [];
       botonesPaso = [];
+      indiceManiobra = 1;
       if (listaPasos) listaPasos.replaceChildren();
       if (panelPasos) panelPasos.hidden = true;
+      if (navActual) navActual.hidden = true;
       if (resumenRuta) resumenRuta.hidden = true;
       if (selectorSedes) selectorSedes.hidden = true;
       if (botonRuta) botonRuta.hidden = false;
