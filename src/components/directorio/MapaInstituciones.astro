@@ -84,10 +84,14 @@ const hayVariosDestinos = pinesIniciales.length > 1;
             </div>
           </div>
           <p class="nav-luego" id="nav-luego" hidden></p>
-          <button type="button" id="btn-detener-nav" class="enlace-accion">
-            Detener navegación
-          </button>
         </div>
+
+        {/* Vive fuera de nav-actual a propósito: ese panel se oculta en los
+            tramos rectos, pero mientras se navega siempre tiene que haber
+            forma de detenerla. */}
+        <button type="button" id="btn-detener-nav" class="btn-detener-persistente" hidden>
+          Detener navegación
+        </button>
 
         <div class="panel-pasos" id="panel-pasos" hidden>
           <div class="pasos-cabecera">
@@ -232,13 +236,22 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     padding-top: 0.5rem;
   }
 
-  .nav-actual .enlace-accion {
-    color: rgba(255, 255, 255, 0.85);
-    margin-top: 0;
+  .btn-detener-persistente {
+    align-self: flex-start;
+    background: #fff;
+    border: 1px solid rgba(26, 26, 23, 0.14);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-ink-soft);
+    cursor: pointer;
   }
 
-  .nav-actual .enlace-accion:hover {
-    color: #fff;
+  .btn-detener-persistente:hover {
+    border-color: var(--color-red);
+    color: var(--color-red);
   }
 
   .panel-pasos {
@@ -831,6 +844,9 @@ const hayVariosDestinos = pinesIniciales.length > 1;
     let progresoTrazado = 0;
     let indiceManiobra = 1;
     const METROS_FUERA_DE_RUTA = 60;
+    // El aviso solo se muestra cerca del giro (como una app de delivery),
+    // no todo el trayecto: en los tramos rectos no debe ocupar pantalla.
+    const METROS_AVISO_GIRO = 300;
 
     function indiceMasCercanoDelTrazado(lat: number, lng: number) {
       let mejor = 0;
@@ -885,6 +901,10 @@ const hayVariosDestinos = pinesIniciales.length > 1;
       const siguiente = pasosActuales[indiceManiobra + 1];
       const metrosRestantes = metrosPorLaRuta(progresoTrazado, indiceTrazadoDePaso[indiceManiobra]);
 
+      // Recto y sin giro cerca: solo el mapa, sin panel encima tapando la
+      // pantalla. El aviso aparece al acercarse y desaparece al pasarlo.
+      if (navActual) navActual.hidden = metrosRestantes > METROS_AVISO_GIRO;
+
       if (navFlecha) navFlecha.textContent = flechaDePaso(actual);
       if (navDistancia) {
         navDistancia.textContent =
@@ -932,6 +952,7 @@ const hayVariosDestinos = pinesIniciales.length > 1;
       }
       botonSeguimiento?.setAttribute('aria-pressed', 'false');
       if (botonSeguimiento) botonSeguimiento.textContent = 'Iniciar navegación';
+      if (botonDetenerNav) botonDetenerNav.hidden = true;
       // Al salir de navegación vuelve la lista completa para repasar el camino.
       if (navActual) navActual.hidden = true;
       if (panelPasos) panelPasos.hidden = pasosActuales.length === 0;
@@ -970,9 +991,10 @@ const hayVariosDestinos = pinesIniciales.length > 1;
 
       botonSeguimiento?.setAttribute('aria-pressed', 'true');
       if (botonSeguimiento) botonSeguimiento.textContent = 'Detener navegación';
+      if (botonDetenerNav) botonDetenerNav.hidden = false;
 
-      // En navegación manda la maniobra en curso; la lista completa estorba.
-      if (navActual) navActual.hidden = false;
+      // En navegación la lista completa estorba; el aviso de giro solo se
+      // muestra cuando corresponde (lo decide actualizarNavegacion).
       if (panelPasos) panelPasos.hidden = true;
 
       if (ubicacionActual) {
