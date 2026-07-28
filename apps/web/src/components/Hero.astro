@@ -1,17 +1,15 @@
 ---
-const navLinks = [
-	{ label: 'Inicio', href: '#inicio' },
-	{ label: 'Recursos', href: '#recursos' },
-	{ label: 'Asistente', href: '#asistente' },
-	{ label: 'Blog', href: '#blog' },
-	{ label: 'Contratos', href: '#contactos' },
-];
+import { Image } from 'astro:assets';
+import stopViolenceImage from '../assets/images/carousel/stop-violence-against-women-photo.webp';
+import { getPlaceholderVariant } from '../lib/imagePlaceholders';
 
 const slides = [
 	{
 		badge: 'Estás en un espacio seguro',
 		heading: [{ text: 'No estás sola. ' }, { text: 'No es tu culpa.', accent: true }],
 		text: 'Encuentra apoyo, orientación legal y contención inmediata, las 24 horas.',
+		image: stopViolenceImage,
+		alt: '',
 	},
 	{
 		badge: 'Trabajamos junto a la Defensoría',
@@ -20,6 +18,7 @@ const slides = [
 			{ text: 'niñas, niños y adolescentes.', accent: true },
 		],
 		text: 'Canales y recursos pensados especialmente para NNA, en coordinación con la Defensoría de la Niñez y Adolescencia.',
+		placeholderVariant: getPlaceholderVariant(1),
 	},
 	{
 		badge: 'Para quienes acompañan',
@@ -28,65 +27,67 @@ const slides = [
 			{ text: 'también puedes ayudar.', accent: true },
 		],
 		text: 'Aprende a identificar señales de alerta y cómo actuar de forma segura y a tiempo.',
+		placeholderVariant: getPlaceholderVariant(2),
 	},
 ];
+
+const slidesText = slides.map(({ badge, heading, text }) => ({ badge, heading, text }));
 ---
 
-<header class="site-header">
-	<div class="navbar wrapper">
-		<a class="logo" href="/">yanapaway</a>
-		<ul class="nav-links">
+<section class="hero" aria-roledescription="carousel" aria-label="Mensajes de apoyo">
+	<div class="hero-backgrounds">
+		{
+			slides.map((slide, index) => (
+				<div class="hero-bg" class:list={[{ active: index === 0 }]} data-index={index}>
+					{slide.image ? (
+						<Image src={slide.image} alt={slide.alt ?? ''} class="hero-bg-img" />
+					) : (
+						<div class={`hero-bg-img img-placeholder ${slide.placeholderVariant}`} />
+					)}
+				</div>
+			))
+		}
+	</div>
+	<div class="hero-scrim"></div>
+
+	<div class="hero-content wrapper">
+		<div class="hero-copy" id="hero-copy" aria-live="polite">
+			<span class="hero-badge">
+				<span class="badge-dot"></span>
+				<span id="hero-badge-text">{slides[0].badge}</span>
+			</span>
+			<h1 id="hero-heading">
+				{
+					slides[0].heading.map((part) =>
+						part.accent ? <span class="accent">{part.text}</span> : part.text
+					)
+				}
+			</h1>
+			<p id="hero-text">{slides[0].text}</p>
+		</div>
+
+		<div class="hero-actions">
+			<a href="#asistente" class="pill-btn hero-cta-primary">Habla con alguien ahora</a>
+			<a href="#recursos" class="pill-btn hero-cta-secondary">Conoce tus opciones</a>
+		</div>
+
+		<div class="hero-dots">
 			{
-				navLinks.map((link) => (
-					<li>
-						<a href={link.href}>{link.label}</a>
-					</li>
+				slides.map((_, index) => (
+					<button
+						type="button"
+						class="hero-dot"
+						class:list={[{ active: index === 0 }]}
+						data-index={index}
+						aria-label={`Ir al mensaje ${index + 1}`}
+					/>
 				))
 			}
-		</ul>
-		<a class="sos-badge" href="#sos" aria-label="Ayuda de emergencia SOS">SOS</a>
-	</div>
-
-	<div class="hero" aria-roledescription="carousel" aria-label="Mensajes de apoyo">
-		<div class="hero-content wrapper">
-			<div class="hero-copy" id="hero-copy" aria-live="polite">
-				<span class="hero-badge">
-					<span class="badge-dot"></span>
-					<span id="hero-badge-text">{slides[0].badge}</span>
-				</span>
-				<h1 id="hero-heading">
-					{
-						slides[0].heading.map((part) =>
-							part.accent ? <span class="accent">{part.text}</span> : part.text
-						)
-					}
-				</h1>
-				<p id="hero-text">{slides[0].text}</p>
-			</div>
-
-			<div class="hero-actions">
-				<a href="#asistente" class="pill-btn hero-cta-primary">Habla con alguien ahora</a>
-				<a href="#recursos" class="pill-btn hero-cta-secondary">Conoce tus opciones</a>
-			</div>
-
-			<div class="hero-dots">
-				{
-					slides.map((_, index) => (
-						<button
-							type="button"
-							class="hero-dot"
-							class:list={[{ active: index === 0 }]}
-							data-index={index}
-							aria-label={`Ir al mensaje ${index + 1}`}
-						/>
-					))
-				}
-			</div>
 		</div>
 	</div>
-</header>
+</section>
 
-<script type="application/json" id="hero-slides-data" set:html={JSON.stringify(slides)} />
+<script type="application/json" id="hero-slides-data" set:html={JSON.stringify(slidesText)} />
 
 <script>
 	interface HeadingPart {
@@ -94,7 +95,7 @@ const slides = [
 		accent?: boolean;
 	}
 
-	interface Slide {
+	interface SlideText {
 		badge: string;
 		heading: HeadingPart[];
 		text: string;
@@ -105,10 +106,11 @@ const slides = [
 	const badgeTextEl = document.getElementById('hero-badge-text');
 	const headingEl = document.getElementById('hero-heading');
 	const textEl = document.getElementById('hero-text');
+	const bgs = document.querySelectorAll<HTMLElement>('.hero-bg');
 	const dots = document.querySelectorAll<HTMLButtonElement>('.hero-dot');
 
-	if (dataEl && copyEl && badgeTextEl && headingEl && textEl && dots.length) {
-		const slides: Slide[] = JSON.parse(dataEl.textContent ?? '[]');
+	if (dataEl && copyEl && badgeTextEl && headingEl && textEl && bgs.length && dots.length) {
+		const slidesText: SlideText[] = JSON.parse(dataEl.textContent ?? '[]');
 		let current = 0;
 		let timer: ReturnType<typeof setInterval>;
 
@@ -119,15 +121,18 @@ const slides = [
 		}
 
 		function goTo(index: number) {
-			const next = (index + slides.length) % slides.length;
+			const next = (index + slidesText.length) % slidesText.length;
 			if (next === current) return;
+
+			bgs[current]?.classList.remove('active');
+			bgs[next]?.classList.add('active');
 
 			copyEl!.classList.add('is-fading');
 			setTimeout(() => {
 				current = next;
-				badgeTextEl!.textContent = slides[current].badge;
-				renderHeading(slides[current].heading);
-				textEl!.textContent = slides[current].text;
+				badgeTextEl!.textContent = slidesText[current].badge;
+				renderHeading(slidesText[current].heading);
+				textEl!.textContent = slidesText[current].text;
 				copyEl!.classList.remove('is-fading');
 			}, 250);
 
@@ -151,69 +156,62 @@ const slides = [
 </script>
 
 <style>
-	.site-header {
-		background: var(--color-primary);
-	}
-
-	.navbar {
-		display: flex;
-		align-items: center;
-		gap: 2rem;
-		padding-block: 1.5rem;
-	}
-
-	.logo {
-		font-size: 1.25rem;
-		font-weight: 600;
-		text-decoration: none;
-		color: white;
-	}
-
-	.nav-links {
-		display: flex;
-		gap: 1.75rem;
-		margin-inline-start: auto;
-	}
-
-	.nav-links a {
-		text-decoration: none;
-		font-size: 0.95rem;
-		font-weight: 500;
-		color: rgba(255, 255, 255, 0.85);
-		transition: color 0.2s ease;
-	}
-
-	.nav-links a:hover {
-		color: white;
-	}
-
-	.sos-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		text-decoration: none;
-		font-weight: 700;
-		font-size: 0.85rem;
-		letter-spacing: 0.04em;
-		color: var(--color-accent);
-		border: 3px double var(--color-accent);
-		padding: 0.3rem 0.6rem;
-		border-radius: 4px;
-		transform: rotate(-4deg);
-		background: var(--color-bg);
-	}
-
 	.hero {
-		background: var(--color-primary-dark);
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		min-height: min(78vh, 640px);
 		color: white;
-		padding-block: 3.5rem;
+		overflow: hidden;
+	}
+
+	.hero-backgrounds {
+		position: absolute;
+		inset: 0;
+	}
+
+	.hero-bg {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.7s ease,
+			visibility 0.7s ease;
+	}
+
+	.hero-bg.active {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.hero-bg-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	img.hero-bg-img {
+		filter: grayscale(1);
+	}
+
+	.hero-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(0deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.32) 45%, rgba(0, 0, 0, 0.45) 100%);
 	}
 
 	.hero-content {
+		position: relative;
+		z-index: 1;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 1.5rem;
+		padding-block: 3rem;
+		width: 100%;
 	}
 
 	.hero-copy {
@@ -320,17 +318,8 @@ const slides = [
 	}
 
 	@media (max-width: 720px) {
-		.navbar {
-			flex-wrap: wrap;
-			gap: 1rem;
-		}
-
-		.nav-links {
-			order: 3;
-			width: 100%;
-			flex-wrap: wrap;
-			gap: 1rem;
-			margin-inline-start: 0;
+		.hero {
+			min-height: min(85vh, 560px);
 		}
 
 		.hero-copy {
@@ -339,7 +328,8 @@ const slides = [
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hero-copy {
+		.hero-copy,
+		.hero-bg {
 			transition: none;
 		}
 	}
