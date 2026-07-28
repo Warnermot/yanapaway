@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
+import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
 import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
 import { obtenerInstitucionPorId } from '../../lib/instituciones';
@@ -46,7 +46,7 @@ const puntosMapa =
 ---
 
 <Layout title={`${institucion.nombre} — Directorio institucional`} description={institucion.descripcion ?? undefined}>
-  <Header mostrarHero={false} rutaActiva="/instituciones" />
+  <Navbar rutaActiva="/instituciones" />
 
   <div class="wrapper pagina-ficha">
     <a class="volver" href="/instituciones">← Volver al directorio</a>

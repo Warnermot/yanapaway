@@ -1,0 +1,336 @@
+---
+import { Image } from 'astro:assets';
+import stopViolenceImage from '../assets/images/carousel/stop-violence-against-women-photo.webp';
+import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+
+const slides = [
+	{
+		badge: 'Estás en un espacio seguro',
+		heading: [{ text: 'No estás sola. ' }, { text: 'No es tu culpa.', accent: true }],
+		text: 'Encuentra apoyo, orientación legal y contención inmediata, las 24 horas.',
+		image: stopViolenceImage,
+		alt: '',
+	},
+	{
+		badge: 'Trabajamos junto a la Defensoría',
+		heading: [
+			{ text: 'También cuidamos a ' },
+			{ text: 'niñas, niños y adolescentes.', accent: true },
+		],
+		text: 'Canales y recursos pensados especialmente para NNA, en coordinación con la Defensoría de la Niñez y Adolescencia.',
+		placeholderVariant: getPlaceholderVariant(1),
+	},
+	{
+		badge: 'Para quienes acompañan',
+		heading: [
+			{ text: 'Si conoces a alguien en riesgo, ' },
+			{ text: 'también puedes ayudar.', accent: true },
+		],
+		text: 'Aprende a identificar señales de alerta y cómo actuar de forma segura y a tiempo.',
+		placeholderVariant: getPlaceholderVariant(2),
+	},
+];
+
+const slidesText = slides.map(({ badge, heading, text }) => ({ badge, heading, text }));
+---
+
+<section class="hero" aria-roledescription="carousel" aria-label="Mensajes de apoyo">
+	<div class="hero-backgrounds">
+		{
+			slides.map((slide, index) => (
+				<div class="hero-bg" class:list={[{ active: index === 0 }]} data-index={index}>
+					{slide.image ? (
+						<Image src={slide.image} alt={slide.alt ?? ''} class="hero-bg-img" />
+					) : (
+						<div class={`hero-bg-img img-placeholder ${slide.placeholderVariant}`} />
+					)}
+				</div>
+			))
+		}
+	</div>
+	<div class="hero-scrim"></div>
+
+	<div class="hero-content wrapper">
+		<div class="hero-copy" id="hero-copy" aria-live="polite">
+			<span class="hero-badge">
+				<span class="badge-dot"></span>
+				<span id="hero-badge-text">{slides[0].badge}</span>
+			</span>
+			<h1 id="hero-heading">
+				{
+					slides[0].heading.map((part) =>
+						part.accent ? <span class="accent">{part.text}</span> : part.text
+					)
+				}
+			</h1>
+			<p id="hero-text">{slides[0].text}</p>
+		</div>
+
+		<div class="hero-actions">
+			<a href="#asistente" class="pill-btn hero-cta-primary">Habla con alguien ahora</a>
+			<a href="#recursos" class="pill-btn hero-cta-secondary">Conoce tus opciones</a>
+		</div>
+
+		<div class="hero-dots">
+			{
+				slides.map((_, index) => (
+					<button
+						type="button"
+						class="hero-dot"
+						class:list={[{ active: index === 0 }]}
+						data-index={index}
+						aria-label={`Ir al mensaje ${index + 1}`}
+					/>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script type="application/json" id="hero-slides-data" set:html={JSON.stringify(slidesText)} />
+
+<script>
+	interface HeadingPart {
+		text: string;
+		accent?: boolean;
+	}
+
+	interface SlideText {
+		badge: string;
+		heading: HeadingPart[];
+		text: string;
+	}
+
+	const dataEl = document.getElementById('hero-slides-data');
+	const copyEl = document.getElementById('hero-copy');
+	const badgeTextEl = document.getElementById('hero-badge-text');
+	const headingEl = document.getElementById('hero-heading');
+	const textEl = document.getElementById('hero-text');
+	const bgs = document.querySelectorAll<HTMLElement>('.hero-bg');
+	const dots = document.querySelectorAll<HTMLButtonElement>('.hero-dot');
+
+	if (dataEl && copyEl && badgeTextEl && headingEl && textEl && bgs.length && dots.length) {
+		const slidesText: SlideText[] = JSON.parse(dataEl.textContent ?? '[]');
+		let current = 0;
+		let timer: ReturnType<typeof setInterval>;
+
+		function renderHeading(parts: HeadingPart[]) {
+			headingEl!.innerHTML = parts
+				.map((part) => (part.accent ? `<span class="accent">${part.text}</span>` : part.text))
+				.join('');
+		}
+
+		function goTo(index: number) {
+			const next = (index + slidesText.length) % slidesText.length;
+			if (next === current) return;
+
+			bgs[current]?.classList.remove('active');
+			bgs[next]?.classList.add('active');
+
+			copyEl!.classList.add('is-fading');
+			setTimeout(() => {
+				current = next;
+				badgeTextEl!.textContent = slidesText[current].badge;
+				renderHeading(slidesText[current].heading);
+				textEl!.textContent = slidesText[current].text;
+				copyEl!.classList.remove('is-fading');
+			}, 250);
+
+			dots.forEach((dot, i) => dot.classList.toggle('active', i === next));
+		}
+
+		function start() {
+			timer = setInterval(() => goTo(current + 1), 6000);
+		}
+
+		dots.forEach((dot, index) => {
+			dot.addEventListener('click', () => {
+				clearInterval(timer);
+				goTo(index);
+				start();
+			});
+		});
+
+		start();
+	}
+</script>
+
+<style>
+	.hero {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		min-height: min(78vh, 640px);
+		color: white;
+		overflow: hidden;
+	}
+
+	.hero-backgrounds {
+		position: absolute;
+		inset: 0;
+	}
+
+	.hero-bg {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity 0.7s ease,
+			visibility 0.7s ease;
+	}
+
+	.hero-bg.active {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.hero-bg-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	img.hero-bg-img {
+		filter: grayscale(1);
+	}
+
+	.hero-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(0deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.32) 45%, rgba(0, 0, 0, 0.45) 100%);
+	}
+
+	.hero-content {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1.5rem;
+		padding-block: 3rem;
+		width: 100%;
+	}
+
+	.hero-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.9rem;
+		max-width: 640px;
+		min-height: 12rem;
+		transition: opacity 0.25s ease;
+	}
+
+	.hero-copy.is-fading {
+		opacity: 0;
+	}
+
+	.hero-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+		padding: 0.45rem 1rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.badge-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: var(--color-accent);
+		flex-shrink: 0;
+	}
+
+	.hero h1 {
+		font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	.hero h1 :global(.accent) {
+		color: var(--color-secondary);
+	}
+
+	.hero-copy p {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		opacity: 0.92;
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.hero-cta-primary {
+		background: var(--color-primary);
+		color: white;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.hero-cta-primary:hover {
+		background: var(--color-primary-light);
+	}
+
+	.hero-cta-secondary {
+		background: var(--color-secondary);
+		color: white;
+		border: none;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.hero-cta-secondary:hover {
+		background: #fda87f;
+	}
+
+	.hero-dots {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.hero-dot {
+		width: 24px;
+		height: 6px;
+		border-radius: 999px;
+		border: none;
+		background: rgba(255, 255, 255, 0.35);
+		cursor: pointer;
+		padding: 0;
+		transition:
+			background 0.2s ease,
+			width 0.2s ease;
+	}
+
+	.hero-dot.active {
+		width: 40px;
+		background: var(--color-secondary);
+	}
+
+	@media (max-width: 720px) {
+		.hero {
+			min-height: min(85vh, 560px);
+		}
+
+		.hero-copy {
+			min-height: 14rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-copy,
+		.hero-bg {
+			transition: none;
+		}
+	}
+</style>

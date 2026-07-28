@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
+import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import { obtenerInstitucionPorId } from '../lib/instituciones';
 import { listarTiposCaso } from '../lib/tipos-caso';
@@ -21,7 +21,7 @@ const MENSAJE_MAX = 2000;
 ---
 
 <Layout title="Solicitar orientación — yanapaway" description="Cuéntanos tu caso de forma confidencial.">
-  <Header mostrarHero={false} rutaActiva="/instituciones" />
+  <Navbar rutaActiva="/instituciones" />
 
   <div class="wrapper pagina-solicitud">
     <div class="tarjeta-formulario">

@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
+import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
 import BuscadorInstituciones from '../../components/directorio/BuscadorInstituciones.astro';
 import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
@@ -29,7 +29,7 @@ const [instituciones, tiposCaso, puntosMapa] = await Promise.all([
   title="Directorio institucional — yanapaway"
   description="Encuentra instituciones que atienden grooming, sextorsión, control digital y violencia en el noviazgo."
 >
-  <Header mostrarHero={false} rutaActiva="/instituciones" />
+  <Navbar rutaActiva="/instituciones" />
 
   <section class="hero-directorio">
     <div class="wrapper">

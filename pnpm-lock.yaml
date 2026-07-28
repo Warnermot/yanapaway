@@ -95,6 +95,9 @@ importers:
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
+      sharp:
+        specifier: ^0.35.3
+        version: 0.35.3(@types/node@26.1.1)
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
@@ -18587,7 +18590,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.3
       '@img/sharp-win32-x64': 0.35.3
       '@types/node': 26.1.1
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
