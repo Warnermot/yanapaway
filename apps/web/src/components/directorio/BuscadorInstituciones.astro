@@ -9,7 +9,14 @@ interface Props {
 }
 
 const { tiposCaso, tipoSeleccionado, tipoCasoSeleccionado } = Astro.props;
-const tiposInstitucion = TIPOS_INSTITUCION;
+// Solo se muestran los tipos que realmente tienen instituciones cargadas;
+// el resto del enum (linea_emergencia, psicologico, ong, refugio, otro)
+// sigue siendo válido para la API, solo no se ofrece como chip de filtro.
+const tiposInstitucion = TIPOS_INSTITUCION.filter((tipo) =>
+  (['defensoria', 'felcv', 'fiscalia', 'policia', 'slim'] as const).includes(
+    tipo as 'defensoria' | 'felcv' | 'fiscalia' | 'policia' | 'slim',
+  ),
+);
 
 const hayFiltroActivo = Boolean(tipoSeleccionado || tipoCasoSeleccionado);
 

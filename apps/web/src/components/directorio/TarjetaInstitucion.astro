@@ -17,7 +17,6 @@ const { institucion, tiposCaso = [], distanciaKm } = Astro.props;
       <h3>{institucion.nombre}</h3>
       <div class="tarjeta-tags">
         <span class="tag tipo">{TIPO_INSTITUCION_LABELS[institucion.tipo]}</span>
-        {institucion.esEmergencia && <span class="tag emergencia">Abierto 24/7</span>}
       </div>
     </div>
     {distanciaKm !== undefined && <span class="distancia">a {distanciaKm.toFixed(1)} km</span>}
