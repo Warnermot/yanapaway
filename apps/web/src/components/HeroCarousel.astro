@@ -10,7 +10,7 @@ const slides = [
 	<div class="carousel-track">
 		{
 			slides.map((slide, index) => (
-				<div class="carousel-slide img-placeholder" class:list={[{ active: index === 0 }]} data-index={index}>
+				<div class="carousel-slide img-placeholder img-placeholder--stripes" class:list={[{ active: index === 0 }]} data-index={index}>
 					<div class="slide-overlay">
 						<div class="slide-content wrapper">
 							<p class="slide-eyebrow">{slide.eyebrow}</p>

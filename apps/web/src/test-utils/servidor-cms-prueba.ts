@@ -51,10 +51,10 @@ export async function iniciarCmsDePrueba(): Promise<ServidorCmsPrueba> {
   const strapi = await createStrapi(appContext).load();
 
   await new Promise<void>((resolve, reject) => {
-    const httpServer = strapi.server.httpServer;
+    const httpServer = strapi.server.httpServer as unknown as import('node:events').EventEmitter;
     httpServer.once('error', reject);
     strapi.server.listen(puerto, '127.0.0.1', () => {
-      httpServer.removeListener('error', reject);
+      httpServer.off('error', reject);
       resolve();
     });
   });
