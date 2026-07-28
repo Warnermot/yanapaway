@@ -1,10 +1,20 @@
 ---
+import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
+
 const navLinks = [
-	{ label: 'Inicio', href: '#inicio' },
-	{ label: 'Recursos', href: '#recursos' },
-	{ label: 'Asistente', href: '#asistente' },
-	{ label: 'Blog', href: '#blog' },
-	{ label: 'Contactos', href: '#contactos' },
+	{ label: t('nav.inicio'), href: '#inicio' },
+	{ label: t('nav.recursos'), href: '#recursos' },
+	{ label: t('nav.asistente'), href: '#asistente' },
+	{ label: t('nav.blog'), href: '#blog' },
+	{ label: t('nav.contactos'), href: '#contactos' },
 ];
 ---
 
@@ -33,6 +43,9 @@ const navLinks = [
 					</li>
 				))
 			}
+			<li class="nav-lang">
+				<LanguageSwitcher lang={lang} />
+			</li>
 		</ul>
 	</div>
 </header>
@@ -120,6 +133,7 @@ const navLinks = [
 
 	.nav-links {
 		display: flex;
+		align-items: center;
 		gap: 1.75rem;
 		margin-inline-start: auto;
 	}
@@ -136,6 +150,11 @@ const navLinks = [
 		color: white;
 	}
 
+	.nav-lang {
+		border-inline-start: 1px solid rgba(255, 255, 255, 0.25);
+		padding-inline-start: 1.25rem;
+	}
+
 	@media (max-width: 720px) {
 		.menu-toggle {
 			display: flex;
@@ -148,6 +167,7 @@ const navLinks = [
 			left: 0;
 			right: 0;
 			flex-direction: column;
+			align-items: flex-start;
 			gap: 0;
 			margin-inline-start: 0;
 			background: var(--color-primary-dark);
@@ -159,12 +179,20 @@ const navLinks = [
 		}
 
 		.nav-links li {
+			width: 100%;
 			border-top: 1px solid rgba(255, 255, 255, 0.15);
 		}
 
 		.nav-links a {
 			display: block;
 			padding: 0.85rem 0;
+		}
+
+		.nav-lang {
+			border-top: 1px solid rgba(255, 255, 255, 0.15);
+			border-inline-start: none;
+			padding-inline-start: 0;
+			padding-block: 0.85rem;
 		}
 	}
 </style>

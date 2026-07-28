@@ -1,0 +1,60 @@
+---
+import { languages } from '../i18n/ui';
+import type { Lang } from '../i18n/utils';
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const paths: Record<Lang, string> = {
+	es: '/',
+	en: '/en/',
+	qu: '/qu/',
+};
+---
+
+<div class="lang-switcher">
+	{
+		(Object.keys(languages) as Lang[]).map((code) => (
+			<a
+				href={paths[code]}
+				class="lang-option"
+				class:list={[{ active: code === lang }]}
+				aria-current={code === lang ? 'true' : undefined}
+			>
+				{code.toUpperCase()}
+			</a>
+		))
+	}
+</div>
+
+<style>
+	.lang-switcher {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.lang-option {
+		text-decoration: none;
+		color: rgba(255, 255, 255, 0.7);
+		padding: 0.3rem 0.5rem;
+		border-radius: 999px;
+		transition:
+			color 0.2s ease,
+			background 0.2s ease;
+	}
+
+	.lang-option:hover {
+		color: white;
+	}
+
+	.lang-option.active {
+		color: white;
+		background: rgba(255, 255, 255, 0.16);
+	}
+</style>

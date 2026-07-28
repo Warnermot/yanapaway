@@ -2,31 +2,42 @@
 import { Image } from 'astro:assets';
 import stopViolenceImage from '../assets/images/carousel/stop-violence-against-women-photo.webp';
 import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
 
 const slides = [
 	{
-		badge: 'Estás en un espacio seguro',
-		heading: [{ text: 'No estás sola. ' }, { text: 'No es tu culpa.', accent: true }],
-		text: 'Encuentra apoyo, orientación legal y contención inmediata, las 24 horas.',
+		badge: t('hero.slide1.badge'),
+		heading: [
+			{ text: t('hero.slide1.heading.prefix') },
+			{ text: t('hero.slide1.heading.accent'), accent: true },
+		],
+		text: t('hero.slide1.text'),
 		image: stopViolenceImage,
 		alt: '',
 	},
 	{
-		badge: 'Trabajamos junto a la Defensoría',
+		badge: t('hero.slide2.badge'),
 		heading: [
-			{ text: 'También cuidamos a ' },
-			{ text: 'niñas, niños y adolescentes.', accent: true },
+			{ text: t('hero.slide2.heading.prefix') },
+			{ text: t('hero.slide2.heading.accent'), accent: true },
 		],
-		text: 'Canales y recursos pensados especialmente para NNA, en coordinación con la Defensoría de la Niñez y Adolescencia.',
+		text: t('hero.slide2.text'),
 		placeholderVariant: getPlaceholderVariant(1),
 	},
 	{
-		badge: 'Para quienes acompañan',
+		badge: t('hero.slide3.badge'),
 		heading: [
-			{ text: 'Si conoces a alguien en riesgo, ' },
-			{ text: 'también puedes ayudar.', accent: true },
+			{ text: t('hero.slide3.heading.prefix') },
+			{ text: t('hero.slide3.heading.accent'), accent: true },
 		],
-		text: 'Aprende a identificar señales de alerta y cómo actuar de forma segura y a tiempo.',
+		text: t('hero.slide3.text'),
 		placeholderVariant: getPlaceholderVariant(2),
 	},
 ];
@@ -34,7 +45,7 @@ const slides = [
 const slidesText = slides.map(({ badge, heading, text }) => ({ badge, heading, text }));
 ---
 
-<section class="hero" aria-roledescription="carousel" aria-label="Mensajes de apoyo">
+<section class="hero" aria-roledescription="carousel" aria-label={t('hero.aria')}>
 	<div class="hero-backgrounds">
 		{
 			slides.map((slide, index) => (
@@ -67,8 +78,8 @@ const slidesText = slides.map(({ badge, heading, text }) => ({ badge, heading, t
 		</div>
 
 		<div class="hero-actions">
-			<a href="#asistente" class="pill-btn hero-cta-primary">Habla con alguien ahora</a>
-			<a href="#recursos" class="pill-btn hero-cta-secondary">Conoce tus opciones</a>
+			<a href="#asistente" class="pill-btn hero-cta-primary">{t('hero.cta.primary')}</a>
+			<a href="#recursos" class="pill-btn hero-cta-secondary">{t('hero.cta.secondary')}</a>
 		</div>
 
 		<div class="hero-dots">
