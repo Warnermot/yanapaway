@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Hero from '../../components/Hero.astro';
+import ContentSection from '../../components/ContentSection.astro';
+import ContactsSection from '../../components/ContactsSection.astro';
+import Footer from '../../components/Footer.astro';
+
+const lang = 'en' as const;
+---
+
+<Layout
+	lang={lang}
+	title="yanapaway — You are not alone"
+	description="You are not alone. It's not your fault. Find safe support, right now."
+>
+	<Navbar lang={lang} />
+	<Hero lang={lang} />
+	<ContentSection lang={lang} />
+	<ContactsSection lang={lang} />
+	<Footer lang={lang} />
+</Layout>
