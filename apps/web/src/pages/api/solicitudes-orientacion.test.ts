@@ -1,8 +1,7 @@
-import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { detenerBaseDePrueba, iniciarBaseDePrueba } from '../../db/test-utils/base-datos-prueba';
+import { detenerCmsDePrueba, iniciarCmsDePrueba, type ServidorCmsPrueba } from '../../test-utils/servidor-cms-prueba';
 
-let contenedor: StartedPostgreSqlContainer;
+let servidor: ServidorCmsPrueba;
 let ipDePrueba = 0;
 
 function siguienteIp() {
@@ -20,11 +19,11 @@ function crearPeticion(cuerpo: unknown) {
 
 describe('POST /api/solicitudes-orientacion', () => {
   beforeAll(async () => {
-    ({ contenedor } = await iniciarBaseDePrueba());
-  }, 60_000);
+    servidor = await iniciarCmsDePrueba();
+  }, 120_000);
 
   afterAll(async () => {
-    await detenerBaseDePrueba(contenedor);
+    await detenerCmsDePrueba(servidor);
   });
 
   it('crea una solicitud con datos validos', async () => {
@@ -77,7 +76,7 @@ describe('POST /api/solicitudes-orientacion', () => {
     const { POST } = await import('./solicitudes-orientacion');
 
     const respuesta = await POST({
-      request: crearPeticion({ mensaje: 'Mensaje valido con longitud suficiente', tipoCasoId: 'no-es-uuid' }),
+      request: crearPeticion({ mensaje: 'Mensaje valido con longitud suficiente', tipoCasoId: '$$$' }),
       clientAddress: siguienteIp(),
     } as never);
 
@@ -90,7 +89,7 @@ describe('POST /api/solicitudes-orientacion', () => {
     const respuesta = await POST({
       request: crearPeticion({
         mensaje: 'Mensaje valido con longitud suficiente',
-        tipoCasoId: '00000000-0000-0000-0000-000000000000',
+        tipoCasoId: 'aaaaaaaaaaaaaaaaaaaaaaaa',
       }),
       clientAddress: siguienteIp(),
     } as never);

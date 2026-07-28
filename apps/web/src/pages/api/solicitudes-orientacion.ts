@@ -1,8 +1,10 @@
 import type { APIRoute } from 'astro';
-import { crearSolicitudOrientacion, type DatosSolicitudOrientacion } from '../../db/queries/solicitudes';
+import { obtenerInstitucionPorId } from '../../lib/instituciones';
+import { crearSolicitudOrientacion, type DatosSolicitudOrientacion } from '../../lib/solicitudes';
+import { existeTipoCaso } from '../../lib/tipos-caso';
 import { jsonError, jsonOk, registrarError } from '../../lib/http';
 import { excedeLimite } from '../../lib/rate-limit';
-import { esUuidValido } from '../../lib/validation';
+import { esIdValido } from '../../lib/validation';
 
 export const prerender = false;
 
@@ -30,17 +32,21 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return jsonError(400, resultado.error);
   }
 
+  const { datos } = resultado;
+
+  if (datos.institucionId && !(await obtenerInstitucionPorId(datos.institucionId))) {
+    return jsonError(400, 'La institución indicada no existe.');
+  }
+
+  if (datos.tipoCasoId && !(await existeTipoCaso(datos.tipoCasoId))) {
+    return jsonError(400, 'El tipo de caso indicado no existe.');
+  }
+
   try {
     // No se registra el mensaje ni la info de contacto en logs del servidor.
-    const solicitud = await crearSolicitudOrientacion(resultado.datos);
+    const solicitud = await crearSolicitudOrientacion(datos);
     return jsonOk({ solicitud }, 201);
   } catch (error) {
-    // 23503 = foreign_key_violation: el institucionId o tipoCasoId tiene
-    // formato válido pero no existe. Es un error del cliente, no del servidor.
-    if (esErrorDeClavesForaneas(error)) {
-      return jsonError(400, 'La institución o el tipo de caso indicado no existe.');
-    }
-
     registrarError('Error al crear solicitud de orientación:', error);
     return jsonError(500, 'No se pudo registrar la solicitud.');
   }
@@ -61,14 +67,11 @@ function validarSolicitud(cuerpo: unknown): ResultadoValidacion {
   const mensaje = cuerpoRecibido.mensaje;
   const infoContacto = cuerpoRecibido.infoContacto ?? undefined;
 
-  if (
-    institucionId !== undefined &&
-    (typeof institucionId !== 'string' || !esUuidValido(institucionId))
-  ) {
+  if (institucionId !== undefined && (typeof institucionId !== 'string' || !esIdValido(institucionId))) {
     return { valido: false, error: 'El identificador de institución no es válido.' };
   }
 
-  if (tipoCasoId !== undefined && (typeof tipoCasoId !== 'string' || !esUuidValido(tipoCasoId))) {
+  if (tipoCasoId !== undefined && (typeof tipoCasoId !== 'string' || !esIdValido(tipoCasoId))) {
     return { valido: false, error: 'El identificador de tipo de caso no es válido.' };
   }
 
@@ -99,11 +102,4 @@ function validarSolicitud(cuerpo: unknown): ResultadoValidacion {
       infoContacto: infoContacto as string | undefined,
     },
   };
-}
-
-function esErrorDeClavesForaneas(error: unknown): boolean {
-  // Drizzle envuelve el error real de `pg` en `.cause`; el código de
-  // Postgres para foreign_key_violation vive ahí, no en el objeto externo.
-  const causa = error instanceof Error ? error.cause : undefined;
-  return typeof causa === 'object' && causa !== null && 'code' in causa && causa.code === '23503';
 }

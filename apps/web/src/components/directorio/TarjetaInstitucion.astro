@@ -1,9 +1,9 @@
 ---
-import type { instituciones } from '../../db/schema';
+import type { Institucion } from '../../lib/instituciones';
 import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
 
 interface Props {
-  institucion: typeof instituciones.$inferSelect;
+  institucion: Institucion;
   tiposCaso?: { id: string; nombre: string }[];
   distanciaKm?: number;
 }
@@ -41,13 +41,6 @@ const { institucion, tiposCaso = [], distanciaKm } = Astro.props;
       institucion.telefono && (
         <a class="btn primario" href={`tel:${institucion.telefono}`}>
           Llamar
-        </a>
-      )
-    }
-    {
-      institucion.whatsapp && (
-        <a class="btn fantasma" href={`https://wa.me/${institucion.whatsapp.replace(/\D/g, '')}`}>
-          WhatsApp
         </a>
       )
     }

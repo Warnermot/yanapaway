@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
-import { obtenerInstitucionPorId } from '../../../db/queries/instituciones';
+import { obtenerInstitucionPorId } from '../../../lib/instituciones';
 import { jsonError, jsonOk, registrarError } from '../../../lib/http';
-import { esUuidValido } from '../../../lib/validation';
+import { esIdValido } from '../../../lib/validation';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params }) => {
   const { id } = params;
 
-  if (!id || !esUuidValido(id)) {
+  if (!id || !esIdValido(id)) {
     return jsonError(400, 'El identificador de la institución no es válido.');
   }
 

@@ -1,8 +1,7 @@
-import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { detenerBaseDePrueba, iniciarBaseDePrueba } from '../../../db/test-utils/base-datos-prueba';
+import { detenerCmsDePrueba, iniciarCmsDePrueba, type ServidorCmsPrueba } from '../../../test-utils/servidor-cms-prueba';
 
-let contenedor: StartedPostgreSqlContainer;
+let servidor: ServidorCmsPrueba;
 
 function crearContexto(query: string) {
   return { url: new URL(`http://localhost/api/instituciones/cercanas${query}`) };
@@ -10,20 +9,27 @@ function crearContexto(query: string) {
 
 describe('GET /api/instituciones/cercanas', () => {
   beforeAll(async () => {
-    ({ contenedor } = await iniciarBaseDePrueba());
+    servidor = await iniciarCmsDePrueba();
 
-    const { db } = await import('../../../db/client');
-    const { instituciones } = await import('../../../db/schema');
-    await db.insert(instituciones).values({
-      nombre: 'FELCV Sucre',
-      tipo: 'felcv',
-      latitud: -19.041,
-      longitud: -65.251,
+    await servidor.strapi.documents('api::institucion.institucion').create({
+      data: {
+        nombre: 'FELCV Sucre',
+        tipo: 'felcv',
+        descripcion: 'Institución de prueba.',
+        ciudad: 'Sucre',
+        esEmergencia: false,
+        activa: true,
+        verificadoEn: new Date().toISOString().slice(0, 10),
+        latitud: -19.041,
+        longitud: -65.251,
+        telefonos: [{ numero: '000-000-0000', esGratuito: false }],
+      },
+      status: 'published',
     });
-  }, 60_000);
+  }, 120_000);
 
   afterAll(async () => {
-    await detenerBaseDePrueba(contenedor);
+    await detenerCmsDePrueba(servidor);
   });
 
   it('responde 400 si faltan lat/lng', async () => {

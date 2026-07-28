@@ -1,5 +1,5 @@
 ---
-import { tipoInstitucionEnum } from '../../db/schema';
+import { TIPOS_INSTITUCION } from '../../lib/instituciones';
 import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { tiposCaso, tipoSeleccionado, tipoCasoSeleccionado } = Astro.props;
-const tiposInstitucion = tipoInstitucionEnum.enumValues;
+const tiposInstitucion = TIPOS_INSTITUCION;
 
 const hayFiltroActivo = Boolean(tipoSeleccionado || tipoCasoSeleccionado);
 

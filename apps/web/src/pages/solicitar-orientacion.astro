@@ -2,21 +2,20 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { db } from '../db/client';
-import { tiposCaso as tablaTiposCaso } from '../db/schema';
-import { obtenerInstitucionPorId } from '../db/queries/instituciones';
+import { obtenerInstitucionPorId } from '../lib/instituciones';
+import { listarTiposCaso } from '../lib/tipos-caso';
 import { etiquetaTipoCaso } from '../lib/etiquetas';
-import { esUuidValido } from '../lib/validation';
+import { esIdValido } from '../lib/validation';
 
 export const prerender = false;
 
 const institucionIdParam = Astro.url.searchParams.get('institucion');
 const institucionPreseleccionada =
-  institucionIdParam && esUuidValido(institucionIdParam)
+  institucionIdParam && esIdValido(institucionIdParam)
     ? await obtenerInstitucionPorId(institucionIdParam)
     : null;
 
-const tiposCaso = await db.select().from(tablaTiposCaso);
+const tiposCaso = await listarTiposCaso();
 
 const MENSAJE_MAX = 2000;
 ---

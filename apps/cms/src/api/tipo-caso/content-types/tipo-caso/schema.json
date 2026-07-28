@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tipos_caso",
+  "info": {
+    "singularName": "tipo-caso",
+    "pluralName": "tipos-caso",
+    "displayName": "Tipo de Caso",
+    "description": "Categoría de caso que una institución puede atender (ej. grooming, sextorsión, violencia en el noviazgo). Se usa para filtrar el directorio."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "Nombre del tipo de caso, ej. \"Grooming\", \"Sextorsión\"."
+    },
+    "descripcion": {
+      "type": "text",
+      "required": false,
+      "description": "Explicación breve de qué abarca este tipo de caso."
+    },
+    "instituciones": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::institucion.institucion",
+      "mappedBy": "tiposCaso"
+    }
+  }
+}

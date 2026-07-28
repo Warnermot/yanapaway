@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { listarInstitucionesCercanas } from '../../../db/queries/instituciones';
+import { listarInstitucionesCercanas } from '../../../lib/instituciones';
 import { jsonError, jsonOk, registrarError } from '../../../lib/http';
 
 export const prerender = false;

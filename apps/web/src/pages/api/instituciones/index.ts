@@ -1,12 +1,11 @@
 import type { APIRoute } from 'astro';
-import { listarInstituciones, type TipoInstitucion } from '../../../db/queries/instituciones';
-import { tipoInstitucionEnum } from '../../../db/schema';
+import { listarInstituciones, TIPOS_INSTITUCION, type TipoInstitucion } from '../../../lib/instituciones';
 import { jsonError, jsonOk, registrarError } from '../../../lib/http';
-import { esUuidValido } from '../../../lib/validation';
+import { esIdValido } from '../../../lib/validation';
 
 export const prerender = false;
 
-const TIPOS_VALIDOS = new Set<string>(tipoInstitucionEnum.enumValues);
+const TIPOS_VALIDOS = new Set<string>(TIPOS_INSTITUCION);
 
 export const GET: APIRoute = async ({ url }) => {
   const tipoParam = url.searchParams.get('tipo');
@@ -16,7 +15,7 @@ export const GET: APIRoute = async ({ url }) => {
     return jsonError(400, 'El parámetro "tipo" no es válido.');
   }
 
-  if (tipoCasoParam && !esUuidValido(tipoCasoParam)) {
+  if (tipoCasoParam && !esIdValido(tipoCasoParam)) {
     return jsonError(400, 'El parámetro "tipo_caso" no es válido.');
   }
 

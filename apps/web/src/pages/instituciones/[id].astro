@@ -3,15 +3,15 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
-import { obtenerInstitucionPorId } from '../../db/queries/instituciones';
+import { obtenerInstitucionPorId } from '../../lib/instituciones';
 import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
-import { esUuidValido } from '../../lib/validation';
+import { esIdValido } from '../../lib/validation';
 
 export const prerender = false;
 
 const { id } = Astro.params;
 
-if (!id || !esUuidValido(id)) {
+if (!id || !esIdValido(id)) {
   return new Response(null, { status: 404 });
 }
 
@@ -20,11 +20,6 @@ const institucion = await obtenerInstitucionPorId(id);
 if (!institucion) {
   return new Response(null, { status: 404 });
 }
-
-const horario =
-  institucion.horario && typeof institucion.horario === 'object'
-    ? Object.entries(institucion.horario as Record<string, string>)
-    : [];
 
 const puntosMapa =
   institucion.sedes.length > 0
@@ -36,16 +31,18 @@ const puntosMapa =
         esEmergencia: institucion.esEmergencia,
         esSede: true,
       }))
-    : [
-        {
-          institucionId: institucion.id,
-          nombre: institucion.nombre,
-          latitud: institucion.latitud,
-          longitud: institucion.longitud,
-          esEmergencia: institucion.esEmergencia,
-          esSede: false,
-        },
-      ];
+    : institucion.latitud !== undefined && institucion.longitud !== undefined
+      ? [
+          {
+            institucionId: institucion.id,
+            nombre: institucion.nombre,
+            latitud: institucion.latitud,
+            longitud: institucion.longitud,
+            esEmergencia: institucion.esEmergencia,
+            esSede: false,
+          },
+        ]
+      : [];
 ---
 
 <Layout title={`${institucion.nombre} — Directorio institucional`} description={institucion.descripcion ?? undefined}>
@@ -86,15 +83,6 @@ const puntosMapa =
           {institucion.telefono && (
             <div><h3>Teléfono</h3><p><a href={`tel:${institucion.telefono}`}>{institucion.telefono}</a></p></div>
           )}
-          {institucion.whatsapp && (
-            <div><h3>WhatsApp</h3><p><a href={`https://wa.me/${institucion.whatsapp.replace(/\D/g, '')}`}>{institucion.whatsapp}</a></p></div>
-          )}
-          {institucion.correo && (
-            <div><h3>Correo</h3><p><a href={`mailto:${institucion.correo}`}>{institucion.correo}</a></p></div>
-          )}
-          {institucion.sitioWeb && (
-            <div><h3>Sitio web</h3><p><a href={institucion.sitioWeb} target="_blank" rel="noopener noreferrer">{institucion.sitioWeb}</a></p></div>
-          )}
         </div>
 
         {
@@ -114,17 +102,10 @@ const puntosMapa =
         }
 
         {
-          horario.length > 0 && (
+          institucion.horario && (
             <div class="seccion">
               <h2>Horario</h2>
-              <dl class="horario">
-                {horario.map(([dia, franja]) => (
-                  <>
-                    <dt>{dia.replaceAll('_', ' ')}</dt>
-                    <dd>{franja}</dd>
-                  </>
-                ))}
-              </dl>
+              <p>{institucion.horario}</p>
             </div>
           )
         }
@@ -255,22 +236,6 @@ const puntosMapa =
     color: var(--color-ink);
   }
 
-  .horario {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.3rem 1rem;
-    font-size: 0.88rem;
-  }
-
-  .horario dt {
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-
-  .horario dd {
-    margin: 0;
-    color: var(--color-ink-soft);
-  }
 
   .btn-solicitar {
     align-self: flex-start;

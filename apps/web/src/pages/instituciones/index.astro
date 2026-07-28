@@ -5,13 +5,8 @@ import Footer from '../../components/Footer.astro';
 import BuscadorInstituciones from '../../components/directorio/BuscadorInstituciones.astro';
 import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
 import TarjetaInstitucion from '../../components/directorio/TarjetaInstitucion.astro';
-import { db } from '../../db/client';
-import { tiposCaso as tablaTiposCaso } from '../../db/schema';
-import {
-  listarInstituciones,
-  listarPuntosMapa,
-  type TipoInstitucion,
-} from '../../db/queries/instituciones';
+import { listarInstituciones, listarPuntosMapa, type TipoInstitucion } from '../../lib/instituciones';
+import { listarTiposCaso } from '../../lib/tipos-caso';
 
 export const prerender = false;
 
@@ -25,7 +20,7 @@ const filtros = {
 
 const [instituciones, tiposCaso, puntosMapa] = await Promise.all([
   listarInstituciones(filtros),
-  db.select().from(tablaTiposCaso),
+  listarTiposCaso(),
   listarPuntosMapa(filtros),
 ]);
 ---

@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sedes_institucion",
+  "info": {
+    "singularName": "sede-institucion",
+    "pluralName": "sedes-institucion",
+    "displayName": "Sede de Institución",
+    "description": "Una ubicación física de una institución que tiene más de un punto de atención (ej. FELCV, Defensoría)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "description": "Nombre de la sede, ej. \"Sede Central\", \"Sede Zona Sur\"."
+    },
+    "direccion": {
+      "type": "string",
+      "required": true,
+      "description": "Dirección física de esta sede."
+    },
+    "latitud": {
+      "type": "decimal",
+      "required": true,
+      "description": "Coordenada de latitud, verificada contra una fuente real (nunca inventada)."
+    },
+    "longitud": {
+      "type": "decimal",
+      "required": true,
+      "description": "Coordenada de longitud, verificada contra una fuente real (nunca inventada)."
+    },
+    "telefono": {
+      "type": "string",
+      "required": false,
+      "description": "Teléfono propio de esta sede, si difiere del de la institución."
+    },
+    "institucion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::institucion.institucion",
+      "inversedBy": "sedes"
+    }
+  }
+}

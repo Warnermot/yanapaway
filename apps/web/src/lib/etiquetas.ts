@@ -1,4 +1,4 @@
-import type { TipoInstitucion } from '../db/queries/instituciones';
+import type { TipoInstitucion } from './instituciones';
 
 export const TIPO_INSTITUCION_LABELS: Record<TipoInstitucion, string> = {
   defensoria: 'Defensoría',
@@ -7,6 +7,9 @@ export const TIPO_INSTITUCION_LABELS: Record<TipoInstitucion, string> = {
   policia: 'Policía',
   slim: 'SLIM',
   linea_emergencia: 'Línea de emergencia',
+  psicologico: 'Apoyo psicológico',
+  ong: 'ONG',
+  refugio: 'Refugio',
   otro: 'Otro',
 };
 
