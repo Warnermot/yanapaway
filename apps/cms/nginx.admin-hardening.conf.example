@@ -1,0 +1,64 @@
+# =============================================================================
+# Reverse proxy de ejemplo para restringir el acceso al panel /admin del CMS.
+#
+# NO se usa automáticamente. Es un artefacto listo para conectar cuando se
+# defina el mecanismo de restricción según el servidor universitario
+# disponible (decisión abierta en el brief). Copiar a la config real del
+# proxy y ajustar.
+#
+# El brief exige que el panel de administración NO quede expuesto abiertamente
+# en internet sin alguna capa adicional. Acá se ofrecen dos capas
+# combinables: lista de IPs permitidas + autenticación básica en el proxy.
+#
+# ⚠️ CUIDADO CRÍTICO: la ruta /api debe seguir accesible para el build del
+# sitio Astro (con su token). Restringir /admin NO debe bloquear /api. Por
+# eso /api tiene su propio location, separado y sin la restricción de /admin.
+# =============================================================================
+
+upstream cms_backend {
+    server cms:1337;
+}
+
+server {
+    listen 80;
+    server_name cms.ejemplo.edu;  # ajustar al dominio real
+
+    # --- API: accesible para el build del sitio (protegida por token de Strapi) ---
+    location /api/ {
+        proxy_pass http://cms_backend;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # --- Panel de administración: acceso restringido ---
+    location /admin {
+        # Capa 1 — lista de IPs permitidas (red universitaria / VPN).
+        # Descomentar y ajustar los rangos reales:
+        # allow 10.0.0.0/8;
+        # allow 192.168.0.0/16;
+        # deny all;
+
+        # Capa 2 — autenticación básica en el proxy (además del login de Strapi).
+        # Generar el archivo con: htpasswd -c /etc/nginx/.htpasswd <usuario>
+        # auth_basic           "Panel restringido";
+        # auth_basic_user_file /etc/nginx/.htpasswd;
+
+        proxy_pass http://cms_backend;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Assets del panel (JS/CSS del build del admin). Comparten el mismo origen
+    # que /admin; si se aplica IP allowlist, conviene que también los cubra.
+    location / {
+        proxy_pass http://cms_backend;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

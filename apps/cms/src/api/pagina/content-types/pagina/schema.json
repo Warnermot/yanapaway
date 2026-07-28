@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "paginas",
+  "info": {
+    "singularName": "pagina",
+    "pluralName": "paginas",
+    "displayName": "Página",
+    "description": "Contenido informativo sobre violencia de pareja, recursos y material de apoyo. No se publica en el sitio hasta que un gestor lo publique explícitamente."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string",
+      "required": true,
+      "description": "Título de la página."
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titulo",
+      "required": true,
+      "description": "Identificador único en la URL. Se genera a partir del título."
+    },
+    "resumen": {
+      "type": "text",
+      "required": true,
+      "maxLength": 300,
+      "description": "Bajada corta (máx. ~300 caracteres). Se usa en listados y como meta descripción."
+    },
+    "contenido": {
+      "type": "blocks",
+      "required": false,
+      "description": "Cuerpo de la página, editor de bloques estructurados. Nunca pegar HTML: el editor de bloques es la única forma permitida de cargar contenido."
+    },
+    "seccion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::seccion.seccion",
+      "inversedBy": "paginas",
+      "required": true
+    },
+    "portada": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Imagen de portada opcional."
+    },
+    "nivelSensibilidad": {
+      "type": "enumeration",
+      "enum": ["general", "sensible"],
+      "default": "general",
+      "required": true,
+      "description": "Controla si el sitio muestra un aviso previo por contenido potencialmente angustiante."
+    },
+    "orden": {
+      "type": "integer",
+      "required": false,
+      "description": "Posición dentro de la sección. Opcional, menor primero."
+    }
+  }
+}

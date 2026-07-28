@@ -1,11 +1,21 @@
 # build output
 dist/
+build/
 
 # generated types
 .astro/
 
 # dependencies
 node_modules/
+
+# Strapi (apps/cms)
+.cache/
+.strapi/
+.tmp/
+apps/cms/public/uploads/
+!apps/cms/public/uploads/.gitkeep
+apps/cms/types/generated/
+license.txt
 
 # logs
 npm-debug.log*

@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "instituciones",
+  "info": {
+    "singularName": "institucion",
+    "pluralName": "instituciones",
+    "displayName": "Institución",
+    "description": "Directorio de instituciones de apoyo. Dominio de alto impacto: alguien en crisis puede marcar estos teléfonos, por eso la exactitud y vigencia de los datos importan más que en cualquier otro contenido."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "description": "Nombre de la institución."
+    },
+    "tipo": {
+      "type": "enumeration",
+      "enum": ["policial", "judicial", "salud", "psicologico", "ong", "refugio"],
+      "required": true,
+      "description": "Categoría de la institución."
+    },
+    "descripcion": {
+      "type": "text",
+      "required": true,
+      "description": "Qué hace esta institución y qué tipo de ayuda ofrece."
+    },
+    "telefonos": {
+      "type": "component",
+      "component": "contacto.telefono",
+      "repeatable": true,
+      "required": true,
+      "min": 1,
+      "description": "Al menos un teléfono de contacto es obligatorio."
+    },
+    "direccion": {
+      "type": "string",
+      "required": false,
+      "description": "Dirección física, si corresponde."
+    },
+    "ciudad": {
+      "type": "string",
+      "required": true,
+      "description": "Ciudad donde opera la institución."
+    },
+    "horario": {
+      "type": "string",
+      "required": false,
+      "description": "Horario de atención en texto libre, ej. \"24 horas\", \"L-V 8:00-16:00\"."
+    },
+    "esEmergencia": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "description": "Marcar si esta institución debe destacarse en el sitio como recurso de emergencia."
+    },
+    "verificadoEn": {
+      "type": "date",
+      "required": true,
+      "description": "Última vez que se confirmaron estos datos de contacto. No se puede publicar ni mantener publicada una institución con esta fecha vencida hace más de 180 días — la regla se aplica en el backend, no se puede saltear vía API."
+    },
+    "activa": {
+      "type": "boolean",
+      "required": true,
+      "default": true,
+      "description": "Baja lógica. Nunca se borra físicamente un registro: una institución que dejó de operar se marca como inactiva."
+    }
+  }
+}

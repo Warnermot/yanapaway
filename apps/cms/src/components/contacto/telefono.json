@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_contacto_telefonos",
+  "info": {
+    "displayName": "Teléfono",
+    "icon": "phone",
+    "description": "Un número de contacto de una institución, con etiqueta opcional."
+  },
+  "options": {},
+  "attributes": {
+    "numero": {
+      "type": "string",
+      "required": true,
+      "description": "Número de teléfono tal como debe mostrarse (incluir código de área)."
+    },
+    "etiqueta": {
+      "type": "string",
+      "required": false,
+      "description": "Aclaración opcional, ej. \"Línea de emergencias\", \"Guardia\"."
+    },
+    "esGratuito": {
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "description": "Marcar si la llamada es gratuita (ej. líneas 0800)."
+    }
+  }
+}
