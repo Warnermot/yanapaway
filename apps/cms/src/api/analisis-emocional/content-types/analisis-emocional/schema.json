@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "analisis_emocionales",
+  "info": {
+    "singularName": "analisis-emocional",
+    "pluralName": "analisis-emocionales",
+    "displayName": "Análisis Emocional",
+    "description": "Emoción detectada automáticamente por el backend en el mensaje del usuario. Se usa para personalizar la respuesta de la IA."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "mensaje": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::mensaje-chat.mensaje-chat",
+      "required": true,
+      "description": "Mensaje al que corresponde este análisis."
+    },
+    "emocion": {
+      "type": "enumeration",
+      "enum": ["miedo", "ansiedad", "tristeza", "desesperacion", "esperanza", "calma", "enojo", "neutral"],
+      "required": true,
+      "description": "Emoción dominante detectada."
+    },
+    "confianza": {
+      "type": "decimal",
+      "required": true,
+      "description": "Nivel de confianza de la IA sobre la clasificación emocional. Valor entre 0.00 y 1.00."
+    }
+  }
+}

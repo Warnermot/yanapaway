@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sesiones_chat",
+  "info": {
+    "singularName": "sesion-chat",
+    "pluralName": "sesiones-chat",
+    "displayName": "Sesión de Chat",
+    "description": "Agrupa una conversación completa entre un usuario y el asistente IA."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "usuarioId": {
+      "type": "integer",
+      "required": true,
+      "description": "ID del usuario de la tabla central users. Clave de aislamiento: nunca devolver sesiones donde usuarioId != sesión activa."
+    },
+    "fechaInicio": {
+      "type": "datetime",
+      "required": true,
+      "description": "Timestamp de inicio de la sesión."
+    }
+  }
+}
