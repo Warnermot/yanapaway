@@ -2,6 +2,14 @@
 import { Image } from 'astro:assets';
 import fotoImage from '../assets/images/contactos/foto.png';
 import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
 
 const contacts = [
 	{
@@ -28,7 +36,7 @@ const contacts = [
 
 <section class="contacts-section" id="contactos">
 	<div class="wrapper">
-		<h2 class="section-heading">contactos</h2>
+		<h2 class="section-heading">{t('contacts.heading')}</h2>
 		<div class="contacts-field">
 			{
 				contacts.map((contact) => (
@@ -42,7 +50,7 @@ const contacts = [
 							<p class="contact-name">{contact.name}</p>
 							<p class="contact-detail">{contact.detail}</p>
 							<a href="#" class="pill-btn contact-cta">
-								Contactar
+								{t('contacts.cta')}
 							</a>
 						</div>
 					</article>

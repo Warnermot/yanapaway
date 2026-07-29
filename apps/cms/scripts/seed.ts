@@ -78,7 +78,7 @@ async function main(): Promise<void> {
     const institucionesDef = [
       {
         nombre: `${PREFIJO} Línea de emergencia (ejemplo)`,
-        tipo: 'policial' as const,
+        tipo: 'linea_emergencia' as const,
         descripcion: 'Institución de ejemplo para desarrollo. NO es un número real.',
         telefonos: [{ numero: TEL_NO_MARCABLE, etiqueta: 'No marcable (prueba)', esGratuito: true }],
         ciudad: 'Ciudad de Prueba',

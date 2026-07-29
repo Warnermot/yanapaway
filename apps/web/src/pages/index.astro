@@ -5,12 +5,14 @@ import Hero from '../components/Hero.astro';
 import ContentSection from '../components/ContentSection.astro';
 import ContactsSection from '../components/ContactsSection.astro';
 import Footer from '../components/Footer.astro';
+
+const lang = 'es' as const;
 ---
 
-<Layout>
-	<Navbar />
-	<Hero />
-	<ContentSection />
-	<ContactsSection />
-	<Footer />
+<Layout lang={lang}>
+	<Navbar lang={lang} />
+	<Hero lang={lang} />
+	<ContentSection lang={lang} />
+	<ContactsSection lang={lang} />
+	<Footer lang={lang} />
 </Layout>

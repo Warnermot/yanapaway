@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "solicitudes_orientacion",
+  "info": {
+    "singularName": "solicitud-orientacion",
+    "pluralName": "solicitudes-orientacion",
+    "displayName": "Solicitud de Orientación",
+    "description": "Un pedido de orientación enviado por una persona desde el sitio. Contiene datos personales de alguien en situación de violencia — NUNCA exponer por el rol público ni por un token de solo lectura; solo lectura desde el panel (Editor/Super Admin) y creación desde el token de integración del sitio."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombreSolicitante": {
+      "type": "string",
+      "required": false,
+      "description": "Nombre de la persona que solicita orientación, si lo comparte (el formulario del sitio no lo obliga)."
+    },
+    "contacto": {
+      "type": "string",
+      "required": false,
+      "description": "Teléfono o correo para responder la solicitud, si la persona decide dejarlo."
+    },
+    "mensaje": {
+      "type": "text",
+      "required": true,
+      "description": "Descripción libre de la situación o consulta."
+    },
+    "institucion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::institucion.institucion",
+      "description": "Institución a la que se dirige la solicitud."
+    },
+    "tipoCaso": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::tipo-caso.tipo-caso",
+      "description": "Tipo de caso relacionado, si se especificó."
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": ["pendiente", "en_proceso", "atendida"],
+      "required": true,
+      "default": "pendiente",
+      "description": "Estado de seguimiento interno de la solicitud."
+    }
+  }
+}

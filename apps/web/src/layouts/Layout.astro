@@ -1,20 +1,25 @@
 ---
 import '../styles/global.css';
 import SosButton from '../components/SosButton.astro';
+import { defaultLang, type Lang } from '../i18n/utils';
 
 interface Props {
 	title?: string;
 	description?: string;
+	lang?: Lang;
 }
 
 const {
 	title = 'yanapaway — No estás sola',
 	description = 'No estás sola. No es tu culpa. Encuentra apoyo seguro, ahora mismo.',
+	lang = defaultLang,
 } = Astro.props;
+
+// El atributo lang del <html> usa códigos BCP 47; "qu" (quechua) es válido tal cual.
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,6 +37,6 @@ const {
 	</head>
 	<body>
 		<slot />
-		<SosButton />
+		<SosButton lang={lang} />
 	</body>
 </html>

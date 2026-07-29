@@ -34,7 +34,7 @@ export async function despublicarInstitucionesVencidas({
   const publicadas = (await strapi.documents(UID).findMany({
     status: 'published',
     fields: ['documentId', 'nombre', 'verificadoEn'],
-  })) as InstitucionMin[];
+  })) as unknown as InstitucionMin[];
 
   let despublicadas = 0;
   let porVencerPronto = 0;

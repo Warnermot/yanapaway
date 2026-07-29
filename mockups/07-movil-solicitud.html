@@ -1,0 +1,136 @@
+<title>Móvil · Directorio institucional — Solicitud de orientación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --orange-text: color-mix(in srgb, var(--color-orange) 48%, var(--color-ink));
+    --orange-soft: color-mix(in srgb, var(--color-orange) 16%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 8px 20px -14px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 20px 44px -24px rgba(26,26,23,.30);
+    --ring-green: 0 0 0 4px color-mix(in srgb, var(--color-green) 22%, transparent);
+    --radius-s: 14px; --radius-m: 18px; --radius-l: 24px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background:
+      radial-gradient(900px 460px at 50% -220px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; align-items: center; }
+  .shell-head { max-width: 640px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; text-align: center; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 23px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); font-size: 14px; }
+
+  .phone { width: 390px; background: var(--surface); border-radius: 46px; border: 11px solid var(--color-footer); box-shadow: var(--shadow-md), 0 40px 80px -40px rgba(26,26,23,.5); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 24px; background: var(--color-footer); border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone-screen { height: 820px; overflow-y: auto; background: var(--surface-warm); }
+
+  .m-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 16px; background: color-mix(in srgb, var(--color-cream) 60%, #fff); }
+  .m-logo { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+  .sos-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: .04em; color: var(--color-red); border: 2.5px double var(--color-red); padding: 3px 9px; border-radius: 7px; transform: rotate(-4deg); background: color-mix(in srgb, var(--color-red) 6%, #fff); box-shadow: var(--shadow-sm); }
+  .m-back { display: flex; align-items: center; gap: 6px; padding: 16px 18px 0; font-size: 12.5px; font-weight: 600; color: var(--color-green); }
+
+  .m-form-body { padding: 14px 18px 60px; }
+  .m-form-body h2 { font-size: 19px; font-weight: 700; }
+  .m-form-body .lede { font-size: 12.5px; color: var(--color-ink-soft); margin-top: 9px; line-height: 1.6; }
+
+  .form-card { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-sm); padding: 18px; margin-top: 16px; }
+
+  .selected-inst { display: flex; flex-direction: column; gap: 4px; background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--color-green) 30%, transparent); border-radius: var(--radius-m); padding: 13px 15px; margin-bottom: 16px; font-size: 12.5px; color: var(--green-text); }
+  .selected-inst strong { font-size: 13.5px; }
+  .selected-inst button { align-self: flex-start; border: none; background: none; color: var(--green-text); font-weight: 600; font-size: 11.5px; text-decoration: underline; padding: 0; margin-top: 2px; }
+
+  .privacy-note { display: flex; gap: 11px; align-items: flex-start; background: var(--orange-soft); border: 1px solid color-mix(in srgb, var(--color-orange) 36%, transparent); color: var(--orange-text); padding: 14px 15px; border-radius: var(--radius-m); font-size: 12px; margin-bottom: 20px; line-height: 1.55; }
+  .privacy-note strong { display: block; margin-bottom: 3px; font-size: 12.5px; }
+  .privacy-note svg { flex-shrink: 0; margin-top: 2px; color: var(--color-orange); }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .field label { font-size: 12.5px; font-weight: 600; }
+  .field .hint { font-size: 11px; color: var(--color-ink-soft); }
+  .field select, .field textarea, .field input[type="text"] {
+    font-family: inherit; font-size: 13.5px; padding: 12px 14px; border-radius: var(--radius-s);
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); width: 100%; transition: box-shadow .2s ease, border-color .2s ease;
+  }
+  .field textarea { resize: vertical; line-height: 1.55; }
+  .field select:focus-visible, .field textarea:focus-visible, .field input:focus-visible { outline: none; border-color: var(--color-green); box-shadow: var(--ring-green); }
+  .char-count { display: flex; justify-content: flex-end; font-size: 11px; color: var(--color-ink-soft); margin-top: 5px; }
+  .btn { border-radius: 999px; padding: 13px 20px; font-size: 13.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); width: 100%; transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--color-green) 60%, transparent); }
+  .icon { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · alta fidelidad</span>
+    <h1>Móvil — Solicitud de orientación</h1>
+    <p>Formulario en una columna con el mismo aviso de privacidad, tono cuidadoso y límite de caracteres visible.</p>
+  </div>
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="m-nav">
+        <span class="m-logo">yanapaway</span>
+        <a class="sos-badge" href="#">SOS</a>
+      </div>
+      <div class="m-back">&larr; Volver a la ficha</div>
+      <div class="m-form-body">
+        <h2>Pide orientación</h2>
+        <p class="lede">Cuéntanos qué está pasando. Un equipo humano revisa tu mensaje y te contacta por el medio que elijas.</p>
+
+        <div class="form-card">
+          <div class="selected-inst">
+            <strong>FELCV Sucre</strong>
+            Institución preseleccionada desde la ficha.
+            <button type="button">Cambiar a "consulta general"</button>
+          </div>
+
+          <div class="privacy-note">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg>
+            <div><strong>Tu mensaje es confidencial</strong>No se guarda en los registros del servidor. Solo el equipo de orientación puede leerlo.</div>
+          </div>
+
+          <form>
+            <div class="field">
+              <label for="m-case-type">¿Qué tipo de situación estás viviendo?</label>
+              <select id="m-case-type">
+                <option>Aún no lo sé</option>
+                <option>Grooming</option>
+                <option selected>Sextorsión</option>
+                <option>Control digital</option>
+                <option>Consentimiento</option>
+                <option>Violencia en el noviazgo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-message">Cuéntanos qué pasó</label>
+              <textarea id="m-message" rows="5">Alguien está amenazando con compartir fotos mías si no le mando más.</textarea>
+              <div class="char-count">198 / 1000 caracteres</div>
+            </div>
+            <div class="field">
+              <label for="m-contact">¿Cómo te contactamos? <span style="font-weight:400; color:var(--color-ink-soft);">(opcional)</span></label>
+              <input type="text" id="m-contact" value="WhatsApp: 700 00 000" />
+              <span class="hint">Puedes dejarlo vacío.</span>
+            </div>
+            <button type="submit" class="btn primary">Enviar solicitud</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

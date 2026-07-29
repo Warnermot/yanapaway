@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Hero from '../../components/Hero.astro';
+import ContentSection from '../../components/ContentSection.astro';
+import ContactsSection from '../../components/ContactsSection.astro';
+import Footer from '../../components/Footer.astro';
+
+const lang = 'qu' as const;
+---
+
+<Layout
+	lang={lang}
+	title="yanapaway — Mana sapallaykichu kanki"
+	description="Mana sapallaykichu kanki. Mana kanchu huchayki. Segurulla yanapayta tarinki, kunanmi."
+>
+	<Navbar lang={lang} />
+	<Hero lang={lang} />
+	<ContentSection lang={lang} />
+	<ContactsSection lang={lang} />
+	<Footer lang={lang} />
+</Layout>
