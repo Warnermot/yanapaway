@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const attemptedPath = Astro.url.pathname;
+---
+
+<Layout lang={lang} title={`yanapaway — ${t('notfound.eyebrow')}`}>
+	<Navbar lang={lang} />
+
+	<main class="notfound">
+		<div class="notfound-content wrapper">
+			<p class="notfound-eyebrow">{t('notfound.eyebrow')}</p>
+			<h1 class="notfound-heading">{t('notfound.heading')}</h1>
+			<p class="notfound-text">{t('notfound.text')}</p>
+
+			<div class="notfound-actions">
+				<a href="/" class="pill-btn notfound-cta-primary">{t('notfound.cta.home')}</a>
+				<a href="#asistente" class="pill-btn notfound-cta-secondary">{t('hero.cta.primary')}</a>
+			</div>
+
+			<p class="notfound-path">
+				<code>{attemptedPath}</code>
+			</p>
+		</div>
+	</main>
+
+	<Footer lang={lang} />
+</Layout>
+
+<style>
+	.notfound {
+		background: var(--color-primary-dark);
+		color: white;
+		padding-block: 5rem;
+		min-height: min(60vh, 520px);
+		display: flex;
+		align-items: center;
+	}
+
+	.notfound-content {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1rem;
+		max-width: 640px;
+	}
+
+	.notfound-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+		padding: 0.45rem 1rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+	}
+
+	.notfound-heading {
+		font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+		font-weight: 700;
+		line-height: 1.25;
+	}
+
+	.notfound-text {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		opacity: 0.92;
+	}
+
+	.notfound-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin-top: 0.5rem;
+	}
+
+	.notfound-cta-primary {
+		background: var(--color-primary);
+		color: white;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.notfound-cta-primary:hover {
+		background: var(--color-primary-light);
+	}
+
+	.notfound-cta-secondary {
+		background: var(--color-secondary);
+		color: white;
+		padding: 0.9rem 1.6rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.notfound-cta-secondary:hover {
+		background: #fda87f;
+	}
+
+	.notfound-path {
+		margin-top: 1.5rem;
+		font-size: 0.85rem;
+		opacity: 0.65;
+	}
+
+	.notfound-path code {
+		background: rgba(255, 255, 255, 0.12);
+		padding: 0.3rem 0.6rem;
+		border-radius: 0.4rem;
+		font-family:
+			ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono',
+			monospace;
+	}
+</style>

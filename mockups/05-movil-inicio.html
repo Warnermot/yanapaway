@@ -1,0 +1,192 @@
+<title>Móvil · Directorio institucional — Inicio y búsqueda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --red-soft: color-mix(in srgb, var(--color-red) 11%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 8px 20px -14px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 20px 44px -24px rgba(26,26,23,.30);
+    --ring-green: 0 0 0 4px color-mix(in srgb, var(--color-green) 22%, transparent);
+    --radius-s: 14px; --radius-m: 18px; --radius-l: 24px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background:
+      radial-gradient(900px 460px at 50% -220px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; align-items: center; }
+  .shell-head { max-width: 640px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; text-align: center; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 23px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); font-size: 14px; }
+
+  .phone { width: 390px; background: var(--surface); border-radius: 46px; border: 11px solid var(--color-footer); box-shadow: var(--shadow-md), 0 40px 80px -40px rgba(26,26,23,.5); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 24px; background: var(--color-footer); border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone-screen { height: 820px; overflow-y: auto; position: relative; background: var(--surface-warm); }
+
+  .m-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 16px; background: color-mix(in srgb, var(--color-cream) 60%, #fff); }
+  .m-logo { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+  .sos-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: .04em; color: var(--color-red); border: 2.5px double var(--color-red); padding: 3px 9px; border-radius: 7px; transform: rotate(-4deg); background: color-mix(in srgb, var(--color-red) 6%, #fff); box-shadow: var(--shadow-sm); }
+
+  .hero-search { position: relative; color: #fff; padding: 20px 18px 50px; overflow: hidden;
+    background:
+      radial-gradient(320px 180px at 90% -30px, color-mix(in srgb, var(--color-green-light) 55%, transparent), transparent 70%),
+      linear-gradient(135deg, var(--color-green), var(--green-deep)); }
+  .hero-search h1 { font-size: 20px; line-height: 1.28; font-weight: 700; position: relative; z-index: 1; }
+  .hero-search p { margin-top: 7px; font-size: 12.5px; color: color-mix(in srgb, #fff 88%, transparent); position: relative; z-index: 1; }
+
+  .search-panel { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-md); margin: -32px 16px 0; padding: 18px; position: relative; z-index: 2; }
+  .search-input { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 999px; padding: 12px 15px; font-size: 13px; color: var(--color-ink-soft); transition: box-shadow .2s ease, border-color .2s ease; }
+  .search-input:focus-within { border-color: var(--color-green); box-shadow: var(--ring-green); }
+  .search-input input { border: none; background: none; font: inherit; color: var(--color-ink); flex: 1; outline: none; }
+  .search-input svg { color: var(--color-green); }
+  .toggle-emergency { display: flex; align-items: center; gap: 9px; background: var(--red-soft); color: var(--color-red); border: 1px solid color-mix(in srgb, var(--color-red) 24%, transparent); border-radius: 999px; padding: 11px 15px; font-size: 12px; font-weight: 700; margin-top: 11px; }
+  .toggle-emergency input { accent-color: var(--color-red); width: 15px; height: 15px; }
+
+  .m-chip-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 14px 16px 2px; }
+  .m-chip-scroll .label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--color-ink-soft); font-weight: 700; align-self: center; flex-shrink: 0; }
+  .chip { flex-shrink: 0; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 500; transition: all .18s ease; }
+  .chip[aria-pressed="true"] { background: var(--green-soft); border-color: color-mix(in srgb, var(--color-green) 40%, transparent); color: var(--green-text); font-weight: 600; box-shadow: var(--ring-green); }
+
+  .m-map-toggle { margin: 16px 16px 0; display: flex; background: color-mix(in srgb, var(--color-cream-dark) 65%, #fff); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+  .m-map-toggle button { flex: 1; border: none; background: transparent; padding: 9px; font-size: 12.5px; font-weight: 600; color: var(--color-ink-soft); border-radius: 999px; transition: all .2s ease; }
+  .m-map-toggle button.active { background: var(--surface); color: var(--color-green); box-shadow: var(--shadow-sm); }
+
+  .m-card-list { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 100px; }
+  .inst-card { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 16px 18px; display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow-sm); }
+  .inst-card.is-emergency { border-color: color-mix(in srgb, var(--color-red) 26%, transparent); }
+  .inst-card-top { display: flex; justify-content: space-between; gap: 8px; }
+  .inst-card h3 { font-size: 15px; font-weight: 600; }
+  .inst-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .tag { font-size: 10.5px; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--color-cream-dark) 60%, #fff); color: var(--color-ink-soft); font-weight: 500; border: 1px solid var(--border); }
+  .tag.type { background: var(--green-soft); color: var(--green-text); font-weight: 600; border-color: color-mix(in srgb, var(--color-green) 26%, transparent); }
+  .tag.emergency { background: var(--red-soft); color: var(--color-red); font-weight: 600; border-color: color-mix(in srgb, var(--color-red) 24%, transparent); }
+  .distance { font-size: 11px; color: var(--green-text); white-space: nowrap; font-weight: 600; }
+  .inst-desc { font-size: 12px; color: var(--color-ink-soft); line-height: 1.55; }
+  .inst-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn { border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-green) 60%, transparent); }
+  .btn.danger { background: linear-gradient(180deg, color-mix(in srgb, var(--color-red) 88%, #fff), var(--color-red)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-red) 60%, transparent); }
+  .btn.ghost { background: transparent; }
+
+  .m-map-canvas { margin: 14px 16px 0; height: 220px; border-radius: var(--radius-l); position: relative; overflow: hidden; border: 1px solid var(--border);
+    background: repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(28,122,94,.06) 30px, rgba(28,122,94,.06) 32px),
+      radial-gradient(240px 150px at 48% 55%, color-mix(in srgb, var(--color-green) 16%, #fff), transparent 70%),
+      linear-gradient(160deg, var(--green-soft), var(--color-cream-dark)); }
+  .pin { position: absolute; transform: translate(-50%, -100%); }
+  .pin-dot { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: linear-gradient(135deg, var(--color-green-light), var(--color-green)); border: 2.5px solid #fff; box-shadow: var(--shadow-md); }
+  .pin.emergency .pin-dot { background: linear-gradient(135deg, color-mix(in srgb, var(--color-red) 80%, #fff), var(--color-red)); }
+  .you-are-here { position: absolute; transform: translate(-50%,-50%); width: 14px; height: 14px; border-radius: 50%; background: var(--color-orange); border: 2px solid #fff; box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-orange) 24%, transparent); }
+
+  .m-fab { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: linear-gradient(180deg, color-mix(in srgb, var(--color-red) 86%, #fff), var(--color-red)); color: #fff; border: none; border-radius: 999px; padding: 12px 22px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; box-shadow: 0 14px 28px -10px color-mix(in srgb, var(--color-red) 70%, transparent); }
+  .icon { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · alta fidelidad</span>
+    <h1>Móvil — Directorio institucional: inicio y búsqueda</h1>
+    <p>Misma pantalla que la versión de escritorio, adaptada a un layout de una sola columna con mapa/lista alternables.</p>
+  </div>
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="m-nav">
+        <span class="m-logo">yanapaway</span>
+        <a class="sos-badge" href="#">SOS</a>
+      </div>
+      <section class="hero-search">
+        <h1>Encuentra apoyo cerca de ti</h1>
+        <p>Instituciones verificadas para grooming, sextorsión y violencia digital.</p>
+      </section>
+      <div class="search-panel">
+        <label class="search-input">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" placeholder="Buscar institución" value="Sucre" />
+        </label>
+        <label class="toggle-emergency"><input type="checkbox" checked /> Solo emergencia 24/7</label>
+      </div>
+      <div class="m-chip-scroll">
+        <span class="label">Tipo</span>
+        <button class="chip" aria-pressed="true">Todas</button>
+        <button class="chip">Defensoría</button>
+        <button class="chip">FELCV</button>
+        <button class="chip">Fiscalía</button>
+        <button class="chip">Policía</button>
+        <button class="chip">SLIM</button>
+      </div>
+      <div class="m-chip-scroll">
+        <span class="label">Caso</span>
+        <button class="chip" aria-pressed="true">Grooming</button>
+        <button class="chip">Sextorsión</button>
+        <button class="chip">Control digital</button>
+        <button class="chip">Noviazgo</button>
+        <button class="chip">Consentimiento</button>
+      </div>
+      <div class="m-map-toggle">
+        <button class="active">Lista</button>
+        <button>Mapa</button>
+      </div>
+
+      <div class="m-map-canvas" style="display:none;">
+        <div class="you-are-here" style="top:58%; left:44%;"></div>
+        <div class="pin emergency" style="top:35%; left:38%;"><div class="pin-dot"></div></div>
+        <div class="pin" style="top:28%; left:62%;"><div class="pin-dot"></div></div>
+        <div class="pin" style="top:68%; left:70%;"><div class="pin-dot"></div></div>
+      </div>
+
+      <div class="m-card-list">
+        <article class="inst-card is-emergency">
+          <div class="inst-card-top">
+            <div><h3>Línea 156</h3><div class="inst-meta"><span class="tag type">Línea de emergencia</span><span class="tag emergency">24/7</span></div></div>
+            <span class="distance">0.4 km</span>
+          </div>
+          <p class="inst-desc">Atención inmediata a grooming y sextorsión, deriva a Fiscalía o Policía.</p>
+          <div class="inst-actions"><button class="btn danger">Llamar 156</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>FELCV Sucre</h3><div class="inst-meta"><span class="tag type">FELCV</span></div></div>
+            <span class="distance">1.2 km</span>
+          </div>
+          <p class="inst-desc">Recepción de denuncias de violencia digital y de género.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>Defensoría de la Niñez</h3><div class="inst-meta"><span class="tag type">Defensoría</span></div></div>
+            <span class="distance">1.8 km</span>
+          </div>
+          <p class="inst-desc">Protección y seguimiento de casos con menores de edad.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+        <article class="inst-card">
+          <div class="inst-card-top">
+            <div><h3>SLIM Sucre</h3><div class="inst-meta"><span class="tag type">SLIM</span></div></div>
+            <span class="distance">2.1 km</span>
+          </div>
+          <p class="inst-desc">Orientación legal y psicológica gratuita para adolescentes.</p>
+          <div class="inst-actions"><button class="btn primary">Llamar</button><button class="btn ghost">Ver ficha</button></div>
+        </article>
+      </div>
+
+      <button class="m-fab"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.68 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.32 1.85.55 2.81.68A2 2 0 0 1 22 16.92z"/></svg>Ayuda ahora</button>
+    </div>
+  </div>
+</div>

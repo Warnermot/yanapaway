@@ -1,0 +1,519 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import BurbujaChat from '../components/BurbujaChat.astro';
+
+// URL base del CMS Strapi (configurable con PUBLIC_CMS_URL)
+const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
+---
+
+<Layout title="Yanapaway — Asistente" description="Chat privado de contención emocional con Yanapaway.">
+	<Navbar />
+	<main class="asistente-wrapper wrapper">
+		<h1 class="asistente-titulo">Yanapaway — Tu espacio seguro 🌿</h1>
+
+		<!-- Botón de salida rápida: siempre visible, 1 clic, protocolo de seguridad -->
+		<div class="salida-rapida-bar">
+			<a href="https://www.google.com" id="btn-salida-rapida" class="btn-salida-rapida" aria-label="Salir rápidamente de esta página">
+				⚡ Salida rápida
+			</a>
+			<span class="salida-rapida-hint">Cierra esta página de inmediato</span>
+		</div>
+
+		<div class="asistente-layout">
+			<aside class="chat-sidebar">
+				<h2>Tu asistente</h2>
+				<p class="aviso-privacidad">Esta conversación es privada y segura. Nadie más puede verla.</p>
+				<div class="emocion-actual">
+					Yanapaway nota: <span id="emocion-tag" class="emocion-tag" data-emocion="neutral">escuchándote</span>
+				</div>
+				<div id="modo-badge" class="modo-badge" data-modo="acompañamiento">
+					🌿 Acompañamiento
+				</div>
+				<nav class="modulos-nav" aria-label="Módulos personales">
+					<a href="/diario" class="pill-btn nav-modulo">Ir a tu diario personal</a>
+				</nav>
+			</aside>
+
+			<section class="chat-area">
+				<!-- Banner de emergencia: oculto por defecto, visible cuando riesgo_detectado=true -->
+				<div id="banner-emergencia" class="banner-emergencia" role="alert" aria-live="assertive" hidden>
+					<strong>🚨 Situación de riesgo detectada</strong>
+					<span id="banner-emergencia-texto">Si estás en peligro ahora mismo, usá el botón de salida rápida o llamá a emergencias.</span>
+				</div>
+
+				<div class="mensajes" id="mensajes-container" aria-live="polite">
+					<BurbujaChat
+						mensaje="Hola, soy Yanapaway. Estoy aquí para escucharte y ayudarte, sin juzgar. Podés contarme cómo te sentís o pedirme información sobre recursos de ayuda."
+						remitente="ia"
+						timestamp={new Date().toISOString()}
+					/>
+				</div>
+
+				<!-- Botones de respuesta rápida: aparecen cuando la IA los sugiere -->
+				<div id="opciones-rapidas" class="opciones-rapidas" hidden></div>
+
+				<form class="chat-form" id="chat-form">
+					<textarea
+						id="input-mensaje"
+						placeholder="Escribe aquí lo que necesitás..."
+						rows="2"
+						required
+					></textarea>
+					<button type="submit" id="btn-enviar" class="pill-btn">Enviar</button>
+				</form>
+			</section>
+		</div>
+	</main>
+	<Footer />
+</Layout>
+
+<script is:inline define:vars={{ CMS_URL }}>
+	(function () {
+		const API = `${CMS_URL}/api`;
+
+		// Identificador de usuario provisional mientras no exista autenticación
+		// (SEC-01: todas las consultas filtran por este usuarioId).
+		function obtenerUsuarioId() {
+			const clave = 'yanapaway_usuario_id';
+			let id = Number(localStorage.getItem(clave));
+			if (!id) {
+				id = Math.floor(Math.random() * 1_000_000) + 1;
+				localStorage.setItem(clave, String(id));
+			}
+			return id;
+		}
+
+		const usuarioId = obtenerUsuarioId();
+		const contenedor = document.getElementById('mensajes-container');
+		const form = document.getElementById('chat-form');
+		const input = document.getElementById('input-mensaje');
+		const btnEnviar = document.getElementById('btn-enviar');
+		const emocionTag = document.getElementById('emocion-tag');
+		const modoBadge = document.getElementById('modo-badge');
+		const bannerEmergencia = document.getElementById('banner-emergencia');
+		const bannerTexto = document.getElementById('banner-emergencia-texto');
+		const opcionesRapidas = document.getElementById('opciones-rapidas');
+
+		let sesionId = null;
+
+		function horaActual() {
+			return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+		}
+
+		// Agrega una burbuja de chat al contenedor
+		function agregarBurbuja(mensaje, remitente) {
+			const wrapper = document.createElement('div');
+			wrapper.className = `burbuja-wrapper ${remitente === 'ia' ? 'es-ia' : 'es-usuario'}`;
+
+			const burbuja = document.createElement('div');
+			burbuja.className = 'burbuja';
+			const texto = document.createElement('p');
+			texto.className = 'burbuja-texto';
+			texto.textContent = mensaje;
+			burbuja.appendChild(texto);
+
+			const hora = document.createElement('span');
+			hora.className = 'burbuja-hora';
+			hora.textContent = horaActual();
+
+			wrapper.appendChild(burbuja);
+			wrapper.appendChild(hora);
+			contenedor.appendChild(wrapper);
+			// Scroll interno del contenedor, no de la página entera
+			contenedor.scrollTop = contenedor.scrollHeight;
+		}
+
+		// Actualiza el tag de emoción en el sidebar
+		function actualizarEmocion(emocion) {
+			if (!emocion || emocion === 'null') return;
+			const etiquetas = {
+				miedo: 'miedo 😨', tristeza: 'tristeza 😔', enojo: 'enojo 😤',
+				culpa: 'culpa 😞', alivio: 'alivio 😮‍💨', esperanza: 'esperanza 🌱',
+				confusion: 'confusión 😕', ansiedad: 'ansiedad 😰',
+				desesperacion: 'desesperación 💔', calma: 'calma 🌊', neutral: 'escuchándote'
+			};
+			emocionTag.textContent = etiquetas[emocion] ?? emocion;
+			emocionTag.dataset.emocion = emocion;
+		}
+
+		// Actualiza el badge que muestra en qué modo está respondiendo la IA
+		function actualizarModo(modo) {
+			if (!modo) return;
+			const etiquetas = {
+				'informacion': '📋 Información',
+				'acompañamiento': '🌿 Acompañamiento',
+			};
+			modoBadge.textContent = etiquetas[modo] ?? modo;
+			modoBadge.dataset.modo = modo;
+		}
+
+		// Muestra el banner rojo de emergencia con el mensaje de la IA
+		function mostrarBannerEmergencia(mensajeIA) {
+			bannerTexto.textContent = mensajeIA;
+			bannerEmergencia.hidden = false;
+			// Scroll al tope del contenedor del chat, no de la página
+			contenedor.scrollTop = 0;
+		}
+
+		// Muestra botones de respuesta rápida sugeridos por la IA
+		function mostrarOpcionesRapidas(opciones) {
+			opcionesRapidas.innerHTML = '';
+			if (!opciones || opciones.length === 0) {
+				opcionesRapidas.hidden = true;
+				return;
+			}
+			opciones.forEach((opcion) => {
+				const btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'opcion-rapida-btn';
+				btn.textContent = opcion;
+				btn.addEventListener('click', () => {
+					input.value = opcion;
+					opcionesRapidas.hidden = true;
+					form.requestSubmit();
+				});
+				opcionesRapidas.appendChild(btn);
+			});
+			opcionesRapidas.hidden = false;
+		}
+
+		// Al cargar la página: crear una nueva sesión de chat
+		async function crearSesion() {
+			try {
+				const res = await fetch(`${API}/sesiones-chat`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						data: { usuarioId, fechaInicio: new Date().toISOString() },
+					}),
+				});
+				const json = await res.json();
+				sesionId = json.data?.documentId ?? null;
+			} catch (error) {
+				console.error('No se pudo crear la sesión de chat:', error);
+			}
+		}
+
+		// Enter envía el mensaje — Shift+Enter hace salto de línea
+		input.addEventListener('keydown', (ev) => {
+			if (ev.key === 'Enter' && !ev.shiftKey) {
+				ev.preventDefault();
+				form.requestSubmit();
+			}
+		});
+
+		form.addEventListener('submit', async (ev) => {
+			ev.preventDefault();
+			const mensajeUsuario = input.value.trim();
+			if (!mensajeUsuario) return;
+
+			// Ocultar opciones rápidas al enviar un nuevo mensaje
+			opcionesRapidas.hidden = true;
+			bannerEmergencia.hidden = true;
+
+			// Optimistic UI: mostrar de inmediato la burbuja del usuario
+			agregarBurbuja(mensajeUsuario, 'usuario');
+			input.value = '';
+			btnEnviar.disabled = true;
+
+			try {
+				const res = await fetch(`${API}/asistente/chat`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ mensajeUsuario, sesionId, usuarioId }),
+				});
+				const json = await res.json();
+
+				// El campo 'mensaje' es el nuevo, 'respuesta' se mantiene por retrocompatibilidad
+				const textoRespuesta = json.mensaje ?? json.respuesta;
+
+				if (res.ok && textoRespuesta) {
+					agregarBurbuja(textoRespuesta, 'ia');
+					actualizarEmocion(json.emocion);
+					actualizarModo(json.modo_usado);
+
+					// Si hay riesgo detectado: mostrar banner de emergencia
+					if (json.riesgo_detectado === true) {
+						mostrarBannerEmergencia(textoRespuesta);
+					}
+
+					// Si la IA sugirió botones de respuesta rápida: mostrarlos
+					if (Array.isArray(json.opciones_boton) && json.opciones_boton.length > 0) {
+						mostrarOpcionesRapidas(json.opciones_boton);
+					}
+				} else {
+					agregarBurbuja(
+						'No pude responder en este momento. Estoy aquí, intentémoslo de nuevo cuando quieras.',
+						'ia'
+					);
+				}
+			} catch (error) {
+				console.error('Error al enviar mensaje:', error);
+				agregarBurbuja(
+					'Parece que no hay conexión con el asistente. Recuerda que no estás sola/o.',
+					'ia'
+				);
+			} finally {
+				btnEnviar.disabled = false;
+				input.focus();
+			}
+		});
+
+		crearSesion();
+	})();
+</script>
+
+<style>
+	.asistente-wrapper {
+		background: var(--color-bg-soft);
+		padding-block: 1.5rem;
+		/* Ocupa exactamente el espacio entre la navbar y el footer */
+		height: calc(100vh - 5rem);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.asistente-titulo {
+		font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+		font-weight: 600;
+		margin-bottom: 0.75rem;
+	}
+
+	/* Barra de salida rápida — siempre visible, protocolo de seguridad */
+	.salida-rapida-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.btn-salida-rapida {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: var(--color-accent, #c0392b);
+		color: #ffffff;
+		padding: 0.5rem 1.1rem;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-decoration: none;
+		transition: opacity 0.15s ease;
+	}
+
+	.btn-salida-rapida:hover {
+		opacity: 0.85;
+	}
+
+	.salida-rapida-hint {
+		font-size: 0.78rem;
+		color: var(--color-ink-soft);
+	}
+
+	/* Banner de emergencia */
+	.banner-emergencia {
+		background: #fef2f2;
+		border: 2px solid #c0392b;
+		border-radius: 1rem;
+		padding: 1rem 1.25rem;
+		margin-bottom: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		color: #7f1d1d;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.banner-emergencia strong {
+		font-size: 1rem;
+	}
+
+	/* Badge de modo activo */
+	.modo-badge {
+		display: inline-block;
+		padding: 0.25rem 0.75rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		background: var(--color-support-teal-tint);
+		color: var(--color-ink);
+		transition: background 0.3s ease;
+	}
+
+	.modo-badge[data-modo='informacion'] {
+		background: #eff6ff;
+		color: #1e3a5f;
+	}
+
+	/* Botones de respuesta rápida */
+	.opciones-rapidas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		padding: 0 0.25rem;
+	}
+
+	.opcion-rapida-btn {
+		background: var(--color-bg);
+		border: 1.5px solid var(--color-primary);
+		color: var(--color-primary);
+		padding: 0.45rem 1rem;
+		border-radius: 999px;
+		font-size: 0.82rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease;
+	}
+
+	.opcion-rapida-btn:hover {
+		background: var(--color-primary);
+		color: #ffffff;
+	}
+
+	.asistente-layout {
+		display: grid;
+		grid-template-columns: 260px 1fr;
+		gap: 1.25rem;
+		align-items: start;
+		/* Llena el espacio restante del wrapper */
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	/* Sidebar */
+	.chat-sidebar {
+		background: var(--color-bg);
+		border-radius: 1.5rem;
+		padding: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		box-shadow: 0 1px 4px rgba(26, 29, 33, 0.06);
+		height: 100%;
+		overflow-y: auto;
+	}
+
+	.chat-sidebar h2 {
+		font-size: 1.1rem;
+		font-weight: 600;
+	}
+
+	.aviso-privacidad {
+		font-size: 0.85rem;
+		color: var(--color-ink-soft);
+		line-height: 1.5;
+	}
+
+	.emocion-actual {
+		font-size: 0.85rem;
+		color: var(--color-ink-soft);
+	}
+
+	.emocion-tag {
+		display: inline-block;
+		padding: 0.2rem 0.7rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		background: var(--color-bg-soft);
+		color: var(--color-ink-soft);
+	}
+
+	.emocion-tag[data-emocion='miedo'] { background: var(--color-primary-dark); color: #ffffff; }
+	.emocion-tag[data-emocion='ansiedad'] { background: var(--color-secondary); color: #ffffff; }
+	.emocion-tag[data-emocion='tristeza'] { background: var(--color-primary); color: #ffffff; }
+	.emocion-tag[data-emocion='desesperacion'] { background: var(--color-ink-soft); color: #ffffff; }
+	.emocion-tag[data-emocion='esperanza'] { background: var(--color-support-teal); color: var(--color-ink); }
+	.emocion-tag[data-emocion='calma'] { background: var(--color-support-teal-tint); color: var(--color-ink); }
+	.emocion-tag[data-emocion='enojo'] { background: var(--color-accent); color: #ffffff; }
+
+	.modulos-nav {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.nav-modulo {
+		background: var(--color-support-teal-tint);
+		color: var(--color-ink);
+		padding: 0.6rem 1.1rem;
+		font-size: 0.82rem;
+		text-align: center;
+	}
+
+	/* Área de chat — ocupa toda la altura disponible */
+	.chat-area {
+		background: var(--color-support-teal-tint);
+		border-radius: 1.5rem;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.mensajes {
+		display: flex;
+		flex-direction: column;
+		/* Ocupa todo el espacio libre — el form queda siempre abajo */
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		padding: 0.5rem;
+		scroll-behavior: smooth;
+	}
+
+	.chat-form {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-end;
+	}
+
+	#input-mensaje {
+		flex: 1;
+		border: 2px solid var(--color-primary);
+		border-radius: 1rem;
+		padding: 0.75rem 1rem;
+		font-family: inherit;
+		font-size: 0.95rem;
+		resize: none;
+		background: var(--color-bg);
+	}
+
+	#input-mensaje:focus {
+		outline: none;
+		border-color: var(--color-primary-light);
+	}
+
+	#btn-enviar {
+		background: var(--color-primary);
+		color: #ffffff;
+		padding: 0.75rem 1.75rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		border-radius: 999px;
+		transition: background 0.2s ease;
+	}
+
+	#btn-enviar:hover:not(:disabled) {
+		background: var(--color-primary-light);
+	}
+
+	#btn-enviar:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+
+	@media (max-width: 820px) {
+		.asistente-layout {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

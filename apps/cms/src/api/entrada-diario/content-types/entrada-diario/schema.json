@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "entradas_diario",
+  "info": {
+    "singularName": "entrada-diario",
+    "pluralName": "entradas-diario",
+    "displayName": "Entrada de Diario",
+    "description": "Registro personal diario del usuario. Datos altamente sensibles: el acceso debe estar estrictamente aislado por usuarioId."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "usuarioId": {
+      "type": "integer",
+      "required": true,
+      "description": "ID del usuario propietario. NUNCA devolver entradas de otro usuarioId."
+    },
+    "fecha": {
+      "type": "datetime",
+      "required": true,
+      "description": "Fecha y hora del registro."
+    },
+    "emocion": {
+      "type": "enumeration",
+      "enum": ["muy_bien", "bien", "neutral", "mal", "muy_mal"],
+      "required": true,
+      "description": "Estado de ánimo general seleccionado por el usuario al escribir la entrada."
+    },
+    "texto": {
+      "type": "richtext",
+      "required": true,
+      "description": "Contenido libre escrito por el usuario."
+    },
+    "etiquetas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::etiqueta-diario.etiqueta-diario",
+      "description": "Etiquetas semánticas que clasifica el usuario."
+    }
+  }
+}

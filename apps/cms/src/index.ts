@@ -1,5 +1,6 @@
 import type { Core } from '@strapi/strapi';
 import { enforceSecurityPolicy } from './bootstrap/security-policy';
+import { asegurarTokenIntegracionWeb } from './bootstrap/token-integracion-web';
 import { institucionReglas } from './middlewares/institucion-reglas';
 import { rebuildOnChange } from './middlewares/rebuild-on-change';
 
@@ -24,6 +25,7 @@ export default {
    */
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await enforceSecurityPolicy({ strapi });
+    await asegurarTokenIntegracionWeb({ strapi });
 
     // Se corre de nuevo justo cuando el servidor confirma que ya está
     // escuchando conexiones. `enforceSecurityPolicy` es idempotente (solo

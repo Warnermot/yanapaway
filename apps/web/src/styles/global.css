@@ -1,5 +1,5 @@
 :root {
-  /* Paleta oficial (guia-paleta-colores.md) */
+  /* Paleta oficial (guia-paleta-colores.md, definida en landing-page-rey) */
   --color-primary: #3eb6fc; /* dominante: header/nav, CTA primario, enlaces activos */
   --color-primary-dark: #0c4a6b; /* variante oscura para superficies grandes (hero); ~4.2:1 vs --color-primary para que el CTA resalte */
   --color-primary-light: #6bc8fd; /* hover/estados sobre superficies primarias */
@@ -18,8 +18,27 @@
   --color-placeholder-dark: #a6a9b0;
   --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --max-width: 1200px;
+
+  /* Alias hacia la paleta anterior: el directorio institucional (y otros
+     componentes propios) usan estos nombres. Se mapean a la paleta oficial
+     en vez de reescribir cada componente uno por uno. */
+  --color-cream: var(--color-bg);
+  --color-cream-dark: var(--color-bg-soft);
+  --color-green: var(--color-primary);
+  --color-green-light: var(--color-primary-light);
+  --color-orange: var(--color-secondary);
+  --color-red: var(--color-accent);
+  --color-green-soft: color-mix(in srgb, var(--color-primary) 12%, white);
+  --color-orange-soft: color-mix(in srgb, var(--color-secondary) 15%, white);
+  --color-red-soft: color-mix(in srgb, var(--color-accent) 12%, white);
+
+  /* Tokens propios del directorio institucional, sin equivalente en la
+     paleta de landing-page-rey (no son colores). */
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --shadow-soft: 0 1px 2px rgba(26, 26, 23, 0.05), 0 14px 30px -18px rgba(26, 26, 23, 0.25);
 }
-  
+
 *,
 *::before,
 *::after {

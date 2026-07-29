@@ -43,7 +43,18 @@ describe('Modelo de datos', () => {
 
     expect(attrs.tipo.type).toBe('enumeration');
     expect((attrs.tipo as { enum: string[] }).enum.sort()).toEqual(
-      ['policial', 'judicial', 'salud', 'psicologico', 'ong', 'refugio'].sort()
+      [
+        'defensoria',
+        'felcv',
+        'fiscalia',
+        'policia',
+        'slim',
+        'linea_emergencia',
+        'psicologico',
+        'ong',
+        'refugio',
+        'otro',
+      ].sort()
     );
     expect(attrs.telefonos.type).toBe('component');
     expect((attrs.telefonos as { component: string }).component).toBe('contacto.telefono');

@@ -1,0 +1,1324 @@
+---
+export interface PuntoMapa {
+  institucionId: string;
+  nombre: string;
+  latitud: number | null;
+  longitud: number | null;
+  esEmergencia: boolean;
+  esSede: boolean;
+}
+
+interface Props {
+  puntos?: PuntoMapa[];
+  // false en la ficha de una sola institución: ahí el mapa solo debe mostrar
+  // los puntos de esa institución, nunca mezclarlos con otras instituciones
+  // cercanas que devuelva la geolocalización.
+  mostrarCercania?: boolean;
+  // true en la ficha: habilita trazar el recorrido desde la ubicación actual
+  // hasta la institución (o hasta la sede que se elija).
+  permitirRuta?: boolean;
+}
+
+const { puntos = [], mostrarCercania = true, permitirRuta = false } = Astro.props;
+
+const pinesIniciales = puntos.filter(
+  (punto): punto is PuntoMapa & { latitud: number; longitud: number } =>
+    punto.latitud !== null && punto.longitud !== null,
+);
+
+const hayVariosDestinos = pinesIniciales.length > 1;
+---
+
+<aside class="mapa-panel" id="mapa-instituciones">
+  <div class="mapa-envoltorio">
+    <div id="mapa-leaflet" class="mapa-leaflet" data-puntos={JSON.stringify(pinesIniciales)}></div>
+
+    {/* Overlays sobre el mapa, no bloques debajo: así la indicación se ve de
+        entrada, sin scrollear, tanto en el tamaño normal como ampliado. */}
+    {
+      permitirRuta && pinesIniciales.length > 0 && (
+        <>
+          <div class="nav-actual" id="nav-actual" hidden>
+            <div class="nav-principal">
+              <span class="nav-flecha" id="nav-flecha" aria-hidden="true">
+                ↑
+              </span>
+              <div class="nav-texto">
+                <p class="nav-distancia" id="nav-distancia" />
+                <p class="nav-instruccion" id="nav-instruccion" aria-live="polite" />
+              </div>
+            </div>
+            <p class="nav-luego" id="nav-luego" hidden />
+          </div>
+
+          {/* Vive aparte de nav-actual a propósito: ese aviso se oculta en
+              los tramos rectos, pero mientras se navega siempre tiene que
+              haber forma de detenerla, sin depender de que se muestre. */}
+          <button type="button" id="btn-detener-nav" class="btn-detener-persistente" hidden>
+            Detener navegación
+          </button>
+        </>
+      )
+    }
+
+    <button type="button" id="btn-expandir" class="btn-mapa-flotante" aria-expanded="false">
+      <span id="texto-expandir">Ampliar mapa</span>
+    </button>
+  </div>
+
+  {
+    mostrarCercania && (
+      <div class="mapa-acciones">
+        <button type="button" id="btn-ubicacion" class="btn-ubicacion">
+          Usar mi ubicación
+        </button>
+        <p id="mapa-mensaje" class="mapa-mensaje" hidden />
+      </div>
+    )
+  }
+
+  {
+    permitirRuta && pinesIniciales.length > 0 && (
+      <div class="mapa-acciones" data-varios-destinos={hayVariosDestinos ? 'si' : 'no'}>
+        <button type="button" id="btn-ruta" class="btn-ubicacion">
+          Cómo llegar
+        </button>
+
+        <div id="resumen-ruta" class="resumen-ruta" hidden>
+          <p class="ruta-destino" id="ruta-destino" />
+          <p class="ruta-datos" id="ruta-datos" />
+          <button type="button" id="btn-quitar-ruta" class="enlace-accion">
+            Quitar recorrido
+          </button>
+        </div>
+
+        {hayVariosDestinos && (
+          <div class="selector-sedes" id="selector-sedes" hidden>
+            <p class="selector-titulo">Elegir otra sede</p>
+            <ul class="lista-sedes-mapa" id="lista-sedes-mapa" />
+          </div>
+        )}
+
+        <p id="ruta-mensaje" class="mapa-mensaje" hidden />
+
+        <div class="panel-pasos" id="panel-pasos" hidden>
+          <div class="pasos-cabecera">
+            <p class="selector-titulo">Indicaciones</p>
+            <button type="button" id="btn-seguimiento" class="btn-seguimiento">
+              Iniciar navegación
+            </button>
+          </div>
+          <ol class="lista-pasos" id="lista-pasos"></ol>
+        </div>
+      </div>
+    )
+  }
+</aside>
+
+<style>
+  /* Las clases de abajo definen `display`, lo que gana por especificidad
+     sobre el `[hidden] { display: none }` del navegador y dejaba visibles
+     bloques vacíos. Esta regla restituye el comportamiento de `hidden`. */
+  [hidden] {
+    display: none !important;
+  }
+
+  .mapa-panel {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mapa-envoltorio {
+    position: relative;
+  }
+
+  .mapa-leaflet {
+    height: 380px;
+    width: 100%;
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    background: var(--color-cream-dark);
+  }
+
+  .btn-mapa-flotante {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    /* Encima de los controles de Leaflet, que llegan hasta z-index 1000. */
+    z-index: 1001;
+    background: #fff;
+    color: var(--color-ink);
+    border: 1px solid rgba(26, 26, 23, 0.14);
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn-mapa-flotante:hover {
+    border-color: var(--color-green);
+    color: var(--color-green);
+  }
+
+  /* Modo ampliado: el panel cubre la ventana y el mapa toma el alto restante,
+     con las indicaciones desplazables debajo. */
+  .mapa-panel.expandido {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    border-radius: 0;
+    padding: 0.75rem;
+    gap: 0.6rem;
+    overflow-y: auto;
+    background: var(--color-cream);
+  }
+
+  .mapa-panel.expandido .mapa-envoltorio {
+    flex: 1 1 auto;
+    min-height: 55vh;
+  }
+
+  .mapa-panel.expandido .mapa-leaflet {
+    height: 100%;
+    min-height: 55vh;
+  }
+
+  /* Indicación en curso: flota sobre el mapa (como un navegador real), no
+     debajo — así se ve de entrada, sin scrollear, en cualquier tamaño. */
+  .nav-actual {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    right: 0.6rem;
+    z-index: 1000;
+    background: linear-gradient(135deg, var(--color-green), #156049);
+    color: #fff;
+    border-radius: var(--radius-m);
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 10px 30px -8px rgba(16, 40, 30, 0.45);
+  }
+
+  .nav-principal {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .nav-flecha {
+    flex: 0 0 2.6rem;
+    height: 2.6rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .nav-texto {
+    min-width: 0;
+  }
+
+  .nav-distancia {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .nav-instruccion {
+    font-size: 0.92rem;
+    line-height: 1.35;
+    margin-top: 0.15rem;
+  }
+
+  .nav-luego {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    padding-top: 0.5rem;
+  }
+
+  .btn-detener-persistente {
+    position: absolute;
+    left: 0.6rem;
+    bottom: 0.6rem;
+    z-index: 1001;
+    background: #fff;
+    border: 1px solid rgba(26, 26, 23, 0.14);
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-ink-soft);
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn-detener-persistente:hover {
+    border-color: var(--color-red);
+    color: var(--color-red);
+  }
+
+  .panel-pasos {
+    width: 100%;
+    background: var(--color-cream);
+    border-radius: var(--radius-m);
+    padding: 0.8rem 0.9rem;
+  }
+
+  .pasos-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .pasos-cabecera .selector-titulo {
+    margin-bottom: 0;
+  }
+
+  .btn-seguimiento {
+    background: transparent;
+    border: 1px solid var(--color-green);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-green);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-seguimiento[aria-pressed='true'] {
+    background: var(--color-green);
+    color: #fff;
+  }
+
+  .lista-pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: 15rem;
+    overflow-y: auto;
+  }
+
+  .mapa-panel.expandido .lista-pasos {
+    max-height: none;
+  }
+
+  /* Los pasos se crean desde el script: sus estilos van globales porque no
+     reciben el atributo de alcance que Astro añade al marcado estático. */
+  :global(.paso-ruta) {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-m);
+    padding: 0.5rem 0.55rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+
+  :global(.paso-ruta:hover) {
+    background: #fff;
+  }
+
+  :global(.paso-ruta:focus-visible) {
+    outline: 2px solid var(--color-green);
+    outline-offset: 1px;
+  }
+
+  :global(.paso-ruta[aria-current='step']) {
+    background: var(--color-green-soft);
+    font-weight: 600;
+    color: #10553f;
+  }
+
+  :global(.paso-flecha) {
+    flex: 0 0 1.35rem;
+    height: 1.35rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid rgba(26, 26, 23, 0.12);
+    font-size: 0.8rem;
+    line-height: 1;
+    color: var(--color-green);
+  }
+
+  :global(.paso-ruta[aria-current='step'] .paso-flecha) {
+    background: var(--color-green);
+    border-color: var(--color-green);
+    color: #fff;
+  }
+
+  :global(.paso-texto) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  :global(.paso-distancia) {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    color: var(--color-ink-soft);
+    padding-top: 0.1rem;
+  }
+
+  :global(.paso-ruta[aria-current='step'] .paso-distancia) {
+    color: #10553f;
+  }
+
+  .mapa-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .btn-ubicacion {
+    background: var(--color-green);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.4rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .resumen-ruta {
+    width: 100%;
+    background: var(--color-green-soft);
+    border-radius: var(--radius-m);
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .ruta-destino {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #10553f;
+  }
+
+  .ruta-datos {
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+  }
+
+  .enlace-accion {
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: var(--color-ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .enlace-accion:hover {
+    color: var(--color-green);
+  }
+
+  .selector-sedes {
+    width: 100%;
+    background: var(--color-cream);
+    border-radius: var(--radius-m);
+    padding: 0.8rem 0.9rem;
+  }
+
+  .selector-titulo {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-soft);
+    font-weight: 600;
+    margin-bottom: 0.55rem;
+  }
+
+  /* La lista y sus botones se crean desde el script, así que no reciben el
+     atributo de alcance que Astro añade al marcado estático: sus estilos
+     tienen que declararse como globales o no se aplican. */
+  :global(.lista-sedes-mapa) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  :global(.btn-sede) {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+    background: #fff;
+    border: 1px solid rgba(26, 26, 23, 0.1);
+    border-radius: var(--radius-m);
+    padding: 0.5rem 0.7rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  /* El punto replica el pin del mapa: conecta visualmente cada botón con su
+     marcador correspondiente. */
+  :global(.btn-sede::before) {
+    content: '';
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--color-green);
+    transition: background 0.18s ease;
+  }
+
+  :global(.btn-sede:hover) {
+    border-color: rgba(28, 122, 94, 0.45);
+    transform: translateX(2px);
+  }
+
+  :global(.btn-sede:focus-visible) {
+    outline: 2px solid var(--color-green);
+    outline-offset: 2px;
+  }
+
+  :global(.btn-sede[aria-pressed='true']) {
+    background: var(--color-green-soft);
+    border-color: var(--color-green);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  :global(.btn-sede[aria-pressed='true']::before) {
+    background: var(--color-green);
+  }
+
+  .btn-ubicacion:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .mapa-mensaje {
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+  }
+
+  :global(.pin-institucion) {
+    width: 26px;
+    height: 26px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--color-green);
+    border: 2px solid #fff;
+    box-shadow: var(--shadow-soft);
+  }
+
+  :global(.pin-institucion.emergencia) {
+    background: var(--color-red);
+  }
+
+  :global(.pin-usuario) {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-orange);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(227, 166, 63, 0.35);
+  }
+
+  :global(.popup-institucion) {
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  :global(.popup-institucion .popup-nombre) {
+    font-weight: 600;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  :global(.popup-institucion .popup-distancia) {
+    font-size: 0.78rem;
+    color: var(--color-ink-soft);
+  }
+</style>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+  import {
+    describirManiobra,
+    formatearMetros,
+    formatearSegundos,
+    type PasoOsrm,
+  } from '../../lib/instrucciones-ruta';
+
+  type PuntoMapa = {
+    institucionId: string;
+    nombre: string;
+    latitud: number;
+    longitud: number;
+    esEmergencia: boolean;
+  };
+
+  type PuntoInicial = PuntoMapa & { esSede: boolean };
+
+  type PuntoCercano = PuntoMapa & { distanciaKm: number };
+
+  const CENTRO_POR_DEFECTO: L.LatLngTuple = [-16.5, -64.0]; // centro aproximado de Bolivia
+
+  function crearIcono(esEmergencia: boolean) {
+    return L.divIcon({
+      className: '',
+      html: `<div class="pin-institucion${esEmergencia ? ' emergencia' : ''}"></div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 26],
+    });
+  }
+
+  function crearContenidoPopup(punto: PuntoMapa | PuntoCercano) {
+    const contenedor = document.createElement('div');
+    contenedor.className = 'popup-institucion';
+
+    const enlace = document.createElement('a');
+    enlace.href = `/instituciones/${punto.institucionId}`;
+    enlace.className = 'popup-nombre';
+    enlace.textContent = punto.nombre;
+    contenedor.append(enlace);
+
+    if ('distanciaKm' in punto) {
+      const distancia = document.createElement('span');
+      distancia.className = 'popup-distancia';
+      distancia.textContent = `${punto.distanciaKm.toFixed(1)} km`;
+      contenedor.append(distancia);
+    }
+
+    return contenedor;
+  }
+
+  const contenedorMapa = document.getElementById('mapa-leaflet');
+  const boton = document.getElementById('btn-ubicacion') as HTMLButtonElement | null;
+  const mensaje = document.getElementById('mapa-mensaje');
+
+  if (contenedorMapa) {
+    const pinesIniciales: PuntoInicial[] = JSON.parse(contenedorMapa.dataset.puntos ?? '[]');
+    // Los puntos de sede (sin coordenada propia en `instituciones`) no los
+    // conoce GET /api/instituciones/cercanas: van en una capa aparte que
+    // nunca se borra, para que no desaparezcan al buscar la ubicación.
+    const pinesDeSede = pinesIniciales.filter((punto) => punto.esSede);
+    const pinesDirectos = pinesIniciales.filter((punto) => !punto.esSede);
+
+    const mapa = L.map(contenedorMapa, { zoomControl: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(mapa);
+    // Arriba a la derecha: el aviso de giro ocupa arriba a la izquierda, y
+    // abajo quedan el botón de detener y el de ampliar mapa.
+    L.control.zoom({ position: 'topright' }).addTo(mapa);
+
+    let capaSedes = L.layerGroup().addTo(mapa);
+    let capaInstituciones = L.layerGroup().addTo(mapa);
+    let capaUsuario = L.layerGroup().addTo(mapa);
+
+    function dibujarPuntos(capa: L.LayerGroup, lista: (PuntoMapa | PuntoCercano)[]) {
+      capa.clearLayers();
+      for (const punto of lista) {
+        L.marker([punto.latitud, punto.longitud], {
+          icon: crearIcono(punto.esEmergencia),
+        })
+          .bindPopup(crearContenidoPopup(punto))
+          .addTo(capa);
+      }
+    }
+
+    dibujarPuntos(capaSedes, pinesDeSede);
+    dibujarPuntos(capaInstituciones, pinesDirectos);
+
+    if (pinesIniciales.length === 1) {
+      mapa.setView([pinesIniciales[0].latitud, pinesIniciales[0].longitud], 14);
+    } else if (pinesIniciales.length > 1) {
+      mapa.fitBounds(
+        L.latLngBounds(pinesIniciales.map((i) => [i.latitud, i.longitud] as L.LatLngTuple)),
+        { padding: [24, 24] },
+      );
+    } else {
+      mapa.setView(CENTRO_POR_DEFECTO, 5);
+    }
+
+    // ---- Recorrido hasta la institución (OSRM) --------------------------
+    const botonRuta = document.getElementById('btn-ruta') as HTMLButtonElement | null;
+    const botonQuitarRuta = document.getElementById('btn-quitar-ruta') as HTMLButtonElement | null;
+    const resumenRuta = document.getElementById('resumen-ruta');
+    const rutaDestino = document.getElementById('ruta-destino');
+    const rutaDatos = document.getElementById('ruta-datos');
+    const rutaMensaje = document.getElementById('ruta-mensaje');
+    const selectorSedes = document.getElementById('selector-sedes');
+    const listaSedes = document.getElementById('lista-sedes-mapa');
+
+    const capaRuta = L.layerGroup().addTo(mapa);
+    let ubicacionActual: { lat: number; lng: number } | null = null;
+    let destinoElegido: PuntoInicial | null = null;
+
+    function mostrarMensajeRuta(texto: string) {
+      if (!rutaMensaje) return;
+      rutaMensaje.textContent = texto;
+      rutaMensaje.hidden = false;
+    }
+
+    function limpiarMensajeRuta() {
+      if (rutaMensaje) rutaMensaje.hidden = true;
+    }
+
+    type Coordenada = { lat: number; lng: number };
+
+    function distanciaAproxKm(desde: Coordenada, hasta: Coordenada) {
+      const RADIO_TIERRA_KM = 6371;
+      const dLat = ((hasta.lat - desde.lat) * Math.PI) / 180;
+      const dLng = ((hasta.lng - desde.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((desde.lat * Math.PI) / 180) *
+          Math.cos((hasta.lat * Math.PI) / 180) *
+          Math.sin(dLng / 2) ** 2;
+      return RADIO_TIERRA_KM * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+    }
+
+    function comoCoordenada(punto: PuntoInicial): Coordenada {
+      return { lat: punto.latitud, lng: punto.longitud };
+    }
+
+    function marcarSedeActiva() {
+      if (!listaSedes) return;
+      for (const boton of listaSedes.querySelectorAll('button')) {
+        boton.setAttribute(
+          'aria-pressed',
+          boton.dataset.nombre === destinoElegido?.nombre ? 'true' : 'false',
+        );
+      }
+    }
+
+    function construirSelectorSedes() {
+      if (!listaSedes || !selectorSedes) return;
+      listaSedes.replaceChildren();
+
+      for (const punto of pinesIniciales) {
+        const item = document.createElement('li');
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'btn-sede';
+        boton.dataset.nombre = punto.nombre;
+        // Solo la parte propia de la sede: el nombre de la institución ya
+        // encabeza la ficha y repetirlo en cada botón satura el espacio.
+        boton.textContent = punto.nombre.split(' · ').pop() ?? punto.nombre;
+        boton.addEventListener('click', () => trazarRutaHasta(punto));
+        item.append(boton);
+        listaSedes.append(item);
+      }
+
+      selectorSedes.hidden = false;
+    }
+
+    // ---- Indicaciones paso a paso --------------------------------------
+    const panelPasos = document.getElementById('panel-pasos');
+    const listaPasos = document.getElementById('lista-pasos');
+    const botonSeguimiento = document.getElementById('btn-seguimiento') as HTMLButtonElement | null;
+    const navActual = document.getElementById('nav-actual');
+    const navFlecha = document.getElementById('nav-flecha');
+    const navDistancia = document.getElementById('nav-distancia');
+    const navInstruccion = document.getElementById('nav-instruccion');
+    const navLuego = document.getElementById('nav-luego');
+    const botonDetenerNav = document.getElementById('btn-detener-nav') as HTMLButtonElement | null;
+
+    type PasoConPosicion = PasoOsrm & { lat: number; lng: number };
+
+    let pasosActuales: PasoConPosicion[] = [];
+    let botonesPaso: HTMLButtonElement[] = [];
+    let idSeguimiento: number | null = null;
+
+    const FLECHAS: Record<string, string> = {
+      straight: '↑',
+      'slight right': '↗',
+      right: '→',
+      'sharp right': '↘',
+      uturn: '↩',
+      'slight left': '↖',
+      left: '←',
+      'sharp left': '↙',
+    };
+
+    function flechaDePaso(paso: PasoOsrm) {
+      if (paso.maneuver.type === 'arrive') return '⚑';
+      if (paso.maneuver.type === 'depart') return '●';
+      if (paso.maneuver.type.includes('roundabout') || paso.maneuver.type.includes('rotary')) {
+        return '↻';
+      }
+      return FLECHAS[paso.maneuver.modifier ?? ''] ?? '↑';
+    }
+
+    function dibujarPasos(steps: PasoOsrm[]) {
+      if (!listaPasos || !panelPasos) return;
+
+      pasosActuales = steps
+        .filter((paso) => Array.isArray((paso as { maneuver: { location?: number[] } }).maneuver.location))
+        .map((paso) => {
+          const [lng, lat] = (paso as unknown as { maneuver: { location: [number, number] } })
+            .maneuver.location;
+          return { ...paso, lat, lng };
+        });
+
+      listaPasos.replaceChildren();
+      botonesPaso = [];
+
+      pasosActuales.forEach((paso, indice) => {
+        const item = document.createElement('li');
+        const boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'paso-ruta';
+
+        const flecha = document.createElement('span');
+        flecha.className = 'paso-flecha';
+        flecha.setAttribute('aria-hidden', 'true');
+        flecha.textContent = flechaDePaso(paso);
+
+        const texto = document.createElement('span');
+        texto.className = 'paso-texto';
+        // textContent y no innerHTML: el nombre de la calle viene de datos
+        // externos (OpenStreetMap) y no debe interpretarse como HTML.
+        texto.textContent = describirManiobra(paso);
+
+        const distancia = document.createElement('span');
+        distancia.className = 'paso-distancia';
+        distancia.textContent = paso.distance > 0 ? formatearMetros(paso.distance) : '';
+
+        boton.append(flecha, texto, distancia);
+        boton.addEventListener('click', () => {
+          mapa.setView([paso.lat, paso.lng], 17);
+          resaltarPaso(indice);
+        });
+
+        item.append(boton);
+        listaPasos.append(item);
+        botonesPaso.push(boton);
+      });
+
+      panelPasos.hidden = pasosActuales.length === 0;
+    }
+
+    function resaltarPaso(indice: number) {
+      botonesPaso.forEach((boton, i) => {
+        if (i === indice) {
+          boton.setAttribute('aria-current', 'step');
+        } else {
+          boton.removeAttribute('aria-current');
+        }
+      });
+      botonesPaso[indice]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    // El avance se mide sobre el trazado de la ruta, no por cercanía a cada
+    // maniobra: si se midiera así, bastaba no pasar justo por el punto de giro
+    // para que la indicación quedara trabada en el mismo paso para siempre.
+    let trazadoActual: L.LatLngTuple[] = [];
+    let indiceTrazadoDePaso: number[] = [];
+    let progresoTrazado = 0;
+    let indiceManiobra = 1;
+    const METROS_FUERA_DE_RUTA = 60;
+    // El aviso solo se muestra cerca del giro (como una app de delivery),
+    // no todo el trayecto: en los tramos rectos no debe ocupar pantalla.
+    const METROS_AVISO_GIRO = 300;
+
+    function indiceMasCercanoDelTrazado(lat: number, lng: number) {
+      let mejor = 0;
+      let mejorKm = Infinity;
+      trazadoActual.forEach(([latPunto, lngPunto], indice) => {
+        const km = distanciaAproxKm({ lat, lng }, { lat: latPunto, lng: lngPunto });
+        if (km < mejorKm) {
+          mejorKm = km;
+          mejor = indice;
+        }
+      });
+      return { indice: mejor, metros: mejorKm * 1000 };
+    }
+
+    /** Distancia real siguiendo la ruta, no en línea recta. */
+    function metrosPorLaRuta(desdeIndice: number, hastaIndice: number) {
+      let metros = 0;
+      for (let i = desdeIndice; i < hastaIndice && i + 1 < trazadoActual.length; i += 1) {
+        const [lat1, lng1] = trazadoActual[i];
+        const [lat2, lng2] = trazadoActual[i + 1];
+        metros += distanciaAproxKm({ lat: lat1, lng: lng1 }, { lat: lat2, lng: lng2 }) * 1000;
+      }
+      return metros;
+    }
+
+    function prepararSeguimientoDeRuta(trazado: L.LatLngTuple[]) {
+      trazadoActual = trazado;
+      progresoTrazado = 0;
+      indiceManiobra = 1;
+      // Cada maniobra se ancla a su punto más cercano dentro del trazado.
+      indiceTrazadoDePaso = pasosActuales.map(
+        (paso) => indiceMasCercanoDelTrazado(paso.lat, paso.lng).indice,
+      );
+    }
+
+    function actualizarNavegacion(lat: number, lng: number) {
+      if (pasosActuales.length === 0 || trazadoActual.length === 0) return;
+
+      const { indice, metros: metrosAlTrazado } = indiceMasCercanoDelTrazado(lat, lng);
+      // El progreso nunca retrocede: evita que la indicación salte de un lado
+      // a otro con cada lectura imprecisa del GPS.
+      progresoTrazado = Math.max(progresoTrazado, indice);
+
+      // La maniobra vigente es la primera que todavía queda por delante.
+      let siguienteIndice = indiceTrazadoDePaso.findIndex(
+        (indiceDelPaso, posicion) => posicion > 0 && indiceDelPaso > progresoTrazado,
+      );
+      if (siguienteIndice === -1) siguienteIndice = pasosActuales.length - 1;
+      indiceManiobra = siguienteIndice;
+
+      const actual = pasosActuales[indiceManiobra];
+      const siguiente = pasosActuales[indiceManiobra + 1];
+      const metrosRestantes = metrosPorLaRuta(progresoTrazado, indiceTrazadoDePaso[indiceManiobra]);
+
+      // Recto y sin giro cerca: solo el mapa, sin panel encima tapando la
+      // pantalla. El aviso aparece al acercarse y desaparece al pasarlo.
+      if (navActual) navActual.hidden = metrosRestantes > METROS_AVISO_GIRO;
+
+      if (navFlecha) navFlecha.textContent = flechaDePaso(actual);
+      if (navDistancia) {
+        navDistancia.textContent =
+          metrosRestantes < 20 ? 'Ahora' : `En ${formatearMetros(metrosRestantes)}`;
+      }
+      if (navInstruccion) navInstruccion.textContent = describirManiobra(actual);
+
+      if (navLuego) {
+        if (siguiente) {
+          navLuego.textContent = `Luego: ${describirManiobra(siguiente)}`;
+          navLuego.hidden = false;
+        } else {
+          navLuego.hidden = true;
+        }
+      }
+
+      // Alejarse del trazado significa que la ruta ya no sirve como guía.
+      if (metrosAlTrazado > METROS_FUERA_DE_RUTA) {
+        mostrarMensajeRuta('Parece que te saliste del recorrido. Vuelve a calcularlo si hace falta.');
+      } else {
+        limpiarMensajeRuta();
+      }
+
+      resaltarPaso(indiceManiobra);
+    }
+
+    function dibujarUsuario(lat: number, lng: number) {
+      capaUsuario.clearLayers();
+      L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div class="pin-usuario"></div>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        }),
+      })
+        .bindPopup('Tu ubicación')
+        .addTo(capaUsuario);
+    }
+
+    function detenerSeguimiento() {
+      if (idSeguimiento !== null) {
+        navigator.geolocation.clearWatch(idSeguimiento);
+        idSeguimiento = null;
+      }
+      botonSeguimiento?.setAttribute('aria-pressed', 'false');
+      if (botonSeguimiento) botonSeguimiento.textContent = 'Iniciar navegación';
+      if (botonDetenerNav) botonDetenerNav.hidden = true;
+      // Al salir de navegación vuelve la lista completa para repasar el camino.
+      if (navActual) navActual.hidden = true;
+      if (panelPasos) panelPasos.hidden = pasosActuales.length === 0;
+    }
+
+    function alternarSeguimiento() {
+      if (idSeguimiento !== null) {
+        detenerSeguimiento();
+        return;
+      }
+
+      // watchPosition mantiene el GPS activo: siempre se libera con
+      // clearWatch al detenerlo o al quitar el recorrido.
+      idSeguimiento = navigator.geolocation.watchPosition(
+        (posicion) => {
+          const { latitude, longitude } = posicion.coords;
+          ubicacionActual = { lat: latitude, lng: longitude };
+          dibujarUsuario(latitude, longitude);
+          actualizarNavegacion(latitude, longitude);
+          mapa.panTo([latitude, longitude]);
+          limpiarMensajeRuta();
+        },
+        (error) => {
+          // Perder la señal un instante es normal moviéndose por la ciudad
+          // (edificios, túneles). Solo se corta el seguimiento si el permiso
+          // fue denegado, porque eso no se recupera solo.
+          if (error.code === error.PERMISSION_DENIED) {
+            mostrarMensajeRuta('No pudimos seguir tu ubicación. Revisa los permisos del navegador.');
+            detenerSeguimiento();
+            return;
+          }
+          mostrarMensajeRuta('Señal de ubicación intermitente. Seguimos intentando…');
+        },
+        { enableHighAccuracy: true, maximumAge: 5000 },
+      );
+
+      botonSeguimiento?.setAttribute('aria-pressed', 'true');
+      if (botonSeguimiento) botonSeguimiento.textContent = 'Detener navegación';
+      if (botonDetenerNav) botonDetenerNav.hidden = false;
+
+      // En navegación la lista completa estorba; el aviso de giro solo se
+      // muestra cuando corresponde (lo decide actualizarNavegacion).
+      if (panelPasos) panelPasos.hidden = true;
+
+      if (ubicacionActual) {
+        actualizarNavegacion(ubicacionActual.lat, ubicacionActual.lng);
+      }
+    }
+
+    botonSeguimiento?.addEventListener('click', alternarSeguimiento);
+    botonDetenerNav?.addEventListener('click', detenerSeguimiento);
+
+    // ---- Mapa ampliado --------------------------------------------------
+    const panelMapa = document.getElementById('mapa-instituciones');
+    const botonExpandir = document.getElementById('btn-expandir') as HTMLButtonElement | null;
+    const textoExpandir = document.getElementById('texto-expandir');
+
+    function estaExpandido() {
+      return panelMapa?.classList.contains('expandido') ?? false;
+    }
+
+    function sincronizarBotonExpandir() {
+      const expandido = estaExpandido();
+      botonExpandir?.setAttribute('aria-expanded', expandido ? 'true' : 'false');
+      if (textoExpandir) textoExpandir.textContent = expandido ? 'Cerrar mapa' : 'Ampliar mapa';
+      // Leaflet necesita recalcular su tamaño cuando cambia el contenedor.
+      setTimeout(() => mapa.invalidateSize(), 210);
+    }
+
+    function expandirMapa() {
+      panelMapa?.classList.add('expandido');
+      document.body.style.overflow = 'hidden';
+      sincronizarBotonExpandir();
+      // La pantalla completa nativa es un extra: si el navegador la rechaza
+      // (habitual en iOS), el modo ampliado por CSS ya está aplicado.
+      panelMapa?.requestFullscreen?.().catch(() => {});
+    }
+
+    function contraerMapa() {
+      panelMapa?.classList.remove('expandido');
+      document.body.style.overflow = '';
+      sincronizarBotonExpandir();
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    }
+
+    botonExpandir?.addEventListener('click', () => {
+      if (estaExpandido()) contraerMapa();
+      else expandirMapa();
+    });
+
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape' && estaExpandido()) contraerMapa();
+    });
+
+    // Si se sale de pantalla completa desde el navegador, se cierra también
+    // el modo ampliado para no dejar estados desincronizados.
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && estaExpandido()) contraerMapa();
+    });
+
+    async function trazarRutaHasta(destino: PuntoInicial) {
+      if (!ubicacionActual) return;
+
+      destinoElegido = destino;
+      marcarSedeActiva();
+      limpiarMensajeRuta();
+
+      if (botonRuta) {
+        botonRuta.disabled = true;
+        botonRuta.textContent = 'Calculando recorrido…';
+      }
+
+      const origen = `${ubicacionActual.lng},${ubicacionActual.lat}`;
+      const llegada = `${destino.longitud},${destino.latitud}`;
+
+      try {
+        const respuesta = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${origen};${llegada}?overview=full&geometries=geojson&steps=true`,
+        );
+
+        if (!respuesta.ok) throw new Error('El servicio de rutas no respondió.');
+
+        const datos = await respuesta.json();
+        const ruta = datos?.routes?.[0];
+
+        if (datos?.code !== 'Ok' || !ruta?.geometry?.coordinates?.length) {
+          throw new Error('No se encontró un recorrido.');
+        }
+
+        // GeoJSON viene como [lng, lat]; Leaflet espera [lat, lng].
+        const trazado: L.LatLngTuple[] = ruta.geometry.coordinates.map(
+          ([lng, lat]: [number, number]) => [lat, lng] as L.LatLngTuple,
+        );
+
+        capaRuta.clearLayers();
+        L.polyline(trazado, {
+          color: '#1c7a5e',
+          weight: 5,
+          opacity: 0.85,
+        }).addTo(capaRuta);
+
+        mapa.fitBounds(L.latLngBounds(trazado), { padding: [32, 32] });
+
+        if (rutaDestino) {
+          rutaDestino.textContent = `Hasta ${destino.nombre}`;
+        }
+        if (rutaDatos) {
+          rutaDatos.textContent = `${formatearMetros(ruta.distance)} · ${formatearSegundos(
+            ruta.duration,
+          )} en auto`;
+        }
+        if (resumenRuta) resumenRuta.hidden = false;
+        if (botonRuta) botonRuta.hidden = true;
+
+        dibujarPasos(ruta.legs?.flatMap((tramo: { steps?: PasoOsrm[] }) => tramo.steps ?? []) ?? []);
+        prepararSeguimientoDeRuta(trazado);
+      } catch {
+        mostrarMensajeRuta('No pudimos calcular el recorrido. Intenta de nuevo en un momento.');
+      } finally {
+        if (botonRuta) {
+          botonRuta.disabled = false;
+          botonRuta.textContent = 'Cómo llegar';
+        }
+      }
+    }
+
+    function iniciarRuta() {
+      if (!navigator.geolocation) {
+        mostrarMensajeRuta('Tu navegador no permite compartir ubicación.');
+        return;
+      }
+
+      if (botonRuta) {
+        botonRuta.disabled = true;
+        botonRuta.textContent = 'Buscando tu ubicación…';
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (posicion) => {
+          ubicacionActual = {
+            lat: posicion.coords.latitude,
+            lng: posicion.coords.longitude,
+          };
+
+          dibujarUsuario(ubicacionActual.lat, ubicacionActual.lng);
+
+          // Se rutea a la sede más cercana, pero el selector queda disponible
+          // para elegir otra.
+          const masCercana = [...pinesIniciales].sort(
+            (a, b) =>
+              distanciaAproxKm(ubicacionActual!, comoCoordenada(a)) -
+              distanciaAproxKm(ubicacionActual!, comoCoordenada(b)),
+          )[0];
+
+          if (pinesIniciales.length > 1) construirSelectorSedes();
+          trazarRutaHasta(masCercana);
+        },
+        () => {
+          mostrarMensajeRuta(
+            'No pudimos acceder a tu ubicación. Revisa los permisos del navegador.',
+          );
+          if (botonRuta) {
+            botonRuta.disabled = false;
+            botonRuta.textContent = 'Cómo llegar';
+          }
+        },
+      );
+    }
+
+    botonRuta?.addEventListener('click', iniciarRuta);
+
+    botonQuitarRuta?.addEventListener('click', () => {
+      detenerSeguimiento();
+      capaRuta.clearLayers();
+      capaUsuario.clearLayers();
+      destinoElegido = null;
+      ubicacionActual = null;
+      pasosActuales = [];
+      botonesPaso = [];
+      indiceManiobra = 1;
+      if (listaPasos) listaPasos.replaceChildren();
+      if (panelPasos) panelPasos.hidden = true;
+      if (navActual) navActual.hidden = true;
+      if (resumenRuta) resumenRuta.hidden = true;
+      if (selectorSedes) selectorSedes.hidden = true;
+      if (botonRuta) botonRuta.hidden = false;
+      limpiarMensajeRuta();
+
+      if (pinesIniciales.length === 1) {
+        mapa.setView([pinesIniciales[0].latitud, pinesIniciales[0].longitud], 14);
+      } else if (pinesIniciales.length > 1) {
+        mapa.fitBounds(
+          L.latLngBounds(pinesIniciales.map((i) => [i.latitud, i.longitud] as L.LatLngTuple)),
+          { padding: [24, 24] },
+        );
+      }
+    });
+
+function solicitarUbicacion() {
+      if (!navigator.geolocation) {
+        if (mensaje) {
+          mensaje.textContent = 'Tu navegador no permite compartir ubicación.';
+          mensaje.hidden = false;
+        }
+        return;
+      }
+
+      if (boton) {
+        boton.disabled = true;
+        boton.textContent = 'Buscando tu ubicación…';
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (posicion) => {
+          const { latitude, longitude } = posicion.coords;
+
+          capaUsuario.clearLayers();
+          L.marker([latitude, longitude], {
+            icon: L.divIcon({
+              className: '',
+              html: '<div class="pin-usuario"></div>',
+              iconSize: [16, 16],
+              iconAnchor: [8, 8],
+            }),
+          }).addTo(capaUsuario);
+
+          try {
+            const respuesta = await fetch(
+              `/api/instituciones/cercanas?lat=${latitude}&lng=${longitude}`,
+            );
+
+            if (!respuesta.ok) throw new Error('No se pudo obtener instituciones cercanas.');
+
+            type InstitucionCercanaApi = {
+              id: string;
+              nombre: string;
+              latitud: number;
+              longitud: number;
+              esEmergencia: boolean;
+              distanciaKm: number;
+            };
+
+            const datos: { instituciones: InstitucionCercanaApi[] } = await respuesta.json();
+            const cercanas: PuntoCercano[] = datos.instituciones.slice(0, 8).map((item) => ({
+              institucionId: item.id,
+              nombre: item.nombre,
+              latitud: item.latitud,
+              longitud: item.longitud,
+              esEmergencia: item.esEmergencia,
+              distanciaKm: item.distanciaKm,
+            }));
+
+            if (cercanas.length === 0) {
+              if (mensaje) {
+                mensaje.textContent = 'No encontramos instituciones cercanas registradas.';
+                mensaje.hidden = false;
+              }
+              mapa.setView([latitude, longitude], 12);
+              if (boton) {
+                boton.disabled = false;
+                boton.textContent = 'Actualizar mi ubicación';
+              }
+              return;
+            }
+
+            dibujarPuntos(capaInstituciones, cercanas);
+            mapa.fitBounds(
+              L.latLngBounds([
+                [latitude, longitude],
+                ...cercanas.map((i) => [i.latitud, i.longitud] as L.LatLngTuple),
+              ]),
+              { padding: [32, 32] },
+            );
+
+            if (mensaje) mensaje.hidden = true;
+            if (boton) {
+              boton.disabled = false;
+              boton.textContent = 'Actualizar mi ubicación';
+            }
+          } catch {
+            if (mensaje) {
+              mensaje.textContent = 'No se pudo cargar instituciones cercanas. Intenta de nuevo.';
+              mensaje.hidden = false;
+            }
+            if (boton) {
+              boton.disabled = false;
+              boton.textContent = 'Usar mi ubicación';
+            }
+          }
+        },
+        () => {
+          if (mensaje) {
+            mensaje.textContent = 'No pudimos acceder a tu ubicación. Revisa los permisos del navegador.';
+            mensaje.hidden = false;
+          }
+          if (boton) {
+            boton.disabled = false;
+            boton.textContent = 'Usar mi ubicación';
+          }
+        },
+      );
+    }
+
+    if (boton) {
+      solicitarUbicacion();
+      boton.addEventListener('click', solicitarUbicacion);
+    }
+  }
+</script>

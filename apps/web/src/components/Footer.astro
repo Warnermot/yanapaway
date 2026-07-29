@@ -1,20 +1,29 @@
 ---
+import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
+
 const columns = [
 	{
-		title: 'Contactos',
+		title: t('footer.contactos.title'),
 		items: ['+123 654 987', '877 The Bronx, NY', '14568, USA'],
 	},
 	{
-		title: 'Ayuda',
-		items: ['Shipping', 'Returns', 'Sizing'],
+		title: t('footer.ayuda.title'),
+		items: [t('footer.ayuda.item1'), t('footer.ayuda.item2'), t('footer.ayuda.item3')],
 	},
 	{
-		title: 'Contenido',
-		items: ['All Products', 'Bedroom', 'Dinning Room'],
+		title: t('footer.contenido.title'),
+		items: [t('footer.contenido.item1'), t('footer.contenido.item2'), t('footer.contenido.item3')],
 	},
 	{
-		title: 'Legal Stuff',
-		items: ['Shipping & Delivery', 'Terms & Conditions', 'Privacy & Policy'],
+		title: t('footer.legal.title'),
+		items: [t('footer.legal.item1'), t('footer.legal.item2'), t('footer.legal.item3')],
 	},
 ];
 ---

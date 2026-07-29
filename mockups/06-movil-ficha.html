@@ -1,0 +1,142 @@
+<title>Móvil · Directorio institucional — Ficha de institución</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --red-soft: color-mix(in srgb, var(--color-red) 11%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 8px 20px -14px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 20px 44px -24px rgba(26,26,23,.30);
+    --ring-green: 0 0 0 4px color-mix(in srgb, var(--color-green) 22%, transparent);
+    --radius-s: 14px; --radius-m: 18px; --radius-l: 24px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background:
+      radial-gradient(900px 460px at 50% -220px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; align-items: center; }
+  .shell-head { max-width: 640px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; text-align: center; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 23px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); font-size: 14px; }
+
+  .phone { width: 390px; background: var(--surface); border-radius: 46px; border: 11px solid var(--color-footer); box-shadow: var(--shadow-md), 0 40px 80px -40px rgba(26,26,23,.5); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 24px; background: var(--color-footer); border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone-screen { height: 820px; overflow-y: auto; background: var(--surface-warm); }
+
+  .m-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 16px; background: color-mix(in srgb, var(--color-cream) 60%, #fff); }
+  .m-logo { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+  .sos-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; letter-spacing: .04em; color: var(--color-red); border: 2.5px double var(--color-red); padding: 3px 9px; border-radius: 7px; transform: rotate(-4deg); background: color-mix(in srgb, var(--color-red) 6%, #fff); box-shadow: var(--shadow-sm); }
+
+  .m-back { display: flex; align-items: center; gap: 6px; padding: 16px 18px 0; font-size: 12.5px; font-weight: 600; color: var(--color-green); }
+  .m-detail-hero { padding: 14px 18px 18px; }
+  .tag { font-size: 11px; padding: 4px 11px; border-radius: 999px; background: color-mix(in srgb, var(--color-cream-dark) 60%, #fff); color: var(--color-ink-soft); font-weight: 500; border: 1px solid var(--border); }
+  .tag.type { background: var(--green-soft); color: var(--green-text); font-weight: 600; border-color: color-mix(in srgb, var(--color-green) 26%, transparent); }
+  .m-detail-hero h2 { font-size: 20px; margin-top: 10px; font-weight: 700; }
+  .m-detail-hero p { font-size: 13px; color: var(--color-ink-soft); margin-top: 9px; line-height: 1.6; }
+
+  .m-detail-body { padding: 4px 18px 100px; display: flex; flex-direction: column; gap: 14px; }
+  .detail-section { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+  .detail-section h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--green-text); margin: 0 0 10px; font-weight: 700; }
+  .case-chip-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+  .schedule-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .schedule-table td { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table td:first-child { color: var(--color-ink-soft); }
+  .schedule-table td:last-child { text-align: right; font-weight: 500; }
+  .m-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn { border-radius: 999px; padding: 11px 14px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-green) 60%, transparent); }
+  .btn.danger { background: linear-gradient(180deg, color-mix(in srgb, var(--color-red) 88%, #fff), var(--color-red)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-red) 60%, transparent); }
+  .btn.lg { padding: 14px 20px; font-size: 13.5px; }
+
+  .mini-map { height: 140px; border-radius: var(--radius-m); margin-bottom: 10px; position: relative; overflow: hidden; border: 1px solid var(--border);
+    background: repeating-linear-gradient(45deg, rgba(28,122,94,.07), rgba(28,122,94,.07) 8px, transparent 8px, transparent 16px),
+      radial-gradient(200px 120px at 50% 55%, color-mix(in srgb, var(--color-green) 18%, #fff), transparent 70%), var(--green-soft); }
+  .mini-map .pin { position: absolute; top: 55%; left: 50%; transform: translate(-50%,-100%); }
+  .pin-dot { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: linear-gradient(135deg, var(--color-green-light), var(--color-green)); border: 2.5px solid #fff; box-shadow: var(--shadow-md); }
+
+  .emergency-card { background: var(--red-soft); border: 1px solid color-mix(in srgb, var(--color-red) 22%, transparent); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-sm); }
+  .emergency-card h4 { color: var(--color-red); margin: 0 0 6px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .emergency-card p { font-size: 11.5px; color: var(--color-ink-soft); margin-bottom: 12px; line-height: 1.55; }
+  .icon { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · alta fidelidad</span>
+    <h1>Móvil — Ficha de institución</h1>
+    <p>Secciones apiladas en una sola columna: descripción, tipos de caso, horario, contacto y ubicación.</p>
+  </div>
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="m-nav">
+        <span class="m-logo">yanapaway</span>
+        <a class="sos-badge" href="#">SOS</a>
+      </div>
+      <div class="m-back">&larr; Volver al directorio</div>
+      <div class="m-detail-hero">
+        <span class="tag type">FELCV</span>
+        <h2>FELCV Sucre</h2>
+        <p>Fuerza Especial de Lucha Contra la Violencia. Recibe denuncias de violencia digital, sextorsión y grooming, y deriva a Fiscalía cuando corresponde.</p>
+      </div>
+      <div class="m-detail-body">
+        <div class="detail-section">
+          <h4>Dirección</h4>
+          <p style="font-size:12.5px; color:var(--color-ink-soft); margin:0;">Av. Hernando Siles esq. calle Grau, Sucre</p>
+        </div>
+        <div class="detail-section">
+          <h4>Atiende</h4>
+          <div class="case-chip-picker">
+            <span class="tag">Grooming</span><span class="tag">Sextorsión</span><span class="tag">Control digital</span><span class="tag">Noviazgo</span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Horario</h4>
+          <table class="schedule-table">
+            <tr><td>Lun a vie</td><td>08:00–16:00</td></tr>
+            <tr><td>Sábados</td><td>09:00–12:00</td></tr>
+            <tr><td>Domingos</td><td>Solo vía línea 156</td></tr>
+          </table>
+        </div>
+        <div class="detail-section">
+          <h4>Contacto</h4>
+          <div class="m-contact-grid">
+            <button class="btn primary">Llamar</button>
+            <button class="btn">WhatsApp</button>
+            <button class="btn">Correo</button>
+            <button class="btn">Sitio web</button>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Ubicación</h4>
+          <div class="mini-map"><div class="pin"><div class="pin-dot"></div></div></div>
+          <p style="font-size:12px; color:var(--color-ink-soft); margin:0;">A 1.2 km de tu ubicación (mapa de ejemplo).</p>
+        </div>
+        <div class="emergency-card">
+          <h4><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>¿Es urgente?</h4>
+          <p>Esta institución no atiende 24/7. Si necesitas ayuda inmediata, llama a la Línea 156.</p>
+          <button class="btn danger" style="width:100%;">Llamar 156 ahora</button>
+        </div>
+        <button class="btn primary lg" style="width:100%;">Solicitar orientación</button>
+      </div>
+    </div>
+  </div>
+</div>

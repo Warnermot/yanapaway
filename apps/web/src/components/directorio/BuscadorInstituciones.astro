@@ -1,0 +1,274 @@
+---
+import { TIPOS_INSTITUCION } from '../../lib/instituciones';
+import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
+
+interface Props {
+  tiposCaso: { id: string; nombre: string }[];
+  tipoSeleccionado?: string;
+  tipoCasoSeleccionado?: string;
+}
+
+const { tiposCaso, tipoSeleccionado, tipoCasoSeleccionado } = Astro.props;
+// Solo se muestran los tipos que realmente tienen instituciones cargadas;
+// el resto del enum (linea_emergencia, psicologico, ong, refugio, otro)
+// sigue siendo válido para la API, solo no se ofrece como chip de filtro.
+const tiposInstitucion = TIPOS_INSTITUCION.filter((tipo) =>
+  (['defensoria', 'felcv', 'fiscalia', 'policia', 'slim'] as const).includes(
+    tipo as 'defensoria' | 'felcv' | 'fiscalia' | 'policia' | 'slim',
+  ),
+);
+
+const hayFiltroActivo = Boolean(tipoSeleccionado || tipoCasoSeleccionado);
+
+const resumenFiltros = [
+  tipoSeleccionado ? TIPO_INSTITUCION_LABELS[tipoSeleccionado as keyof typeof TIPO_INSTITUCION_LABELS] : null,
+  tipoCasoSeleccionado
+    ? etiquetaTipoCaso(tiposCaso.find((t) => t.id === tipoCasoSeleccionado)?.nombre ?? '')
+    : null,
+]
+  .filter(Boolean)
+  .join(' · ');
+---
+
+<form class="buscador" method="get" action="/instituciones">
+  {/* En pantallas chicas los 14 chips ocupaban casi toda la pantalla antes de
+      mostrar un resultado, así que se pliegan tras un resumen. El plegado usa
+      un checkbox sin `name` (no se envía con el formulario) en lugar de
+      <details>, porque el contenido oculto de un <details> cerrado no se puede
+      volver a mostrar desde CSS en escritorio. */}
+  <input type="checkbox" id="toggle-filtros" class="toggle-filtros" checked={hayFiltroActivo} />
+  <label class="resumen-filtros" for="toggle-filtros">
+    <span class="resumen-titulo">Filtrar</span>
+    <span class="resumen-detalle">{resumenFiltros || 'Todas las instituciones'}</span>
+  </label>
+
+  <div class="cuerpo-filtros">
+      <fieldset class="grupo-chips">
+        <legend>Tipo de institución</legend>
+        <label class="chip">
+          <input type="radio" name="tipo" value="" checked={!tipoSeleccionado} />
+          Todas
+        </label>
+        {
+          tiposInstitucion.map((tipo) => (
+            <label class="chip">
+              <input type="radio" name="tipo" value={tipo} checked={tipoSeleccionado === tipo} />
+              {TIPO_INSTITUCION_LABELS[tipo]}
+            </label>
+          ))
+        }
+      </fieldset>
+
+      <fieldset class="grupo-chips">
+        <legend>Tipo de caso</legend>
+        <label class="chip">
+          <input type="radio" name="tipo_caso" value="" checked={!tipoCasoSeleccionado} />
+          Todos
+        </label>
+        {
+          tiposCaso.map((tipoCaso) => (
+            <label class="chip">
+              <input
+                type="radio"
+                name="tipo_caso"
+                value={tipoCaso.id}
+                checked={tipoCasoSeleccionado === tipoCaso.id}
+              />
+              {etiquetaTipoCaso(tipoCaso.nombre)}
+            </label>
+          ))
+        }
+      </fieldset>
+
+      <div class="acciones-filtros">
+        <button type="submit" class="btn-buscar">Buscar</button>
+        {
+          hayFiltroActivo && (
+            <a class="btn-limpiar" href="/instituciones">
+              Limpiar filtros
+            </a>
+          )
+        }
+      </div>
+  </div>
+</form>
+
+<style>
+  .buscador {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem 1.5rem;
+    margin-top: -2.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cuerpo-filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Visualmente oculto pero enfocable con teclado. */
+  .toggle-filtros {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Sobre 900px no hay plegado: el resumen se oculta y los filtros
+     están siempre a la vista. */
+  .resumen-filtros {
+    display: none;
+  }
+
+  .acciones-filtros {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-limpiar {
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .btn-limpiar:hover {
+    color: var(--color-green);
+  }
+
+  .grupo-chips {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .grupo-chips legend {
+    width: 100%;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-soft);
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .chip {
+    cursor: pointer;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(26, 26, 23, 0.12);
+    color: var(--color-ink);
+    transition: background 0.2s ease;
+  }
+
+  .chip:has(input:checked) {
+    background: var(--color-green-soft);
+    border-color: var(--color-green);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  .chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .btn-buscar {
+    background: var(--color-green);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.65rem 1.75rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    /* Debajo de 900px los filtros se pliegan tras un resumen para que los
+       resultados y el mapa queden a la vista sin scrollear. */
+    .resumen-filtros {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+
+    .resumen-titulo {
+      font-weight: 600;
+      color: var(--color-green);
+      white-space: nowrap;
+    }
+
+    .resumen-titulo::after {
+      content: ' ▾';
+      font-size: 0.75em;
+    }
+
+    .buscador:has(.toggle-filtros:checked) .resumen-titulo::after {
+      content: ' ▴';
+    }
+
+    .resumen-detalle {
+      color: var(--color-ink-soft);
+      font-size: 0.82rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .toggle-filtros:focus-visible + .resumen-filtros {
+      outline: 2px solid var(--color-green);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .cuerpo-filtros {
+      display: none;
+    }
+
+    .buscador:has(.toggle-filtros:checked) .cuerpo-filtros {
+      display: flex;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(26, 26, 23, 0.08);
+    }
+
+    .btn-buscar {
+      width: 100%;
+      padding-block: 0.8rem;
+    }
+
+    .acciones-filtros {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .buscador {
+      margin-top: -1.5rem;
+      padding: 1rem 1.1rem;
+    }
+
+    .chip {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+    }
+  }
+</style>

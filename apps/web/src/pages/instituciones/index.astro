@@ -1,0 +1,168 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import BuscadorInstituciones from '../../components/directorio/BuscadorInstituciones.astro';
+import MapaInstituciones from '../../components/directorio/MapaInstituciones.astro';
+import TarjetaInstitucion from '../../components/directorio/TarjetaInstitucion.astro';
+import { listarInstituciones, listarPuntosMapa, type TipoInstitucion } from '../../lib/instituciones';
+import { listarTiposCaso } from '../../lib/tipos-caso';
+
+export const prerender = false;
+
+const tipoParam = Astro.url.searchParams.get('tipo') || undefined;
+const tipoCasoParam = Astro.url.searchParams.get('tipo_caso') || undefined;
+
+const filtros = {
+  tipo: tipoParam as TipoInstitucion | undefined,
+  tipoCasoId: tipoCasoParam,
+};
+
+const [instituciones, tiposCaso, puntosMapa] = await Promise.all([
+  listarInstituciones(filtros),
+  listarTiposCaso(),
+  listarPuntosMapa(filtros),
+]);
+---
+
+<Layout
+  title="Directorio institucional — yanapaway"
+  description="Encuentra instituciones que atienden grooming, sextorsión, control digital y violencia en el noviazgo."
+>
+  <Navbar rutaActiva="/instituciones" />
+
+  <section class="hero-directorio">
+    <div class="wrapper">
+      <h1>Encuentra apoyo cerca de ti</h1>
+      <p>
+        Instituciones que atienden grooming, sextorsión, control digital y violencia en el
+        noviazgo. No estás sola.
+      </p>
+    </div>
+  </section>
+
+  <div class="wrapper">
+    <BuscadorInstituciones
+      tiposCaso={tiposCaso}
+      tipoSeleccionado={tipoParam}
+      tipoCasoSeleccionado={tipoCasoParam}
+    />
+
+    <div class="contenido-principal">
+      <div class="columna-mapa">
+        <MapaInstituciones puntos={puntosMapa} />
+      </div>
+
+      <div class="lista-resultados">
+        <p class="conteo-resultados">
+          {instituciones.length}{' '}
+          {instituciones.length === 1 ? 'institución encontrada' : 'instituciones encontradas'}
+        </p>
+
+        {
+          instituciones.length === 0 ? (
+            <p class="sin-resultados">
+              No encontramos instituciones con esos filtros. Prueba con otro tipo o tipo de caso.
+            </p>
+          ) : (
+            <div class="tarjetas">
+              {instituciones.map((institucion) => (
+                <TarjetaInstitucion institucion={institucion} />
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  .hero-directorio {
+    background: linear-gradient(135deg, var(--color-green), #156049);
+    color: #fff;
+    padding: 2.5rem 0 4.5rem;
+  }
+
+  .hero-directorio h1 {
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .hero-directorio p {
+    margin-top: 0.5rem;
+    max-width: 60ch;
+    opacity: 0.92;
+  }
+
+  /* Escritorio: resultados a la izquierda, mapa fijo a la derecha mientras
+     se recorre la lista. En móvil el orden se invierte (ver media query). */
+  .contenido-principal {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-areas: 'lista mapa';
+    gap: 1.5rem;
+    padding-block: 2rem 3rem;
+    align-items: start;
+  }
+
+  .lista-resultados {
+    grid-area: lista;
+    min-width: 0;
+  }
+
+  .columna-mapa {
+    grid-area: mapa;
+    position: sticky;
+    top: 1.25rem;
+  }
+
+  .conteo-resultados {
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+    margin-bottom: 0.9rem;
+  }
+
+  .sin-resultados {
+    color: var(--color-ink-soft);
+    background: #fff;
+    border-radius: var(--radius-l);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  @media (max-width: 900px) {
+    /* Una sola columna con el mapa primero: en un teléfono, ver dónde queda
+       la ayuda importa más que leer la lista completa antes de llegar a él. */
+    .contenido-principal {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'mapa'
+        'lista';
+      gap: 1.25rem;
+    }
+
+    .columna-mapa {
+      position: static;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-directorio {
+      padding: 1.75rem 0 3.5rem;
+    }
+
+    .contenido-principal {
+      padding-block: 1.5rem 2.5rem;
+    }
+  }
+</style>

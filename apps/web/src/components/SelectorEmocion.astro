@@ -1,0 +1,101 @@
+---
+interface Props {
+	seleccionada?: string;
+	onChange?: string; // nombre de una función JS global: window[onChange](valor)
+	id?: string;
+}
+
+const { seleccionada = '', onChange = '', id = 'selector-emocion' } = Astro.props;
+
+const opciones = [
+	{ valor: 'muy_bien', emoji: '😊', etiqueta: 'Muy bien' },
+	{ valor: 'bien', emoji: '🙂', etiqueta: 'Bien' },
+	{ valor: 'neutral', emoji: '😐', etiqueta: 'Neutral' },
+	{ valor: 'mal', emoji: '😔', etiqueta: 'Mal' },
+	{ valor: 'muy_mal', emoji: '😢', etiqueta: 'Muy mal' },
+];
+---
+
+<div class="selector-emocion" id={id} role="radiogroup" aria-label="¿Cómo estás hoy?">
+	{
+		opciones.map((op) => (
+			<button
+				type="button"
+				class="opcion-emocion"
+				class:list={[{ seleccionada: op.valor === seleccionada }]}
+				data-emocion={op.valor}
+				role="radio"
+				aria-checked={op.valor === seleccionada}
+			>
+				<span class="emoji" aria-hidden="true">{op.emoji}</span>
+				<span class="etiqueta">{op.etiqueta}</span>
+			</button>
+		))
+	}
+</div>
+
+<script is:inline define:vars={{ id, onChange }}>
+	(function () {
+		const contenedor = document.getElementById(id);
+		if (!contenedor) return;
+
+		contenedor.addEventListener('click', (ev) => {
+			const boton = ev.target.closest('[data-emocion]');
+			if (!boton) return;
+
+			contenedor.querySelectorAll('.opcion-emocion').forEach((el) => {
+				el.classList.remove('seleccionada');
+				el.setAttribute('aria-checked', 'false');
+			});
+			boton.classList.add('seleccionada');
+			boton.setAttribute('aria-checked', 'true');
+
+			if (onChange && typeof window[onChange] === 'function') {
+				window[onChange](boton.dataset.emocion);
+			}
+		});
+	})();
+</script>
+
+<style>
+	.selector-emocion {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.opcion-emocion {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.7rem 1rem;
+		border: 2px solid transparent;
+		border-radius: 1rem;
+		background: var(--color-bg);
+		cursor: pointer;
+		font-family: inherit;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+
+	.opcion-emocion:hover {
+		background: var(--color-bg-soft);
+	}
+
+	.opcion-emocion.seleccionada {
+		border-color: var(--color-primary);
+		background: var(--color-support-teal-tint);
+	}
+
+	.emoji {
+		font-size: 1.6rem;
+		line-height: 1;
+	}
+
+	.etiqueta {
+		font-size: 0.78rem;
+		color: var(--color-ink-soft);
+	}
+</style>

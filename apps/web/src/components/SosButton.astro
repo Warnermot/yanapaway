@@ -1,4 +1,15 @@
-<a href="#sos" class="sos-float" aria-label="Ayuda de emergencia SOS">SOS</a>
+---
+import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
+
+interface Props {
+	lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<a href="#sos" class="sos-float" aria-label={t('sos.label')}>SOS</a>
 
 <style>
 	.sos-float {
