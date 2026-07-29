@@ -8,10 +8,10 @@ import BurbujaChat from '../components/BurbujaChat.astro';
 const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 ---
 
-<Layout title="Yanapa — Asistente" description="Chat privado de contención emocional con Yanapa.">
+<Layout title="Yanapai — Asistente" description="Chat privado de contención emocional con Yanapai.">
 	<Header />
 	<main class="asistente-wrapper wrapper">
-		<h1 class="asistente-titulo">Yanapa — Tu espacio seguro 🌿</h1>
+		<h1 class="asistente-titulo">Yanapai — Tu espacio seguro 🌿</h1>
 
 		<!-- Botón de salida rápida: siempre visible, 1 clic, protocolo de seguridad -->
 		<div class="salida-rapida-bar">
@@ -26,7 +26,7 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 				<h2>Tu asistente</h2>
 				<p class="aviso-privacidad">Esta conversación es privada y segura. Nadie más puede verla.</p>
 				<div class="emocion-actual">
-					Yanapa nota: <span id="emocion-tag" class="emocion-tag" data-emocion="neutral">escuchándote</span>
+					Yanapai nota: <span id="emocion-tag" class="emocion-tag" data-emocion="neutral">escuchándote</span>
 				</div>
 				<div id="modo-badge" class="modo-badge" data-modo="acompañamiento">
 					🌿 Acompañamiento
@@ -45,7 +45,7 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 
 				<div class="mensajes" id="mensajes-container" aria-live="polite">
 					<BurbujaChat
-						mensaje="Hola, soy Yanapa. Estoy aquí para escucharte y ayudarte, sin juzgar. Podés contarme cómo te sentís o pedirme información sobre recursos de ayuda."
+						mensaje="Hola, soy Yanapai. Estoy aquí para escucharte y ayudarte, sin juzgar. Podés contarme cómo te sentís o pedirme información sobre recursos de ayuda."
 						remitente="ia"
 						timestamp={new Date().toISOString()}
 					/>
