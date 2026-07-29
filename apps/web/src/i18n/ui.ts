@@ -52,6 +52,12 @@ export const ui = {
 		'footer.legal.item1': 'Aviso de confidencialidad',
 		'footer.legal.item2': 'Términos y condiciones',
 		'footer.legal.item3': 'Política de privacidad',
+
+		'notfound.eyebrow': 'Error 404',
+		'notfound.heading': 'Esta página no existe, pero la ayuda sí.',
+		'notfound.text':
+			'El enlace que buscabas no está disponible o cambió de dirección. Puedes volver al inicio o hablar con alguien ahora mismo.',
+		'notfound.cta.home': 'Volver al inicio',
 	},
 	en: {
 		'nav.inicio': 'Home',
@@ -97,6 +103,12 @@ export const ui = {
 		'footer.legal.item1': 'Confidentiality notice',
 		'footer.legal.item2': 'Terms & conditions',
 		'footer.legal.item3': 'Privacy policy',
+
+		'notfound.eyebrow': 'Error 404',
+		'notfound.heading': "This page doesn't exist, but help does.",
+		'notfound.text':
+			"The link you were looking for isn't available or moved. You can go back home or talk to someone right now.",
+		'notfound.cta.home': 'Back to home',
 	},
 	qu: {
 		'nav.inicio': 'Qallariy',
@@ -143,5 +155,11 @@ export const ui = {
 		'footer.legal.item1': 'Pakasqa willay',
 		'footer.legal.item2': 'Kamachiykuna',
 		'footer.legal.item3': 'Privacidad kamachiy',
+
+		'notfound.eyebrow': 'Pantalla 404',
+		'notfound.heading': 'Kay p\'anqa mana kanchu, ichaqa yanapayqa kanmi.',
+		'notfound.text':
+			'Maskasqayki t\'inkiy mana kanchu, utaq huk ñanman rirqan. Qallariyman kutiyta atinki, utaq kunanmi pipawanpas rimayta.',
+		'notfound.cta.home': 'Qallariyman kutiy',
 	},
 } as const;
