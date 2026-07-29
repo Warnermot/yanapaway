@@ -1,0 +1,288 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { obtenerInstitucionPorId } from '../lib/instituciones';
+import { listarTiposCaso } from '../lib/tipos-caso';
+import { etiquetaTipoCaso } from '../lib/etiquetas';
+import { esIdValido } from '../lib/validation';
+
+export const prerender = false;
+
+const institucionIdParam = Astro.url.searchParams.get('institucion');
+const institucionPreseleccionada =
+  institucionIdParam && esIdValido(institucionIdParam)
+    ? await obtenerInstitucionPorId(institucionIdParam)
+    : null;
+
+const tiposCaso = await listarTiposCaso();
+
+const MENSAJE_MAX = 2000;
+---
+
+<Layout title="Solicitar orientación — yanapaway" description="Cuéntanos tu caso de forma confidencial.">
+  <Navbar rutaActiva="/instituciones" />
+
+  <div class="wrapper pagina-solicitud">
+    <div class="tarjeta-formulario">
+      <h1>Solicitar orientación</h1>
+      <p class="subtitulo">
+        {
+          institucionPreseleccionada
+            ? <>Tu mensaje se enviará a <strong>{institucionPreseleccionada.nombre}</strong>.</>
+            : 'Cuéntanos qué está pasando. Una persona del equipo de orientación revisará tu mensaje.'
+        }
+      </p>
+
+      <div class="aviso-privacidad">
+        <p>
+          <strong>Tu mensaje es confidencial.</strong> No se guarda ni se muestra en ningún registro
+          (log) del servidor. Solo el equipo de orientación puede leerlo, y no estás obligada a dejar
+          tu contacto.
+        </p>
+      </div>
+
+      <form id="form-solicitud">
+        {institucionPreseleccionada && (
+          <input type="hidden" name="institucionId" value={institucionPreseleccionada.id} />
+        )}
+
+        <label class="campo">
+          <span>Tipo de caso</span>
+          <select name="tipoCasoId">
+            <option value="">Prefiero no especificar</option>
+            {tiposCaso.map((tipoCaso) => (
+              <option value={tipoCaso.id}>{etiquetaTipoCaso(tipoCaso.nombre)}</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="campo">
+          <span>Tu mensaje</span>
+          <textarea
+            name="mensaje"
+            id="campo-mensaje"
+            required
+            minlength="10"
+            maxlength={MENSAJE_MAX}
+            rows={6}
+            placeholder="Cuéntanos lo que está pasando, con la información que te sientas cómoda compartiendo."
+          ></textarea>
+          <span class="contador"><span id="contador-caracteres">0</span> / {MENSAJE_MAX}</span>
+        </label>
+
+        <label class="campo">
+          <span>Información de contacto (opcional)</span>
+          <input
+            type="text"
+            name="infoContacto"
+            maxlength="200"
+            placeholder="Un teléfono o correo, solo si quieres que te contactemos"
+          />
+        </label>
+
+        <button type="submit" class="btn-enviar">Enviar solicitud</button>
+
+        <p id="mensaje-resultado" class="mensaje-resultado" role="status"></p>
+      </form>
+    </div>
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  .pagina-solicitud {
+    padding-block: 2.5rem 4rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .tarjeta-formulario {
+    background: #fff;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 2rem;
+    max-width: 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tarjeta-formulario h1 {
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 1.8rem);
+    font-weight: 700;
+  }
+
+  .subtitulo {
+    color: var(--color-ink-soft);
+  }
+
+  .aviso-privacidad {
+    background: var(--color-green-soft);
+    border-radius: var(--radius-m);
+    padding: 1rem 1.25rem;
+  }
+
+  .aviso-privacidad p {
+    font-size: 0.85rem;
+    color: #10553f;
+    line-height: 1.55;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .campo select,
+  .campo textarea,
+  .campo input {
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 400;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-m);
+    border: 1px solid rgba(26, 26, 23, 0.15);
+    background: var(--color-cream);
+    color: var(--color-ink);
+    resize: vertical;
+  }
+
+  .campo textarea:focus,
+  .campo select:focus,
+  .campo input:focus {
+    outline: 2px solid var(--color-green);
+    outline-offset: 1px;
+  }
+
+  .contador {
+    align-self: flex-end;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--color-ink-soft);
+  }
+
+  .btn-enviar {
+    background: var(--color-green);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.8rem 1.5rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .btn-enviar:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .mensaje-resultado {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .mensaje-resultado.exito {
+    color: #10553f;
+  }
+
+  .mensaje-resultado.error {
+    color: var(--color-red);
+  }
+
+  @media (max-width: 640px) {
+    .pagina-solicitud {
+      padding-block: 1.5rem 2.5rem;
+    }
+
+    .tarjeta-formulario {
+      padding: 1.35rem 1.25rem;
+    }
+
+    /* 16px evita que iOS haga zoom automático al enfocar el campo. */
+    .campo select,
+    .campo textarea,
+    .campo input {
+      font-size: 1rem;
+    }
+
+    .btn-enviar {
+      padding-block: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  const formulario = document.getElementById('form-solicitud') as HTMLFormElement | null;
+  const campoMensaje = document.getElementById('campo-mensaje') as HTMLTextAreaElement | null;
+  const contador = document.getElementById('contador-caracteres');
+  const resultado = document.getElementById('mensaje-resultado');
+
+  campoMensaje?.addEventListener('input', () => {
+    if (contador) contador.textContent = String(campoMensaje.value.length);
+  });
+
+  formulario?.addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+
+    const boton = formulario.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    const datos = new FormData(formulario);
+
+    const cuerpo = {
+      institucionId: (datos.get('institucionId') as string) || undefined,
+      tipoCasoId: (datos.get('tipoCasoId') as string) || undefined,
+      mensaje: datos.get('mensaje') as string,
+      infoContacto: (datos.get('infoContacto') as string) || undefined,
+    };
+
+    if (boton) boton.disabled = true;
+    if (resultado) {
+      resultado.textContent = '';
+      resultado.className = 'mensaje-resultado';
+    }
+
+    try {
+      const respuesta = await fetch('/api/solicitudes-orientacion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo),
+      });
+
+      const datosRespuesta = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(datosRespuesta.error ?? 'No se pudo enviar tu solicitud.');
+      }
+
+      formulario.reset();
+      if (contador) contador.textContent = '0';
+      if (resultado) {
+        resultado.textContent =
+          'Tu solicitud fue enviada. Alguien del equipo de orientación la revisará pronto.';
+        resultado.classList.add('exito');
+      }
+    } catch (error) {
+      if (resultado) {
+        resultado.textContent =
+          error instanceof Error ? error.message : 'No se pudo enviar tu solicitud.';
+        resultado.classList.add('error');
+      }
+    } finally {
+      if (boton) boton.disabled = false;
+    }
+  });
+</script>

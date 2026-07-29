@@ -9,6 +9,7 @@ export const defaultLang = 'es';
 export const ui = {
 	es: {
 		'nav.inicio': 'Inicio',
+		'nav.directorio': 'Directorio',
 		'nav.recursos': 'Recursos',
 		'nav.asistente': 'Asistente',
 		'nav.blog': 'Blog',
@@ -61,6 +62,7 @@ export const ui = {
 	},
 	en: {
 		'nav.inicio': 'Home',
+		'nav.directorio': 'Directory',
 		'nav.recursos': 'Resources',
 		'nav.asistente': 'Assistant',
 		'nav.blog': 'Blog',
@@ -112,6 +114,7 @@ export const ui = {
 	},
 	qu: {
 		'nav.inicio': 'Qallariy',
+		'nav.directorio': 'Tarina',
 		'nav.recursos': 'Yanapaykuna',
 		'nav.asistente': 'Yanapaq',
 		'nav.blog': 'Willakuykuna',

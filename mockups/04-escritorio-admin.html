@@ -1,0 +1,156 @@
+<title>Escritorio · Panel admin (referencia visual — módulo CMS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --orange-text: color-mix(in srgb, var(--color-orange) 48%, var(--color-ink));
+    --orange-soft: color-mix(in srgb, var(--color-orange) 16%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 10px 24px -16px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 22px 46px -24px rgba(26,26,23,.30);
+    --shadow-lg: 0 6px 14px rgba(26,26,23,.06), 0 40px 70px -30px rgba(26,26,23,.35);
+    --ring-green: 0 0 0 4px color-mix(in srgb, var(--color-green) 22%, transparent);
+    --radius-s: 14px; --radius-m: 20px; --radius-l: 26px; --radius-xl: 32px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background:
+      radial-gradient(1100px 520px at 50% -240px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.55; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; }
+  .shell-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 26px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); max-width: 66ch; font-size: 14.5px; }
+
+  .browser { width: 1240px; max-width: 1240px; background: var(--surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden; }
+  .browser-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #fff, var(--surface-warm)); border-bottom: 1px solid var(--border); }
+  .browser-dots { display: flex; gap: 7px; }
+  .browser-dots span { width: 11px; height: 11px; border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 14%, transparent); display: block; }
+  .browser-url { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--color-ink-soft); box-shadow: inset 0 1px 2px rgba(26,26,23,.04); }
+
+  .ref-banner { display: flex; align-items: center; gap: 11px; background: var(--orange-soft); color: var(--orange-text); border-bottom: 1px solid color-mix(in srgb, var(--color-orange) 34%, transparent); padding: 12px 26px; font-size: 12.5px; font-weight: 600; }
+  .ref-banner svg { flex-shrink: 0; color: var(--color-orange); }
+
+  .admin-nav { display: flex; align-items: center; gap: 20px; padding: 18px 34px; background: linear-gradient(180deg, var(--color-ink), var(--color-footer)); color: #fff; }
+  .admin-nav .logo { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  .admin-nav .who { margin-left: auto; font-size: 12px; color: color-mix(in srgb, var(--color-cream) 78%, transparent); }
+  .admin-links { display: flex; gap: 22px; font-size: 13.5px; }
+  .admin-links a { color: color-mix(in srgb, #fff 72%, transparent); padding: 6px 2px; transition: color .2s ease; }
+  .admin-links a:hover { color: #fff; }
+  .admin-links a.current { color: #fff; font-weight: 600; border-bottom: 2px solid var(--color-green-light); }
+
+  .admin-wrap { padding: 28px 34px; }
+  .admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .admin-head h3 { font-size: 19px; font-weight: 700; }
+  .admin-head .count { font-size: 13px; color: var(--color-ink-soft); margin-top: 4px; }
+  .btn { border-radius: 999px; padding: 11px 20px; font-size: 13.5px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--color-green) 60%, transparent); }
+  .btn.primary:hover { filter: brightness(1.05); }
+
+  .admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface); box-shadow: var(--shadow-sm); }
+  table.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; background: transparent; }
+  table.admin-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-ink-soft); padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface-warm); }
+  table.admin-table td { padding: 15px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.admin-table tbody tr { transition: background .18s ease; }
+  table.admin-table tbody tr:hover { background: color-mix(in srgb, var(--color-green) 4%, transparent); }
+  table.admin-table tr:last-child td { border-bottom: none; }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; border: 1px solid transparent; }
+  .status-pill.on { background: var(--green-soft); color: var(--green-text); border-color: color-mix(in srgb, var(--color-green) 26%, transparent); }
+  .status-pill.off { background: color-mix(in srgb, var(--color-cream-dark) 60%, #fff); color: var(--color-ink-soft); border-color: var(--border); }
+  .row-actions { display: flex; gap: 8px; }
+  .row-actions button { border: 1px solid var(--border); background: var(--surface); color: var(--color-ink-soft); font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 999px; transition: all .18s ease; }
+  .row-actions button:hover { color: var(--color-green); border-color: var(--color-green); }
+  .icon { width: 15px; height: 15px; flex-shrink: 0; }
+</style>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · referencia visual</span>
+    <h1>Escritorio — Panel admin de instituciones</h1>
+    <p>Este panel administrativo no es parte del módulo del directorio institucional: lo construye el equipo del CMS sobre su propia sesión de administrador. Aquí solo se muestra como referencia de cómo se vería, usando la API pública de solo lectura y los endpoints de escritura que expone el CMS.</p>
+  </div>
+  <div class="browser">
+    <div class="browser-bar">
+      <div class="browser-dots"><span></span><span></span><span></span></div>
+      <div class="browser-url">yanapaway.com/cms/instituciones</div>
+    </div>
+    <div>
+      <div class="ref-banner">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        Referencia visual — este panel lo construye el módulo CMS de Miguel, no el directorio institucional. Se incluye solo para mostrar cómo consumiría la API de instituciones.
+      </div>
+      <nav class="admin-nav">
+        <span class="logo">yanapaway · cms</span>
+        <div class="admin-links">
+          <a href="#" class="current">Instituciones</a>
+          <a href="#">Solicitudes</a>
+          <a href="#">Usuarios</a>
+        </div>
+        <span class="who">carlos.colque@cms.yanapaway.com</span>
+      </nav>
+
+      <div class="admin-wrap">
+        <div class="admin-head">
+          <div>
+            <h3>Instituciones registradas</h3>
+            <p class="count">6 de 12 mostradas · filtros omitidos en esta referencia</p>
+          </div>
+          <button class="btn primary">+ Nueva institución</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Nombre</th><th>Tipo</th><th>Emergencia</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Línea 156 · Atención inmediata</td><td>Línea de emergencia</td><td><span class="status-pill on">Sí</span></td>
+                <td><span class="status-pill on">Activa</span></td><td>hace 2 días</td>
+                <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+              </tr>
+              <tr>
+                <td>FELCV Sucre</td><td>FELCV</td><td><span class="status-pill off">No</span></td>
+                <td><span class="status-pill on">Activa</span></td><td>hace 6 días</td>
+                <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+              </tr>
+              <tr>
+                <td>Defensoría de la Niñez y Adolescencia</td><td>Defensoría</td><td><span class="status-pill off">No</span></td>
+                <td><span class="status-pill on">Activa</span></td><td>hace 1 semana</td>
+                <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+              </tr>
+              <tr>
+                <td>SLIM Sucre</td><td>SLIM</td><td><span class="status-pill off">No</span></td>
+                <td><span class="status-pill off">Inactiva</span></td><td>hace 3 semanas</td>
+                <td class="row-actions"><button>Editar</button><button>Reactivar</button></td>
+              </tr>
+              <tr>
+                <td>Fiscalía Departamental de Chuquisaca</td><td>Fiscalía</td><td><span class="status-pill off">No</span></td>
+                <td><span class="status-pill on">Activa</span></td><td>hace 2 semanas</td>
+                <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+              </tr>
+              <tr>
+                <td>Policía Boliviana · EPI Sucre</td><td>Policía</td><td><span class="status-pill off">No</span></td>
+                <td><span class="status-pill on">Activa</span></td><td>hace 4 semanas</td>
+                <td class="row-actions"><button>Editar</button><button>Desactivar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

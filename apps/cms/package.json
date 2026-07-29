@@ -12,6 +12,7 @@
     "start": "strapi start",
     "strapi": "strapi",
     "seed": "tsx scripts/seed.ts",
+    "seed:instituciones": "tsx scripts/seed-instituciones.ts",
     "pretest": "rm -rf dist && tsc -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",

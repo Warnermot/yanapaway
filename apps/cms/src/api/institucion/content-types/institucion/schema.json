@@ -19,7 +19,18 @@
     },
     "tipo": {
       "type": "enumeration",
-      "enum": ["policial", "judicial", "salud", "psicologico", "ong", "refugio"],
+      "enum": [
+        "defensoria",
+        "felcv",
+        "fiscalia",
+        "policia",
+        "slim",
+        "linea_emergencia",
+        "psicologico",
+        "ong",
+        "refugio",
+        "otro"
+      ],
       "required": true,
       "description": "Categoría de la institución."
     },
@@ -67,6 +78,28 @@
       "required": true,
       "default": true,
       "description": "Baja lógica. Nunca se borra físicamente un registro: una institución que dejó de operar se marca como inactiva."
+    },
+    "latitud": {
+      "type": "decimal",
+      "required": false,
+      "description": "Coordenada de latitud, para el punto en el mapa. Vacío si la institución solo tiene sedes (usar sedeInstitucion.latitud en ese caso)."
+    },
+    "longitud": {
+      "type": "decimal",
+      "required": false,
+      "description": "Coordenada de longitud, para el punto en el mapa. Vacío si la institución solo tiene sedes (usar sedeInstitucion.longitud en ese caso)."
+    },
+    "sedes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::sede-institucion.sede-institucion",
+      "mappedBy": "institucion"
+    },
+    "tiposCaso": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tipo-caso.tipo-caso",
+      "inversedBy": "instituciones"
     }
   }
 }

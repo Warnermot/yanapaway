@@ -1,0 +1,127 @@
+<title>Móvil · Panel admin (referencia visual — módulo CMS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --color-cream: #f4efe4; --color-cream-dark: #e8e1d1; --color-green: #1c7a5e; --color-green-light: #57bd8a;
+    --color-orange: #e3a63f; --color-red: #c23b3b; --color-ink: #1a1a17; --color-ink-soft: #4b4a45; --color-footer: #17140f;
+    --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --surface: #ffffff;
+    --surface-warm: color-mix(in srgb, var(--color-cream) 55%, #ffffff);
+    --border: color-mix(in srgb, var(--color-ink) 9%, transparent);
+    --border-strong: color-mix(in srgb, var(--color-ink) 15%, transparent);
+    --green-deep: color-mix(in srgb, var(--color-green) 78%, var(--color-ink));
+    --green-text: color-mix(in srgb, var(--color-green) 62%, var(--color-ink));
+    --green-soft: color-mix(in srgb, var(--color-green) 12%, #ffffff);
+    --orange-text: color-mix(in srgb, var(--color-orange) 48%, var(--color-ink));
+    --orange-soft: color-mix(in srgb, var(--color-orange) 16%, #ffffff);
+    --shadow-sm: 0 1px 2px rgba(26,26,23,.05), 0 8px 20px -14px rgba(26,26,23,.22);
+    --shadow-md: 0 2px 5px rgba(26,26,23,.05), 0 20px 44px -24px rgba(26,26,23,.30);
+    --radius-s: 14px; --radius-m: 18px; --radius-l: 24px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background:
+      radial-gradient(900px 460px at 50% -220px, color-mix(in srgb, var(--color-green) 10%, var(--color-cream)), transparent 70%),
+      linear-gradient(170deg, color-mix(in srgb, var(--color-cream) 72%, #fff), var(--color-cream-dark));
+    background-attachment: fixed;
+    color: var(--color-ink); font-family: var(--font-sans); line-height: 1.5; }
+  h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  a { text-decoration: none; color: inherit; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 96px; display: flex; flex-direction: column; align-items: center; }
+  .shell-head { max-width: 640px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 26px; text-align: center; }
+  .shell-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-green); font-weight: 700; }
+  .shell-head h1 { font-size: 23px; font-weight: 700; }
+  .shell-head p { color: var(--color-ink-soft); font-size: 14px; }
+
+  .phone { width: 390px; background: var(--surface); border-radius: 46px; border: 11px solid var(--color-footer); box-shadow: var(--shadow-md), 0 40px 80px -40px rgba(26,26,23,.5); overflow: hidden; position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 24px; background: var(--color-footer); border-radius: 0 0 16px 16px; z-index: 5; }
+  .phone-screen { height: 820px; overflow-y: auto; background: var(--surface-warm); }
+
+  .ref-banner { display: flex; align-items: flex-start; gap: 9px; background: var(--orange-soft); color: var(--orange-text); border-bottom: 1px solid color-mix(in srgb, var(--color-orange) 34%, transparent); padding: 12px 15px; font-size: 11px; font-weight: 600; line-height: 1.5; }
+  .ref-banner svg { flex-shrink: 0; color: var(--color-orange); margin-top: 1px; }
+
+  .admin-nav { display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; background: linear-gradient(180deg, var(--color-ink), var(--color-footer)); color: #fff; }
+  .admin-nav .logo { font-size: 14.5px; font-weight: 700; letter-spacing: -.01em; }
+  .admin-nav .who { font-size: 10.5px; color: color-mix(in srgb, var(--color-cream) 78%, transparent); }
+
+  .m-admin-body { padding: 16px 16px 80px; }
+  .m-admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .m-admin-head h3 { font-size: 16px; font-weight: 700; }
+  .m-admin-head p { font-size: 11px; color: var(--color-ink-soft); margin-top: 2px; }
+  .btn { border-radius: 999px; padding: 9px 15px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong); background: var(--surface); color: var(--color-ink); transition: all .18s ease; }
+  .btn.primary { background: linear-gradient(180deg, var(--color-green-light), var(--color-green)); color: #fff; border-color: transparent; box-shadow: 0 8px 16px -8px color-mix(in srgb, var(--color-green) 60%, transparent); }
+
+  .m-admin-card { background: linear-gradient(180deg, #fff, var(--surface-warm)); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 15px 16px; margin-bottom: 11px; box-shadow: var(--shadow-sm); }
+  .m-admin-card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .m-admin-card .name { font-weight: 600; font-size: 13.5px; }
+  .m-admin-card .meta { font-size: 11px; color: var(--color-ink-soft); margin-top: 3px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid transparent; }
+  .status-pill.on { background: var(--green-soft); color: var(--green-text); border-color: color-mix(in srgb, var(--color-green) 26%, transparent); }
+  .status-pill.off { background: color-mix(in srgb, var(--color-cream-dark) 60%, #fff); color: var(--color-ink-soft); border-color: var(--border); }
+  .row-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .row-actions button { border: 1px solid var(--border); background: var(--surface); color: var(--color-ink-soft); font-size: 11.5px; font-weight: 600; padding: 6px 14px; border-radius: 999px; transition: all .18s ease; }
+  .row-actions button:hover { color: var(--color-green); border-color: var(--color-green); }
+  .icon { width: 13px; height: 13px; flex-shrink: 0; }
+</style>
+<div class="shell">
+  <div class="shell-head">
+    <span class="eyebrow">Mockup · referencia visual</span>
+    <h1>Móvil — Panel admin de instituciones</h1>
+    <p>Este panel lo construye el módulo CMS, no el directorio institucional; se muestra solo como referencia visual adaptada a móvil.</p>
+  </div>
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="ref-banner">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        Referencia visual — panel del módulo CMS, no del directorio institucional.
+      </div>
+      <nav class="admin-nav">
+        <span class="logo">yanapaway · cms</span>
+        <span class="who">carlos.colque</span>
+      </nav>
+      <div class="m-admin-body">
+        <div class="m-admin-head">
+          <div>
+            <h3>Instituciones</h3>
+            <p>6 de 12 mostradas</p>
+          </div>
+          <button class="btn primary">+ Nueva</button>
+        </div>
+
+        <div class="m-admin-card">
+          <div class="top">
+            <div><div class="name">Línea 156</div><div class="meta">Línea de emergencia</div></div>
+            <span class="status-pill on">Activa</span>
+          </div>
+          <div class="row-actions"><button>Editar</button><button>Desactivar</button></div>
+        </div>
+        <div class="m-admin-card">
+          <div class="top">
+            <div><div class="name">FELCV Sucre</div><div class="meta">FELCV</div></div>
+            <span class="status-pill on">Activa</span>
+          </div>
+          <div class="row-actions"><button>Editar</button><button>Desactivar</button></div>
+        </div>
+        <div class="m-admin-card">
+          <div class="top">
+            <div><div class="name">Defensoría de la Niñez</div><div class="meta">Defensoría</div></div>
+            <span class="status-pill on">Activa</span>
+          </div>
+          <div class="row-actions"><button>Editar</button><button>Desactivar</button></div>
+        </div>
+        <div class="m-admin-card">
+          <div class="top">
+            <div><div class="name">SLIM Sucre</div><div class="meta">SLIM</div></div>
+            <span class="status-pill off">Inactiva</span>
+          </div>
+          <div class="row-actions"><button>Editar</button><button>Reactivar</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

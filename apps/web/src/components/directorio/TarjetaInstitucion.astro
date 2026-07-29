@@ -1,0 +1,170 @@
+---
+import type { Institucion } from '../../lib/instituciones';
+import { TIPO_INSTITUCION_LABELS, etiquetaTipoCaso } from '../../lib/etiquetas';
+
+interface Props {
+  institucion: Institucion;
+  tiposCaso?: { id: string; nombre: string }[];
+  distanciaKm?: number;
+}
+
+const { institucion, tiposCaso = [], distanciaKm } = Astro.props;
+---
+
+<article class="tarjeta">
+  <div class="tarjeta-top">
+    <div>
+      <h3>{institucion.nombre}</h3>
+      <div class="tarjeta-tags">
+        <span class="tag tipo">{TIPO_INSTITUCION_LABELS[institucion.tipo]}</span>
+      </div>
+    </div>
+    {distanciaKm !== undefined && <span class="distancia">a {distanciaKm.toFixed(1)} km</span>}
+  </div>
+
+  {institucion.direccion && <p class="direccion">{institucion.direccion}</p>}
+  {institucion.descripcion && <p class="descripcion">{institucion.descripcion}</p>}
+
+  {
+    tiposCaso.length > 0 && (
+      <div class="tarjeta-tags">
+        {tiposCaso.map((tipoCaso) => (
+          <span class="tag">{etiquetaTipoCaso(tipoCaso.nombre)}</span>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="tarjeta-acciones">
+    {
+      institucion.telefono && (
+        <a class="btn primario" href={`tel:${institucion.telefono}`}>
+          Llamar
+        </a>
+      )
+    }
+    <a class="btn fantasma" href={`/instituciones/${institucion.id}`}>
+      Ver ficha
+    </a>
+  </div>
+</article>
+
+<style>
+  .tarjeta {
+    background: #fff;
+    border: 1px solid rgba(26, 26, 23, 0.08);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .tarjeta-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .tarjeta h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .tarjeta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: var(--color-cream-dark);
+    color: var(--color-ink-soft);
+  }
+
+  .tag.tipo {
+    background: var(--color-green-soft);
+    color: #10553f;
+    font-weight: 600;
+  }
+
+  .tag.emergencia {
+    background: var(--color-red-soft);
+    color: var(--color-red);
+    font-weight: 600;
+  }
+
+  .distancia {
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+    white-space: nowrap;
+  }
+
+  .direccion,
+  .descripcion {
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+  }
+
+  .tarjeta-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid rgba(26, 26, 23, 0.12);
+    color: var(--color-ink);
+    transition:
+      background 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn.primario {
+    background: var(--color-green);
+    color: #fff;
+    border-color: var(--color-green);
+  }
+
+  .btn.fantasma {
+    background: transparent;
+  }
+
+  @media (max-width: 640px) {
+    .tarjeta {
+      padding: 1.1rem 1.15rem;
+    }
+
+    /* La distancia baja a su propia línea en vez de comprimir el nombre. */
+    .tarjeta-top {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    /* Botones a ancho completo repartidos en la fila: objetivos de toque
+       cómodos, sin envolverse de forma irregular. */
+    .tarjeta-acciones .btn {
+      flex: 1 1 auto;
+      min-height: 2.6rem;
+    }
+  }
+</style>
