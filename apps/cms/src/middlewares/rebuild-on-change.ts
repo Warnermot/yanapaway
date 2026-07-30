@@ -12,7 +12,7 @@ const ACCIONES_DRAFT_PUBLISH = new Set(['publish', 'unpublish']);
 // Contenido sin draft & publish: siempre está "vivo", cualquier cambio debe
 // reflejarse en el sitio.
 const UIDS_SIEMPRE_VIVOS = new Set([
-  'api::seccion.seccion',
+  'api::categoria-recurso.categoria-recurso',
   'api::sobre-el-proyecto.sobre-el-proyecto',
   'api::terminos.terminos',
   'api::privacidad.privacidad',

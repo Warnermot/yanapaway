@@ -1,0 +1,121 @@
+---
+import type { PaginaRecurso } from '../../lib/recursos';
+import { getPlaceholderVariant } from '../../lib/imagePlaceholders';
+
+interface Props {
+	pagina: PaginaRecurso;
+	/** Posición en la grilla: define la variante del placeholder cuando no hay portada. */
+	indice?: number;
+}
+
+const { pagina, indice = 0 } = Astro.props;
+const href = `/recursos/${pagina.slug}`;
+---
+
+<article class="tarjeta-recurso">
+	<a class="tarjeta-imagen-enlace" href={href} tabindex="-1" aria-hidden="true">
+		{
+			pagina.portadaUrl ? (
+				<img class="tarjeta-imagen" src={pagina.portadaUrl} alt={pagina.portadaAlt ?? ''} loading="lazy" />
+			) : (
+				<div class={`tarjeta-imagen img-placeholder ${getPlaceholderVariant(indice)}`} />
+			)
+		}
+	</a>
+
+	<div class="tarjeta-cuerpo">
+		{pagina.categoria && <span class="tag">{pagina.categoria.nombre}</span>}
+
+		<h3 class="tarjeta-titulo">
+			<a href={href}>{pagina.titulo}</a>
+		</h3>
+
+		<p class="tarjeta-resumen">{pagina.resumen}</p>
+
+		{
+			pagina.nivelSensibilidad === 'sensible' && (
+				<p class="aviso-sensible">Contiene material que puede resultar angustiante.</p>
+			)
+		}
+
+		<a class="pill-btn tarjeta-cta" href={href}>Leer más</a>
+	</div>
+</article>
+
+<style>
+	.tarjeta-recurso {
+		background: #fff;
+		border: 1px solid rgba(26, 26, 23, 0.08);
+		border-radius: var(--radius-l);
+		box-shadow: var(--shadow-soft);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.tarjeta-imagen-enlace {
+		display: block;
+	}
+
+	.tarjeta-imagen {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+	}
+
+	.tarjeta-cuerpo {
+		padding: 1.15rem 1.35rem 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.6rem;
+		flex: 1;
+	}
+
+	.tag {
+		font-size: 0.72rem;
+		font-weight: 600;
+		padding: 0.2rem 0.65rem;
+		border-radius: 999px;
+		background: var(--color-green-soft);
+		color: #10553f;
+	}
+
+	.tarjeta-titulo {
+		font-size: 1.05rem;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	.tarjeta-titulo a {
+		color: var(--color-ink);
+		text-decoration: none;
+	}
+
+	.tarjeta-titulo a:hover,
+	.tarjeta-titulo a:focus-visible {
+		text-decoration: underline;
+	}
+
+	.tarjeta-resumen {
+		font-size: 0.88rem;
+		color: var(--color-ink-soft);
+		line-height: 1.6;
+	}
+
+	.aviso-sensible {
+		font-size: 0.78rem;
+		color: var(--color-red);
+		font-weight: 500;
+	}
+
+	.tarjeta-cta {
+		margin-top: auto;
+		background: var(--color-secondary);
+		color: white;
+		padding: 0.5rem 1.75rem;
+		font-weight: 500;
+	}
+</style>

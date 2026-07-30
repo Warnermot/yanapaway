@@ -7,6 +7,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('../strapi-ts-patch.cjs');
 
+import fs from 'fs/promises';
 import path from 'path';
 import type { Core } from '@strapi/strapi';
 
@@ -57,11 +58,27 @@ export async function cleanupStrapi(): Promise<void> {
     return;
   }
 
-  await global.strapi.server.httpServer.close();
-  await global.strapi.db.connection.destroy();
+  // El archivo sqlite es único por archivo de test (ver config/env/test/database.ts)
+  // y no se vuelve a usar: hay que anotarlo antes de destruir la conexión para
+  // poder borrarlo después y no dejar 1,5 MB de basura por corrida en .tmp/.
+  const sqliteFile = (
+    global.strapi.db.connection.client?.config?.connection as { filename?: string } | undefined
+  )?.filename;
 
+  // `strapi.destroy()` ya cierra el servidor HTTP y destruye el pool de knex,
+  // en ese orden y esperando lo que quede en vuelo. Destruir el pool a mano
+  // antes deja pendientes las operaciones que Strapi todavía va a hacer
+  // durante su propio apagado: tarn las aborta con un `Error: aborted` que
+  // nadie maneja, y el proceso de Jest muere sin imprimir resultados.
   if (typeof global.strapi.destroy === 'function') {
     await global.strapi.destroy();
+  } else {
+    await global.strapi.server.httpServer.close();
+    await global.strapi.db.connection.destroy();
+  }
+
+  if (sqliteFile && sqliteFile !== ':memory:') {
+    await fs.rm(sqliteFile, { force: true });
   }
 
   instance = undefined;

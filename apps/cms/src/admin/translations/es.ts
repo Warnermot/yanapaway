@@ -33,7 +33,7 @@ export const es = {
   'app.components.HomePage.welcome': 'Te damos la bienvenida',
   'app.components.HomePage.welcome.again': 'Hola de nuevo',
   'app.components.HomePage.welcomeBlock.content.again':
-    'Desde acá se gestionan las páginas, las secciones y las instituciones de contacto del sitio.',
+    'Desde acá se gestionan las páginas de recursos, sus categorías y las instituciones de contacto del sitio.',
   'HomePage.welcome.congrats.content':
     'Esta cuenta es la de administración principal del proyecto.',
 

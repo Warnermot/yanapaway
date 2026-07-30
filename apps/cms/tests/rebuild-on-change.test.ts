@@ -1,7 +1,7 @@
 import { setupStrapi, cleanupStrapi } from './helpers/strapi';
 
 const PAGINA_UID = 'api::pagina.pagina' as const;
-const SECCION_UID = 'api::seccion.seccion' as const;
+const CATEGORIA_UID = 'api::categoria-recurso.categoria-recurso' as const;
 
 // La app real (cargada desde dist/, ver tests/helpers/strapi.ts) y este
 // archivo de test (transformado en vivo por ts-jest desde src/) NO comparten
@@ -17,7 +17,7 @@ function esperar(ms: number): Promise<void> {
 
 describe('rebuild-on-change: qué acciones disparan el webhook agrupado', () => {
   const originalFetch = global.fetch;
-  let seccionId: string;
+  let categoriaId: string;
 
   beforeAll(async () => {
     process.env.REBUILD_WEBHOOK_URL = 'https://example.test/rebuild';
@@ -28,10 +28,10 @@ describe('rebuild-on-change: qué acciones disparan el webhook agrupado', () => 
 
     await setupStrapi();
 
-    const seccion = await strapi.documents(SECCION_UID).create({
-      data: { nombre: '[DATOS DE PRUEBA] Sección rebuild', slug: `seccion-rebuild-${Date.now()}`, orden: 1 },
+    const categoria = await strapi.documents(CATEGORIA_UID).create({
+      data: { nombre: '[DATOS DE PRUEBA] Categoría rebuild', slug: `categoria-rebuild-${Date.now()}`, orden: 1 },
     });
-    seccionId = seccion.documentId;
+    categoriaId = categoria.documentId;
     await esperar(DEBOUNCE_MS * 4);
     (global.fetch as jest.Mock).mockClear();
   }, 60000);
@@ -56,7 +56,7 @@ describe('rebuild-on-change: qué acciones disparan el webhook agrupado', () => 
         titulo: '[DATOS DE PRUEBA] Página publicada',
         slug: `pagina-publicada-${Date.now()}`,
         resumen: 'resumen de prueba',
-        seccion: seccionId,
+        categoria: categoriaId,
         nivelSensibilidad: 'general',
       },
       status: 'published',
@@ -72,7 +72,7 @@ describe('rebuild-on-change: qué acciones disparan el webhook agrupado', () => 
         titulo: '[DATOS DE PRUEBA] Página borrador',
         slug: `pagina-borrador-${Date.now()}`,
         resumen: 'resumen de prueba',
-        seccion: seccionId,
+        categoria: categoriaId,
         nivelSensibilidad: 'general',
       },
     });
@@ -81,9 +81,9 @@ describe('rebuild-on-change: qué acciones disparan el webhook agrupado', () => 
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('dispara el webhook al crear una sección (siempre vivo, sin draft/publish)', async () => {
-    await strapi.documents(SECCION_UID).create({
-      data: { nombre: '[DATOS DE PRUEBA] Otra sección', slug: `otra-seccion-${Date.now()}`, orden: 2 },
+  it('dispara el webhook al crear una categoría de recurso (siempre vivo, sin draft/publish)', async () => {
+    await strapi.documents(CATEGORIA_UID).create({
+      data: { nombre: '[DATOS DE PRUEBA] Otra categoría', slug: `otra-categoria-${Date.now()}`, orden: 2 },
     });
 
     await esperar(DEBOUNCE_MS * 4);

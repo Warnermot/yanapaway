@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "categorias_recurso",
+  "info": {
+    "singularName": "categoria-recurso",
+    "pluralName": "categorias-recurso",
+    "displayName": "Categoría de recurso",
+    "description": "Agrupación temática de las páginas de recursos (ej. \"Contenidos educativos\", \"Datos estadísticos\"). Solo agrupa y etiqueta las tarjetas de /recursos: NO forma parte de la URL (las páginas viven en /recursos/{slug}) ni alimenta el menú de navegación."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "description": "Nombre de la categoría tal como se muestra en el listado de recursos."
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombre",
+      "required": true,
+      "description": "Identificador único de la categoría. Se genera a partir del nombre. No aparece en la URL pública."
+    },
+    "descripcion": {
+      "type": "text",
+      "required": false,
+      "description": "Bajada breve opcional para la categoría."
+    },
+    "icono": {
+      "type": "string",
+      "required": false,
+      "description": "Nombre o clave de ícono a usar en el sitio (definido por el equipo de diseño del sitio)."
+    },
+    "orden": {
+      "type": "integer",
+      "required": true,
+      "description": "Posición de la categoría en el listado de recursos. Menor primero."
+    },
+    "paginas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pagina.pagina",
+      "mappedBy": "categoria"
+    }
+  }
+}

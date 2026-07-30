@@ -30,21 +30,21 @@ async function main(): Promise<void> {
   const app = await createStrapi(appContext).load();
 
   try {
-    const seccionUID = 'api::seccion.seccion';
+    const categoriaUID = 'api::categoria-recurso.categoria-recurso';
     const paginaUID = 'api::pagina.pagina';
     const institucionUID = 'api::institucion.institucion';
 
-    // --- Secciones ---
-    const seccionesDef = [
+    // --- Categorías de recurso ---
+    const categoriasDef = [
       { nombre: `${PREFIJO} Reconocer la violencia`, slug: 'reconocer-la-violencia', orden: 1 },
       { nombre: `${PREFIJO} Aspectos legales`, slug: 'aspectos-legales', orden: 2 },
     ];
 
-    const secciones: Record<string, string> = {};
-    for (const def of seccionesDef) {
-      const existente = await app.documents(seccionUID).findFirst({ filters: { slug: def.slug } });
-      const doc = existente ?? (await app.documents(seccionUID).create({ data: def }));
-      secciones[def.slug] = doc.documentId;
+    const categorias: Record<string, string> = {};
+    for (const def of categoriasDef) {
+      const existente = await app.documents(categoriaUID).findFirst({ filters: { slug: def.slug } });
+      const doc = existente ?? (await app.documents(categoriaUID).create({ data: def }));
+      categorias[def.slug] = doc.documentId;
     }
 
     // --- Páginas (publicadas) ---
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
         titulo: `${PREFIJO} ¿Qué es la violencia de pareja?`,
         slug: 'que-es-la-violencia-de-pareja',
         resumen: 'Contenido de ejemplo para desarrollo. No es material real de apoyo.',
-        seccion: secciones['reconocer-la-violencia'],
+        categoria: categorias['reconocer-la-violencia'],
         nivelSensibilidad: 'sensible' as const,
         orden: 1,
       },
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
         titulo: `${PREFIJO} Tus derechos`,
         slug: 'tus-derechos',
         resumen: 'Contenido de ejemplo para desarrollo. No es asesoría legal real.',
-        seccion: secciones['aspectos-legales'],
+        categoria: categorias['aspectos-legales'],
         nivelSensibilidad: 'general' as const,
         orden: 1,
       },

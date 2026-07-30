@@ -11,12 +11,11 @@ const { lang = defaultLang, rutaActiva } = Astro.props;
 const t = useTranslations(lang);
 
 const navLinks = [
-	{ label: t('nav.inicio'), href: '#inicio' },
+	{ label: t('nav.inicio'), href: '/' },
 	{ label: t('nav.directorio'), href: '/instituciones' },
-	{ label: t('nav.recursos'), href: '#recursos' },
+	{ label: t('nav.recursos'), href: '/recursos' },
 	{ label: t('nav.asistente'), href: '/asistente' },
-	{ label: t('nav.blog'), href: '#blog' },
-	{ label: t('nav.contactos'), href: '#contactos' },
+	{ label: t('nav.blog'), href: '/blog' },
 ];
 ---
 

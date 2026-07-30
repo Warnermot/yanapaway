@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "comentarios_historia",
+  "info": {
+    "singularName": "comentario-historia",
+    "pluralName": "comentarios-historia",
+    "displayName": "Comentario de historia",
+    "description": "Mensaje de apoyo anónimo sobre una Historia. Igual que las historias, entra como borrador y no se muestra hasta que un gestor lo publique: el peor resultado posible de este producto es una respuesta cruel bajo el testimonio de una sobreviviente."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "contenido": {
+      "type": "text",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 2000,
+      "description": "Texto del mensaje de apoyo, en texto plano. Nunca HTML."
+    },
+    "alias": {
+      "type": "string",
+      "required": true,
+      "description": "Seudónimo generado automáticamente en el servidor. No se vincula con el alias de ninguna historia."
+    },
+    "ipHash": {
+      "type": "string",
+      "required": false,
+      "private": true,
+      "description": "Hash con sal de la IP de origen, solo para moderación. Marcado como privado: NUNCA sale en una respuesta de la API."
+    },
+    "historia": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::historia.historia",
+      "inversedBy": "comentarios",
+      "required": true,
+      "description": "Historia que este mensaje acompaña."
+    }
+  }
+}

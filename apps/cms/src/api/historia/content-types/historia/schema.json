@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "historias",
+  "info": {
+    "singularName": "historia",
+    "pluralName": "historias",
+    "displayName": "Historia",
+    "description": "Testimonio anónimo enviado por una sobreviviente desde /blog. No hay cuentas ni login: quien escribe queda identificada solo por un alias generado en el servidor. Draft & Publish ES la cola de moderación: toda historia entra como borrador y no es visible en el sitio hasta que un gestor la publique explícitamente."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "contenido": {
+      "type": "text",
+      "required": true,
+      "minLength": 20,
+      "maxLength": 8000,
+      "description": "Texto de la historia, en texto plano. Nunca HTML: el sitio lo renderiza escapado, respetando los saltos de línea."
+    },
+    "categoria": {
+      "type": "enumeration",
+      "enum": [
+        "general",
+        "violencia_fisica",
+        "violencia_psicologica",
+        "violencia_economica",
+        "violencia_digital",
+        "proceso_de_salida",
+        "recuperacion"
+      ],
+      "default": "general",
+      "required": true,
+      "description": "Agrupa la historia en los filtros de /blog. Lista cerrada: el sitio rechaza cualquier otro valor."
+    },
+    "alias": {
+      "type": "string",
+      "required": true,
+      "description": "Seudónimo generado automáticamente en el servidor (ej. \"Marea Resiliente #4821\"). No lo elige quien publica y no guarda ninguna relación con una persona."
+    },
+    "ipHash": {
+      "type": "string",
+      "required": false,
+      "private": true,
+      "description": "Hash con sal de la IP de origen, solo para que la moderación detecte spam desde un mismo origen. Marcado como privado: NUNCA sale en una respuesta de la API. Queda vacío si HASH_SALT no está configurado."
+    },
+    "comentarios": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::comentario-historia.comentario-historia",
+      "mappedBy": "historia"
+    }
+  }
+}
