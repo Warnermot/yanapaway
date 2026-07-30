@@ -25,7 +25,11 @@ FROM deps AS dev
 COPY apps/cms ./apps/cms
 WORKDIR /app/apps/cms
 EXPOSE 1337
-CMD ["pnpm", "strapi", "develop"]
+# Invoke the binary directly instead of through `pnpm`. The deps above are a
+# filtered install, which pnpm records as unverifiable; its pre-run dependency
+# check would therefore purge node_modules and reinstall the whole workspace,
+# and that fails without a TTY. Going straight to the binary skips the check.
+CMD ["./node_modules/.bin/strapi", "develop"]
 
 # ---- build: compile the admin panel and server ----
 FROM deps AS build

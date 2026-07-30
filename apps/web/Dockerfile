@@ -23,7 +23,9 @@ FROM deps AS dev
 COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 EXPOSE 4321
-CMD ["pnpm", "astro", "dev", "--host", "0.0.0.0"]
+# See apps/cms/Dockerfile: bypass pnpm's pre-run dependency check, which cannot
+# verify a filtered install and would reinstall the workspace without a TTY.
+CMD ["./node_modules/.bin/astro", "dev", "--host", "0.0.0.0"]
 
 # ---- build: compile the static site ----
 FROM deps AS build
