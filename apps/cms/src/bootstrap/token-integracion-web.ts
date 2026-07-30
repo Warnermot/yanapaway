@@ -38,7 +38,23 @@ const PERMISOS_LECTURA_PUBLICA = [
 
 const PERMISOS_ESCRITURA_SOLICITUDES = ['api::solicitud-orientacion.solicitud-orientacion.create'];
 
-const PERMISOS_ESPERADOS = [...PERMISOS_LECTURA_PUBLICA, ...PERMISOS_ESCRITURA_SOLICITUDES];
+// Subproducto /blog: el sitio lee lo que ya está publicado y crea borradores.
+// No lleva `update`, `delete` ni forma alguna de publicar — aprobar un
+// testimonio o un mensaje de apoyo es una acción de una persona en el panel
+// (ver middlewares/blog-moderacion.ts, que además lo bloquea en el backend).
+const PERMISOS_BLOG = [
+  'api::historia.historia.find',
+  'api::historia.historia.findOne',
+  'api::historia.historia.create',
+  'api::comentario-historia.comentario-historia.find',
+  'api::comentario-historia.comentario-historia.create',
+];
+
+const PERMISOS_ESPERADOS = [
+  ...PERMISOS_LECTURA_PUBLICA,
+  ...PERMISOS_ESCRITURA_SOLICITUDES,
+  ...PERMISOS_BLOG,
+];
 
 // `getByName` devuelve `permissions` como arreglo de strings (las acciones ya
 // aplanadas), aunque en la base sean filas de `admin::permission` con campo
@@ -123,8 +139,9 @@ export async function asegurarTokenIntegracionWeb({ strapi }: { strapi: Core.Str
   const creado = await servicio.create({
     name: NOMBRE_TOKEN,
     description:
-      'Único acceso de apps/web al directorio y a las páginas de recursos (lectura) y a ' +
-      'solicitudes de orientación (creación). ' +
+      'Único acceso de apps/web al directorio y a las páginas de recursos (lectura), a ' +
+      'solicitudes de orientación (creación) y al blog de historias (lectura de lo publicado ' +
+      'y creación de borradores pendientes de moderación). ' +
       'Creado automáticamente por SEED_WEB_API_TOKEN para dev/staging reproducibles.',
     type: 'custom',
     lifespan: null,

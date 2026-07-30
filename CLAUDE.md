@@ -2,8 +2,15 @@
 
 Monorepo pnpm con dos apps:
 
-- `apps/web` — sitio Astro (estático, sin backend propio)
+- `apps/web` — sitio Astro en modo SSR (`output: 'server'` con adapter Node). Tiene
+  rutas propias bajo `src/pages/api/**`: son las que hablan con Strapi usando el
+  token del servidor, para que nunca salga al navegador.
 - `apps/cms` — Strapi 5 (backend headless que alimenta a `apps/web` vía API REST)
+
+El único acceso de `apps/web` a Strapi es un token de API cuya lista de permisos
+vive en `apps/cms/src/bootstrap/token-integracion-web.ts`. Al agregar un
+content-type nuevo hay que sumarlo a esa lista, o el sitio recibe un 401
+silencioso.
 
 Ver `make help` para todos los comandos disponibles.
 

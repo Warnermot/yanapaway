@@ -40,6 +40,8 @@ Base: `https://<cms-host>/api`
 | Páginas de recursos | `GET /paginas` · `GET /paginas/:documentId` | Filtrables por categoría. Se publican en el sitio como `/recursos/{slug}` |
 | Categorías de recurso | `GET /categorias-recurso` | Agrupan las tarjetas de `/recursos`. No forman parte de la URL |
 | Instituciones | `GET /instituciones` | Filtrables por tipo/ciudad |
+| Historias del blog | `GET /historias` · `GET /historias/:documentId` · `POST /historias` | Testimonios anónimos de `/blog`. Ver *Blog de historias* más abajo |
+| Comentarios de historias | `GET /comentarios-historia` · `POST /comentarios-historia` | Mensajes de apoyo. Se filtran por `filters[historia][documentId][$eq]` |
 | Sobre el proyecto | `GET /sobre-el-proyecto` | Single type |
 | Términos | `GET /terminos` | Single type |
 | Privacidad | `GET /privacidad` | Single type |
@@ -63,6 +65,35 @@ GET /paginas?status=draft    # solo borradores (requiere permiso; no lo usa el b
 
 El build del sitio siempre consume el default (publicado). El contenido no
 llega al sitio hasta que un gestor lo publica explícitamente.
+
+## Blog de historias: crear NO publica
+
+El subproducto `/blog` es el único recurso donde **el sitio escribe contenido
+que después se muestra en el sitio**, y lo escribe a partir de lo que envía
+cualquier persona anónima: no hay cuentas ni login. Por eso nada es visible
+hasta que un gestor lo aprueba en el panel.
+
+```
+POST /historias                    # crea SIEMPRE un borrador
+POST /comentarios-historia         # idem
+GET  /historias                    # solo aprobadas (default de publicación)
+```
+
+Dos cosas que no son obvias y conviene no descubrir en producción:
+
+1. **Crear por la Content API no deja un borrador por sí solo.**
+   `CoreService.getFetchParams` de `@strapi/core` inyecta `status: 'published'`
+   en todas las llamadas del core service, incluida `create`. Lo que fuerza el
+   borrador es el middleware `apps/cms/src/middlewares/blog-moderacion.ts`.
+   Verificado en Strapi 5.51.0 y cubierto por `apps/cms/tests/blog-moderacion.test.ts`.
+
+2. **Publicar, despublicar y borrar están bloqueados en la Content API**, incluso
+   si alguien le concediera esos permisos al token. Aprobar un testimonio es una
+   acción de una persona en el panel, y el backend lo trata como tal.
+
+El campo `ipHash` de ambos recursos está marcado como **privado** en el schema:
+existe solo para que la moderación detecte envíos masivos desde un mismo origen
+y nunca aparece en una respuesta de la API.
 
 ## Instituciones: solo activas y publicadas
 
@@ -127,6 +158,10 @@ del webhook.
 
 - `pagina.nivelSensibilidad`: `general` | `sensible`
 - `institucion.tipo`: `policial` | `judicial` | `salud` | `psicologico` | `ong` | `refugio`
+- `historia.categoria`: `general` | `violencia_fisica` | `violencia_psicologica` |
+  `violencia_economica` | `violencia_digital` | `proceso_de_salida` | `recuperacion`
+  (espejo en `apps/web/src/lib/historias.ts`: `CATEGORIAS_HISTORIA`, que el sitio
+  usa además como lista blanca al recibir un envío)
 
 ## Campos por recurso
 

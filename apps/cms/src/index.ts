@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 import { enforceSecurityPolicy } from './bootstrap/security-policy';
 import { asegurarTokenIntegracionWeb } from './bootstrap/token-integracion-web';
+import { blogModeracion } from './middlewares/blog-moderacion';
 import { institucionReglas } from './middlewares/institucion-reglas';
 import { rebuildOnChange } from './middlewares/rebuild-on-change';
 
@@ -13,6 +14,7 @@ export default {
    */
   register({ strapi }: { strapi: Core.Strapi }) {
     institucionReglas({ strapi });
+    blogModeracion({ strapi });
     rebuildOnChange({ strapi });
   },
 

@@ -107,14 +107,31 @@ services:
       - REBUILD_WEBHOOK_URL=${REBUILD_WEBHOOK_URL:-}
       - REBUILD_WEBHOOK_SECRET=${REBUILD_WEBHOOK_SECRET:-}
 
+  # El sitio corre como servidor Node (astro.config.mjs usa output: 'server'),
+  # no como archivos estáticos: necesita las variables del CMS en tiempo de
+  # ejecución, no solo en el build.
   web-prod:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       target: prod
     profiles: ["prod"]
+    depends_on:
+      - cms-prod
     ports:
-      - "8080:80"
+      - "8080:4321"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4321
+      # Lectura del CMS desde el servidor del sitio (nunca desde el navegador).
+      - STRAPI_URL=${STRAPI_URL:-http://cms-prod:1337}
+      - STRAPI_API_TOKEN=${STRAPI_API_TOKEN:?falta STRAPI_API_TOKEN en .env}
+      # URL del CMS tal como la ve el navegador (diario y asistente la usan).
+      - PUBLIC_CMS_URL=${PUBLIC_CMS_URL:?falta PUBLIC_CMS_URL en .env}
+      # Sal de la huella de origen que usa la moderación de /blog. Sin ella no
+      # se guarda ninguna huella (ver apps/web/src/lib/hash-ip.ts).
+      - HASH_SALT=${HASH_SALT:-}
 
 volumes:
   pgdata:

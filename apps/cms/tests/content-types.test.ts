@@ -83,6 +83,67 @@ describe('Modelo de datos', () => {
     expect((attrs.activa as { default: boolean }).default).toBe(true);
   });
 
+  // Subproducto /blog. Draft & Publish no es un detalle de comodidad editorial
+  // acá: es LA cola de moderación. Sin login, un testimonio o un mensaje de
+  // apoyo visible sin revisión previa es el fallo que este producto no puede
+  // permitirse, así que el flag es parte del contrato del modelo.
+  it('historia y comentario-historia tienen draft & publish habilitado (es la cola de moderación)', () => {
+    expect(strapi.contentType('api::historia.historia').options?.draftAndPublish).toBe(true);
+    expect(strapi.contentType('api::comentario-historia.comentario-historia').options?.draftAndPublish).toBe(true);
+  });
+
+  it('historia expone el contrato de campos que consume /blog', () => {
+    const attrs = strapi.contentType('api::historia.historia').attributes;
+
+    expect(attrs.contenido.type).toBe('text');
+    expect(attrs.contenido.required).toBe(true);
+    expect((attrs.contenido as { minLength: number }).minLength).toBe(20);
+    expect((attrs.contenido as { maxLength: number }).maxLength).toBe(8000);
+
+    expect(attrs.categoria.type).toBe('enumeration');
+    expect((attrs.categoria as { enum: string[] }).enum.sort()).toEqual(
+      [
+        'general',
+        'violencia_fisica',
+        'violencia_psicologica',
+        'violencia_economica',
+        'violencia_digital',
+        'proceso_de_salida',
+        'recuperacion',
+      ].sort()
+    );
+
+    expect(attrs.alias.type).toBe('string');
+    expect(attrs.alias.required).toBe(true);
+
+    expect(attrs.comentarios.type).toBe('relation');
+    expect((attrs.comentarios as { target: string }).target).toBe(
+      'api::comentario-historia.comentario-historia'
+    );
+  });
+
+  it('comentario-historia cuelga de una historia requerida', () => {
+    const attrs = strapi.contentType('api::comentario-historia.comentario-historia').attributes;
+
+    expect(attrs.contenido.type).toBe('text');
+    expect((attrs.contenido as { maxLength: number }).maxLength).toBe(2000);
+    expect(attrs.historia.type).toBe('relation');
+    expect((attrs.historia as { target: string }).target).toBe('api::historia.historia');
+    expect(attrs.historia.required).toBe(true);
+  });
+
+  // El ipHash existe solo para que quien modera note veinte historias
+  // ofensivas del mismo origen. Si dejara de ser privado pasaría a ser un dato
+  // personal servido en una respuesta pública, en un producto cuya promesa
+  // central es el anonimato.
+  it('ipHash es privado en historia y en comentario-historia: nunca sale por la API', () => {
+    const historia = strapi.contentType('api::historia.historia').attributes;
+    const comentario = strapi.contentType('api::comentario-historia.comentario-historia').attributes;
+
+    expect((historia.ipHash as { private: boolean }).private).toBe(true);
+    expect((comentario.ipHash as { private: boolean }).private).toBe(true);
+  });
+
   it('el componente contacto.telefono expone numero, etiqueta y esGratuito', () => {
     const component = strapi.components['contacto.telefono'];
     expect(component).toBeDefined();
