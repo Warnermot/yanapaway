@@ -105,6 +105,11 @@ export function scheduleRebuild({ strapi }: { strapi: Core.Strapi }): void {
   const delay = Math.max(0, Math.min(TRAILING_MS, restanteHastaMaxWait));
 
   timer = setTimeout(flush, delay);
+  // Un debounce pendiente no debe ser razón para mantener vivo el proceso.
+  // En producción el servidor HTTP ya lo mantiene arriba y el timer dispara
+  // igual; en los tests, donde la app se apaga en cuanto termina el archivo,
+  // esto evita que Jest quede colgado hasta que venza la ventana.
+  timer.unref?.();
 }
 
 /** Solo para tests: limpia el estado del debounce entre casos. */

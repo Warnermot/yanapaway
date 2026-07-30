@@ -14,7 +14,7 @@ import type { Core } from '@strapi/strapi';
 
 // Permisos que el rol "public" debe tener habilitados.
 // Formato: "plugin::controller.action"
-const PUBLIC_PERMISSIONS: string[] = [
+export const PUBLIC_PERMISSIONS: string[] = [
   'api::entrada-diario.entrada-diario.find',
   'api::entrada-diario.entrada-diario.findOne',
   'api::entrada-diario.entrada-diario.create',
