@@ -1,0 +1,140 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import BloquesContenido from '../../components/recursos/BloquesContenido.astro';
+import { obtenerPaginaRecursoPorSlug } from '../../lib/recursos';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return new Response(null, { status: 404 });
+}
+
+const pagina = await obtenerPaginaRecursoPorSlug(slug);
+
+if (!pagina) {
+  return new Response(null, { status: 404 });
+}
+---
+
+<Layout title={`${pagina.titulo} — yanapaway`} description={pagina.resumen}>
+  <Navbar rutaActiva="/recursos" />
+
+  <article class="pagina-recurso">
+    <div class="wrapper">
+      <nav class="miga" aria-label="Ruta de navegación">
+        <a href="/recursos">Recursos</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">{pagina.titulo}</span>
+      </nav>
+
+      {pagina.categoria && <span class="tag">{pagina.categoria.nombre}</span>}
+
+      <h1>{pagina.titulo}</h1>
+      <p class="resumen">{pagina.resumen}</p>
+
+      {
+        pagina.nivelSensibilidad === 'sensible' && (
+          <aside class="aviso-sensible" role="note">
+            <strong>Antes de seguir:</strong> este contenido describe situaciones de violencia y puede
+            resultar angustiante. Puedes leerlo con calma, dejarlo para otro momento o hablar con
+            alguien ahora mismo.
+          </aside>
+        )
+      }
+
+      {
+        pagina.portadaUrl && (
+          <img class="portada" src={pagina.portadaUrl} alt={pagina.portadaAlt ?? ''} />
+        )
+      }
+
+      <BloquesContenido bloques={pagina.contenido} />
+
+      <a class="volver" href="/recursos">← Volver a Recursos</a>
+    </div>
+  </article>
+
+  <Footer />
+</Layout>
+
+<style>
+  .pagina-recurso {
+    padding-block: 2.5rem 4.5rem;
+  }
+
+  .pagina-recurso .wrapper {
+    max-width: 46rem;
+  }
+
+  .miga {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+    margin-bottom: 1.5rem;
+  }
+
+  .miga a {
+    color: var(--color-secondary);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: var(--color-green-soft);
+    color: #10553f;
+  }
+
+  .pagina-recurso h1 {
+    margin-top: 0.75rem;
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .resumen {
+    margin-top: 0.85rem;
+    font-size: 1.05rem;
+    color: var(--color-ink-soft);
+    line-height: 1.65;
+  }
+
+  .aviso-sensible {
+    margin-top: 1.5rem;
+    background: var(--color-red-soft);
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-m);
+    padding: 1rem 1.15rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+
+  .portada {
+    margin-top: 1.75rem;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-l);
+  }
+
+  .pagina-recurso :global(.contenido-bloques) {
+    margin-top: 2rem;
+  }
+
+  .volver {
+    display: inline-block;
+    margin-top: 2.5rem;
+    color: var(--color-secondary);
+    font-weight: 500;
+  }
+</style>

@@ -5,7 +5,7 @@
     "singularName": "pagina",
     "pluralName": "paginas",
     "displayName": "Página",
-    "description": "Contenido informativo sobre violencia de pareja, recursos y material de apoyo. No se publica en el sitio hasta que un gestor lo publique explícitamente."
+    "description": "Página de recursos: contenido informativo sobre violencia de pareja y material de apoyo. Se publica en el sitio bajo /recursos/{slug}. No aparece hasta que un gestor la publique explícitamente."
   },
   "options": {
     "draftAndPublish": true
@@ -21,7 +21,7 @@
       "type": "uid",
       "targetField": "titulo",
       "required": true,
-      "description": "Identificador único en la URL. Se genera a partir del título."
+      "description": "Identificador único en la URL. Se genera a partir del título. La página queda publicada en /recursos/{slug}."
     },
     "resumen": {
       "type": "text",
@@ -34,12 +34,13 @@
       "required": false,
       "description": "Cuerpo de la página, editor de bloques estructurados. Nunca pegar HTML: el editor de bloques es la única forma permitida de cargar contenido."
     },
-    "seccion": {
+    "categoria": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::seccion.seccion",
+      "target": "api::categoria-recurso.categoria-recurso",
       "inversedBy": "paginas",
-      "required": true
+      "required": true,
+      "description": "Categoría bajo la que se agrupa la tarjeta en /recursos. No forma parte de la URL."
     },
     "portada": {
       "type": "media",
@@ -58,7 +59,7 @@
     "orden": {
       "type": "integer",
       "required": false,
-      "description": "Posición dentro de la sección. Opcional, menor primero."
+      "description": "Posición dentro de la categoría. Opcional, menor primero."
     }
   }
 }

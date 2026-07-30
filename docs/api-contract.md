@@ -37,15 +37,20 @@ Base: `https://<cms-host>/api`
 
 | Recurso | Ruta | Notas |
 |---|---|---|
-| Páginas | `GET /paginas` · `GET /paginas/:documentId` | Filtrables por sección |
-| Secciones | `GET /seccions` | Para la navegación |
-| Instituciones | `GET /institucions` | Filtrables por tipo/ciudad |
+| Páginas de recursos | `GET /paginas` · `GET /paginas/:documentId` | Filtrables por categoría. Se publican en el sitio como `/recursos/{slug}` |
+| Categorías de recurso | `GET /categorias-recurso` | Agrupan las tarjetas de `/recursos`. No forman parte de la URL |
+| Instituciones | `GET /instituciones` | Filtrables por tipo/ciudad |
 | Sobre el proyecto | `GET /sobre-el-proyecto` | Single type |
 | Términos | `GET /terminos` | Single type |
 | Privacidad | `GET /privacidad` | Single type |
 
 > Los nombres de ruta en plural los deriva Strapi del `pluralName` de cada
-> content-type (`paginas`, `seccions`, `institucions`).
+> content-type (`paginas`, `categorias-recurso`, `instituciones`).
+
+> **Sección fue eliminada del modelo.** Los nuevos requerimientos descartan
+> agrupar páginas para alimentar la navegación. La reemplaza *Categoría de
+> recurso*, que solo agrupa y etiqueta las tarjetas del listado `/recursos`:
+> la ruta pública de una página depende únicamente de su `slug`.
 
 ## Filtrado por estado de publicación
 

@@ -1,0 +1,53 @@
+---
+import type { NodoInline } from '../../lib/bloques';
+
+interface Props {
+	nodos: NodoInline[];
+}
+
+const { nodos } = Astro.props;
+
+// Los enlaces del editor pueden apuntar afuera del sitio: target nuevo y
+// rel="noopener" solo para externos, para no romper la navegación interna.
+function esExterno(url: string): boolean {
+	return /^https?:\/\//.test(url);
+}
+---
+
+{
+	nodos.map((nodo) => {
+		if (nodo.type === 'link') {
+			const externo = esExterno(nodo.url);
+			return (
+				<a
+					href={nodo.url}
+					class="enlace-contenido"
+					target={externo ? '_blank' : undefined}
+					rel={externo ? 'noopener noreferrer' : undefined}
+				>
+					{nodo.children.map((hijo) => hijo.text).join('')}
+				</a>
+			);
+		}
+
+		// Las marcas se anidan de adentro hacia afuera. El texto se interpola
+		// siempre como texto (nunca set:html): el contenido viene del CMS y no
+		// debe poder inyectar markup.
+		let contenido: astroHTML.JSX.Element | string = nodo.text;
+		if (nodo.code) contenido = <code>{contenido}</code>;
+		if (nodo.strikethrough) contenido = <s>{contenido}</s>;
+		if (nodo.underline) contenido = <u>{contenido}</u>;
+		if (nodo.italic) contenido = <em>{contenido}</em>;
+		if (nodo.bold) contenido = <strong>{contenido}</strong>;
+
+		return contenido;
+	})
+}
+
+<style>
+	.enlace-contenido {
+		color: var(--color-secondary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+</style>

@@ -21,7 +21,9 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 }));
 ---
 
-<section class="content-section" id="recursos">
+{/* id="contenido": la sección de vista previa del home. El listado real de
+	recursos vive en la ruta /recursos, así que el ancla no debe competir con ella. */}
+<section class="content-section" id="contenido">
 	<div class="wrapper">
 		<h2 class="section-heading">{t('content.heading')}</h2>
 		<div class="content-grid">
@@ -35,7 +37,7 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 						)}
 						<div class="card-body">
 							<p class="card-title">{item.title}</p>
-							<a href="#" class="pill-btn card-cta">
+							<a href="/recursos" class="pill-btn card-cta">
 								{item.cta}
 							</a>
 						</div>

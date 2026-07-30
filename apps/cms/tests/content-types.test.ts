@@ -15,7 +15,7 @@ describe('Modelo de datos', () => {
   });
 
   it('arranca Strapi con los cuatro content-types y las tres páginas estáticas registrados', () => {
-    expect(strapi.contentType('api::seccion.seccion')).toBeDefined();
+    expect(strapi.contentType('api::categoria-recurso.categoria-recurso')).toBeDefined();
     expect(strapi.contentType('api::pagina.pagina')).toBeDefined();
     expect(strapi.contentType('api::institucion.institucion')).toBeDefined();
     expect(strapi.contentType('api::sobre-el-proyecto.sobre-el-proyecto')).toBeDefined();
@@ -23,9 +23,27 @@ describe('Modelo de datos', () => {
     expect(strapi.contentType('api::privacidad.privacidad')).toBeDefined();
   });
 
-  it('seccion no tiene draft & publish (alimenta la navegación)', () => {
-    const schema = strapi.contentType('api::seccion.seccion');
+  // Sección fue eliminada del modelo: los nuevos requerimientos descartan
+  // agrupar páginas para la navegación. La reemplaza Categoría de recurso,
+  // que solo agrupa tarjetas en /recursos y no participa de la URL.
+  it('seccion ya no existe en el modelo', () => {
+    expect(Object.keys(strapi.contentTypes)).not.toContain('api::seccion.seccion');
+  });
+
+  it('categoria-recurso no tiene draft & publish (siempre visible)', () => {
+    const schema = strapi.contentType('api::categoria-recurso.categoria-recurso');
     expect(schema.options?.draftAndPublish).toBe(false);
+  });
+
+  it('pagina cuelga de una categoría de recurso, requerida y sin efecto en la URL', () => {
+    const attrs = strapi.contentType('api::pagina.pagina').attributes;
+    expect(Object.keys(attrs)).not.toContain('seccion');
+    expect(attrs.categoria.type).toBe('relation');
+    expect((attrs.categoria as { target: string }).target).toBe('api::categoria-recurso.categoria-recurso');
+    expect(attrs.categoria.required).toBe(true);
+    // El slug es lo único que define la ruta pública (/recursos/{slug}).
+    expect(attrs.slug.type).toBe('uid');
+    expect((attrs.slug as { targetField: string }).targetField).toBe('titulo');
   });
 
   it('pagina e institucion tienen draft & publish habilitado', () => {
