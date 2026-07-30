@@ -95,6 +95,20 @@ El campo `ipHash` de ambos recursos está marcado como **privado** en el schema:
 existe solo para que la moderación detecte envíos masivos desde un mismo origen
 y nunca aparece en una respuesta de la API.
 
+### `alias`: vacío significa anónima
+
+`alias` es **opcional** y guarda el nombre que eligió quien envía el contenido.
+Sin valor significa que se publicó de forma anónima, y el sitio muestra
+`Anónima` (`nombreParaMostrar` en `apps/web/src/lib/nombre-publico.ts` es el
+único lugar donde se decide ese texto).
+
+La ausencia del dato **es** la anonimidad: no se guarda un nombre de relleno que
+después haya que interpretar en cada lectura. Volver `alias` requerido rompe la
+publicación anónima.
+
+El alias no es una cuenta ni identifica a nadie: no hay login, así que dos
+historias firmadas igual no son necesariamente de la misma persona.
+
 ## Instituciones: solo activas y publicadas
 
 Una institución puede estar publicada pero dada de baja lógica

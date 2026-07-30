@@ -36,8 +36,9 @@
     },
     "alias": {
       "type": "string",
-      "required": true,
-      "description": "Seudónimo generado automáticamente en el servidor (ej. \"Marea Resiliente #4821\"). No lo elige quien publica y no guarda ninguna relación con una persona."
+      "required": false,
+      "maxLength": 40,
+      "description": "Nombre con el que se firma la historia, elegido por quien la envía. VACÍO significa que se publicó de forma anónima y el sitio muestra \"Anónima\": la ausencia del dato es la anonimidad, no se guarda un nombre de relleno. No es una cuenta ni identifica a nadie: dos historias con el mismo nombre no son necesariamente de la misma persona."
     },
     "ipHash": {
       "type": "string",

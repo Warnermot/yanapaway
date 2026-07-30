@@ -31,7 +31,7 @@ function historiaValida(overrides: { alias?: string } = {}) {
   return {
     contenido: '[DATOS DE PRUEBA] Salí de esa relación hace dos años y hoy estoy mejor.',
     categoria: 'recuperacion' as const,
-    alias: 'Marea Resiliente #4821',
+    alias: 'Rosa',
     ...overrides,
   };
 }
@@ -80,11 +80,22 @@ describe('Moderación del blog (/blog)', () => {
     expect(borrador).not.toBeNull();
   });
 
+  // Anónima = sin alias guardado. Si el schema volviera a exigir el campo,
+  // esto falla acá y no en producción con un 400 delante de una usuaria.
+  it('acepta una historia sin alias: así se guarda una publicación anónima', async () => {
+    const { alias: _sinUsar, ...sinAlias } = historiaValida();
+
+    const respuesta = await autorizado(api().post('/api/historias').send({ data: sinAlias }));
+
+    expect(respuesta.status).toBe(201);
+    expect(respuesta.body.data.alias ?? null).toBeNull();
+  });
+
   it('una historia recién enviada no aparece en el listado público', async () => {
     const creada = await autorizado(
       api()
         .post('/api/historias')
-        .send({ data: historiaValida({ alias: 'Voz Firme #1111' }) })
+        .send({ data: historiaValida({ alias: 'Elena' }) })
     );
 
     const listado = await autorizado(api().get('/api/historias?pagination[pageSize]=100'));
@@ -98,7 +109,7 @@ describe('Moderación del blog (/blog)', () => {
     const creada = await autorizado(
       api()
         .post('/api/historias')
-        .send({ data: historiaValida({ alias: 'Aurora Serena #2222' }) })
+        .send({ data: historiaValida({ alias: 'Aurora' }) })
     );
     const documentId = creada.body.data.documentId;
 
@@ -116,7 +127,7 @@ describe('Moderación del blog (/blog)', () => {
     const respuesta = await autorizado(
       api()
         .post('/api/historias?status=published')
-        .send({ data: historiaValida({ alias: 'Semilla Libre #3333' }) })
+        .send({ data: historiaValida({ alias: 'Carmen' }) })
     );
 
     expect(respuesta.status).toBe(201);
@@ -131,12 +142,12 @@ describe('Moderación del blog (/blog)', () => {
     const creada = await autorizado(
       api()
         .post('/api/historias')
-        .send({ data: historiaValida({ alias: 'Llama Templada #4444' }) })
+        .send({ data: historiaValida({ alias: 'Lucía' }) })
     );
     const documentId = creada.body.data.documentId;
 
     const respuesta = await autorizado(
-      api().put(`/api/historias/${documentId}?status=published`).send({ data: { alias: 'Llama Templada #4444' } })
+      api().put(`/api/historias/${documentId}?status=published`).send({ data: { alias: 'Lucía' } })
     );
 
     expect(respuesta.status).toBeGreaterThanOrEqual(400);
@@ -149,7 +160,7 @@ describe('Moderación del blog (/blog)', () => {
     const creada = await autorizado(
       api()
         .post('/api/historias')
-        .send({ data: historiaValida({ alias: 'Estrella Valiente #5555' }) })
+        .send({ data: historiaValida({ alias: 'Marta' }) })
     );
     const documentId = creada.body.data.documentId;
 

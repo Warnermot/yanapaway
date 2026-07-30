@@ -21,8 +21,9 @@
     },
     "alias": {
       "type": "string",
-      "required": true,
-      "description": "Seudónimo generado automáticamente en el servidor. No se vincula con el alias de ninguna historia."
+      "required": false,
+      "maxLength": 40,
+      "description": "Nombre con el que se firma el mensaje, elegido por quien lo envía. VACÍO significa anónima y el sitio muestra \"Anónima\". No es una cuenta ni identifica a nadie."
     },
     "ipHash": {
       "type": "string",

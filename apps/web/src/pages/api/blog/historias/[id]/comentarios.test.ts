@@ -17,11 +17,12 @@ function siguienteIp() {
   return `10.2.0.${ipDePrueba}`;
 }
 
-function crearPeticion(cuerpo: unknown) {
+// Por defecto se firma como anónima; los tests de firma la pasan explícitamente.
+function crearPeticion(cuerpo: Record<string, unknown>) {
   return new Request('http://localhost/api/blog/historias/x/comentarios', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cuerpo),
+    body: JSON.stringify({ anonima: true, ...cuerpo }),
   });
 }
 
@@ -30,7 +31,7 @@ async function crearHistoriaDePrueba(publicada: boolean): Promise<string> {
     data: {
       contenido: '[DATOS DE PRUEBA] Salí de esa relación y hoy acompaño a otras.',
       categoria: 'recuperacion',
-      alias: 'Marea Resiliente #4821',
+      alias: 'Rosa',
     },
     ...(publicada ? { status: 'published' as const } : {}),
   });
@@ -49,7 +50,7 @@ describe('POST /api/blog/historias/[id]/comentarios', () => {
     await detenerCmsDePrueba(servidor);
   });
 
-  it('acepta un mensaje de apoyo sobre una historia publicada', async () => {
+  it('acepta un mensaje de apoyo anónimo sobre una historia publicada', async () => {
     const { POST } = await import('./comentarios');
 
     const respuesta = await POST({
@@ -60,8 +61,33 @@ describe('POST /api/blog/historias/[id]/comentarios', () => {
 
     expect(respuesta.status).toBe(201);
     const datos = await respuesta.json();
-    expect(datos.alias).toMatch(/#\d{4}$/);
+    expect(datos.alias).toBe('Anónima');
     expect(datos.pendienteDeRevision).toBe(true);
+  });
+
+  it('acepta un mensaje firmado con el nombre elegido', async () => {
+    const { POST } = await import('./comentarios');
+
+    const respuesta = await POST({
+      request: crearPeticion({ contenido: 'Estoy contigo.', anonima: false, nombre: 'Rosa' }),
+      params: { id: idHistoriaPublicada },
+      clientAddress: siguienteIp(),
+    } as never);
+
+    expect(respuesta.status).toBe(201);
+    expect((await respuesta.json()).alias).toBe('Rosa');
+  });
+
+  it('rechaza el mensaje si no se eligió nombre ni se marcó anónima', async () => {
+    const { POST } = await import('./comentarios');
+
+    const respuesta = await POST({
+      request: crearPeticion({ contenido: 'Estoy contigo.', anonima: false, nombre: '' }),
+      params: { id: idHistoriaPublicada },
+      clientAddress: siguienteIp(),
+    } as never);
+
+    expect(respuesta.status).toBe(400);
   });
 
   // Mismo criterio que las historias, y por la misma razón: el peor resultado

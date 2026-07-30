@@ -31,11 +31,13 @@ export function etiquetaDeCategoria(valor: string): string {
 
 export const HISTORIAS_POR_PAGINA = 10;
 
+// `alias` sin valor significa que se publicó de forma anónima. Para mostrarlo
+// siempre pasar por `nombreParaMostrar` de lib/nombre-publico.ts.
 export type Historia = {
   id: string;
   contenido: string;
   categoria: string;
-  alias: string;
+  alias?: string;
   creadaEn: string;
   cantidadComentarios: number;
 };
@@ -43,7 +45,7 @@ export type Historia = {
 export type ComentarioHistoria = {
   id: string;
   contenido: string;
-  alias: string;
+  alias?: string;
   creadaEn: string;
 };
 
@@ -57,7 +59,7 @@ type HistoriaCruda = {
   documentId: string;
   contenido: string;
   categoria: string;
-  alias: string;
+  alias?: string | null;
   createdAt: string;
   comentarios?: { documentId: string }[] | null;
 };
@@ -65,7 +67,7 @@ type HistoriaCruda = {
 type ComentarioCrudo = {
   documentId: string;
   contenido: string;
-  alias: string;
+  alias?: string | null;
   createdAt: string;
 };
 
@@ -80,7 +82,7 @@ function normalizarHistoria(cruda: HistoriaCruda): Historia {
     id: cruda.documentId,
     contenido: cruda.contenido,
     categoria: cruda.categoria,
-    alias: cruda.alias,
+    alias: cruda.alias ?? undefined,
     creadaEn: cruda.createdAt,
     // Si el populate no viniera, se muestra 0 en lugar de romper la página: es
     // un dato decorativo y una historia sin contador se sigue pudiendo leer.
@@ -92,7 +94,7 @@ function normalizarComentario(crudo: ComentarioCrudo): ComentarioHistoria {
   return {
     id: crudo.documentId,
     contenido: crudo.contenido,
-    alias: crudo.alias,
+    alias: crudo.alias ?? undefined,
     creadaEn: crudo.createdAt,
   };
 }
@@ -159,22 +161,23 @@ export async function listarComentarios(historiaId: string): Promise<ComentarioH
   return respuesta.data.map(normalizarComentario);
 }
 
+// `alias` sin valor = se publica como anónima.
 export type DatosNuevaHistoria = {
   contenido: string;
   categoria: CategoriaHistoria;
-  alias: string;
+  alias?: string;
   ipHash?: string;
 };
 
 export type DatosNuevoComentario = {
   contenido: string;
   historiaId: string;
-  alias: string;
+  alias?: string;
   ipHash?: string;
 };
 
 /** Crea la historia como borrador pendiente de moderación (lo garantiza el CMS). */
-export async function crearHistoria(datos: DatosNuevaHistoria): Promise<{ alias: string }> {
+export async function crearHistoria(datos: DatosNuevaHistoria): Promise<void> {
   await strapiPost<{ data: { documentId: string } }>('/api/historias', {
     contenido: datos.contenido,
     categoria: datos.categoria,
@@ -184,17 +187,14 @@ export async function crearHistoria(datos: DatosNuevaHistoria): Promise<{ alias:
 
   // No se devuelve el id: la historia todavía no es visible, así que no hay
   // ninguna URL a la que se pueda mandar a quien acaba de publicar.
-  return { alias: datos.alias };
 }
 
 /** Crea el mensaje de apoyo como borrador pendiente de moderación. */
-export async function crearComentario(datos: DatosNuevoComentario): Promise<{ alias: string }> {
+export async function crearComentario(datos: DatosNuevoComentario): Promise<void> {
   await strapiPost<{ data: { documentId: string } }>('/api/comentarios-historia', {
     contenido: datos.contenido,
     historia: datos.historiaId,
     alias: datos.alias,
     ipHash: datos.ipHash,
   });
-
-  return { alias: datos.alias };
 }

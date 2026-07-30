@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { generarAlias } from '../../../../../lib/alias';
 import { hashearIp } from '../../../../../lib/hash-ip';
 import { crearComentario, obtenerHistoriaPorId } from '../../../../../lib/historias';
 import { jsonError, jsonOk, registrarError } from '../../../../../lib/http';
+import { nombreParaMostrar, resolverNombrePublico } from '../../../../../lib/nombre-publico';
 import { excedeLimite } from '../../../../../lib/rate-limit';
 import { normalizarTextoPlano } from '../../../../../lib/texto';
 import { esIdValido } from '../../../../../lib/validation';
@@ -51,28 +51,30 @@ export const POST: APIRoute = async ({ request, params, clientAddress }) => {
   }
 
   try {
-    const { alias } = await crearComentario({
+    await crearComentario({
       contenido: resultado.contenido,
       historiaId: id,
-      alias: generarAlias(),
+      alias: resultado.alias,
       ipHash: hashearIp(clientAddress),
     });
 
-    return jsonOk({ alias, pendienteDeRevision: true }, 201);
+    return jsonOk({ alias: nombreParaMostrar(resultado.alias), pendienteDeRevision: true }, 201);
   } catch (error) {
     registrarError('Error al registrar un mensaje de apoyo:', error);
     return jsonError(500, 'No pudimos enviar tu mensaje. Vuelve a intentarlo en un momento.');
   }
 };
 
-type ResultadoValidacion = { valido: true; contenido: string } | { valido: false; error: string };
+type ResultadoValidacion =
+  | { valido: true; contenido: string; alias: string | undefined }
+  | { valido: false; error: string };
 
 function validarComentario(cuerpo: unknown): ResultadoValidacion {
   if (typeof cuerpo !== 'object' || cuerpo === null) {
     return { valido: false, error: 'Cuerpo de la solicitud inválido.' };
   }
 
-  const { contenido } = cuerpo as Record<string, unknown>;
+  const { contenido, nombre, anonima } = cuerpo as Record<string, unknown>;
 
   if (typeof contenido !== 'string') {
     return { valido: false, error: 'Falta el contenido del mensaje.' };
@@ -87,5 +89,10 @@ function validarComentario(cuerpo: unknown): ResultadoValidacion {
     };
   }
 
-  return { valido: true, contenido: normalizado };
+  const firma = resolverNombrePublico(nombre, anonima);
+  if (!firma.valido) {
+    return { valido: false, error: firma.error };
+  }
+
+  return { valido: true, contenido: normalizado, alias: firma.alias };
 }

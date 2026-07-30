@@ -10,6 +10,7 @@ import {
   type ComentarioHistoria,
   type Historia,
 } from '../../lib/historias';
+import { NOMBRE_MAX, nombreParaMostrar } from '../../lib/nombre-publico';
 import { esIdValido } from '../../lib/validation';
 
 export const prerender = false;
@@ -42,7 +43,7 @@ const CONTENIDO_MAX = 2000;
 ---
 
 <Layout
-  title={historia ? `Historia de ${historia.alias} — yanapaway` : 'Historias — yanapaway'}
+  title={historia ? `Historia de ${nombreParaMostrar(historia.alias)} — yanapaway` : 'Historias — yanapaway'}
   description="Una historia compartida de forma anónima por una mujer que atravesó una situación de violencia."
 >
   <Navbar rutaActiva="/blog" />
@@ -66,7 +67,7 @@ const CONTENIDO_MAX = 2000;
         <>
           <article class="historia">
             <div class="meta">
-              <span class="alias">{historia.alias}</span>
+              <span class="alias">{nombreParaMostrar(historia.alias)}</span>
               <time datetime={historia.creadaEn}>{formatearFecha(historia.creadaEn)}</time>
             </div>
 
@@ -93,7 +94,22 @@ const CONTENIDO_MAX = 2000;
                 placeholder="Escribe un mensaje de apoyo. También se revisa antes de publicarse."
                 required></textarea>
 
-              <button type="submit" class="pill-btn">Enviar apoyo anónimo</button>
+              <label class="casilla">
+                <input type="checkbox" id="anonima-comentario" checked />
+                <span>Enviar de forma anónima</span>
+              </label>
+
+              <label for="nombre-comentario" class="sr-only">Nombre con el que quieres firmar</label>
+              <input
+                type="text"
+                id="nombre-comentario"
+                maxlength={NOMBRE_MAX}
+                autocomplete="off"
+                placeholder="Nombre con el que quieres firmar"
+                disabled
+              />
+
+              <button type="submit" class="pill-btn">Enviar apoyo</button>
 
               <p id="mensaje-estado" class="mensaje-estado" role="status" aria-live="polite"></p>
             </form>
@@ -105,7 +121,7 @@ const CONTENIDO_MAX = 2000;
                 {comentarios.map((comentario) => (
                   <li class="apoyo">
                     <div class="meta">
-                      <span class="alias">{comentario.alias}</span>
+                      <span class="alias">{nombreParaMostrar(comentario.alias)}</span>
                       <time datetime={comentario.creadaEn}>{formatearFecha(comentario.creadaEn)}</time>
                     </div>
                     <p>{comentario.contenido}</p>
@@ -126,10 +142,30 @@ const CONTENIDO_MAX = 2000;
   const form = document.getElementById('form-comentario');
   const textarea = document.getElementById('contenido-comentario');
   const mensaje = document.getElementById('mensaje-estado');
+  const anonima = document.getElementById('anonima-comentario');
+  const nombre = document.getElementById('nombre-comentario');
 
-  if (form instanceof HTMLFormElement && textarea instanceof HTMLTextAreaElement && mensaje) {
+  if (
+    form instanceof HTMLFormElement &&
+    textarea instanceof HTMLTextAreaElement &&
+    anonima instanceof HTMLInputElement &&
+    nombre instanceof HTMLInputElement &&
+    mensaje
+  ) {
     const historiaId = form.dataset.historiaId;
     const boton = form.querySelector('button[type="submit"]');
+
+    const sincronizarFirma = () => {
+      nombre.disabled = anonima.checked;
+      nombre.required = !anonima.checked;
+      if (anonima.checked) {
+        nombre.value = '';
+      } else {
+        nombre.focus();
+      }
+    };
+
+    anonima.addEventListener('change', sincronizarFirma);
 
     form.addEventListener('submit', async (evento) => {
       evento.preventDefault();
@@ -144,7 +180,11 @@ const CONTENIDO_MAX = 2000;
         const respuesta = await fetch(`/api/blog/historias/${historiaId}/comentarios`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contenido: textarea.value }),
+          body: JSON.stringify({
+            contenido: textarea.value,
+            anonima: anonima.checked,
+            nombre: nombre.value,
+          }),
         });
 
         const datos = await respuesta.json();
@@ -159,6 +199,7 @@ const CONTENIDO_MAX = 2000;
         mensaje.textContent = `Recibimos tu mensaje y quedará firmado como "${datos.alias}". Aparecerá cuando el equipo lo revise.`;
         mensaje.classList.add('exito');
         form.reset();
+        sincronizarFirma();
       } catch (error) {
         mensaje.textContent = error instanceof Error ? error.message : 'No pudimos enviar tu mensaje.';
         mensaje.classList.add('error');
@@ -264,6 +305,43 @@ const CONTENIDO_MAX = 2000;
   textarea:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 1px;
+  }
+
+  .casilla {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.94rem;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  .casilla input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+
+  input[type='text'] {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--color-placeholder);
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  input[type='text']:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  input[type='text']:disabled {
+    background: var(--color-bg-soft);
+    color: var(--color-placeholder-dark);
+    cursor: not-allowed;
   }
 
   .pill-btn {

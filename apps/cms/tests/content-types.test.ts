@@ -113,8 +113,12 @@ describe('Modelo de datos', () => {
       ].sort()
     );
 
+    // El alias es OPCIONAL a propósito: sin valor significa que se publicó de
+    // forma anónima. Volverlo requerido obligaría a guardar un nombre de
+    // relleno y a interpretarlo después en cada lectura.
     expect(attrs.alias.type).toBe('string');
-    expect(attrs.alias.required).toBe(true);
+    expect(attrs.alias.required).toBeFalsy();
+    expect((attrs.alias as { maxLength: number }).maxLength).toBe(40);
 
     expect(attrs.comentarios.type).toBe('relation');
     expect((attrs.comentarios as { target: string }).target).toBe(

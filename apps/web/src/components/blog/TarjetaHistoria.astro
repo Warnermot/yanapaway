@@ -1,6 +1,7 @@
 ---
 import { formatearFecha } from '../../lib/fechas';
 import { etiquetaDeCategoria, type Historia } from '../../lib/historias';
+import { nombreParaMostrar } from '../../lib/nombre-publico';
 import { extracto } from '../../lib/texto';
 
 interface Props {
@@ -13,7 +14,7 @@ const apoyos = historia.cantidadComentarios;
 
 <article class="tarjeta-historia">
   <div class="meta">
-    <span class="alias">{historia.alias}</span>
+    <span class="alias">{nombreParaMostrar(historia.alias)}</span>
     <time datetime={historia.creadaEn}>{formatearFecha(historia.creadaEn)}</time>
   </div>
 

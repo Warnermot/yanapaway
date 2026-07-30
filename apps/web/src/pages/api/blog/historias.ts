@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { generarAlias } from '../../../lib/alias';
 import { hashearIp } from '../../../lib/hash-ip';
 import { crearHistoria, esCategoriaValida, type CategoriaHistoria } from '../../../lib/historias';
 import { jsonError, jsonOk, registrarError } from '../../../lib/http';
+import { nombreParaMostrar, resolverNombrePublico } from '../../../lib/nombre-publico';
 import { excedeLimite } from '../../../lib/rate-limit';
 import { normalizarTextoPlano } from '../../../lib/texto';
 
@@ -35,15 +35,15 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   try {
-    // Nunca se loguea el contenido de una historia, ni en caso de error.
-    const { alias } = await crearHistoria({
+    // Nunca se loguea el contenido de una historia ni su firma, ni en caso de error.
+    await crearHistoria({
       contenido: resultado.contenido,
       categoria: resultado.categoria,
-      alias: generarAlias(),
+      alias: resultado.alias,
       ipHash: hashearIp(clientAddress),
     });
 
-    return jsonOk({ alias, pendienteDeRevision: true }, 201);
+    return jsonOk({ alias: nombreParaMostrar(resultado.alias), pendienteDeRevision: true }, 201);
   } catch (error) {
     registrarError('Error al registrar una historia del blog:', error);
     return jsonError(500, 'No pudimos guardar tu historia. Vuelve a intentarlo en un momento.');
@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 };
 
 type ResultadoValidacion =
-  | { valido: true; contenido: string; categoria: CategoriaHistoria }
+  | { valido: true; contenido: string; categoria: CategoriaHistoria; alias: string | undefined }
   | { valido: false; error: string };
 
 function validarHistoria(cuerpo: unknown): ResultadoValidacion {
@@ -59,7 +59,7 @@ function validarHistoria(cuerpo: unknown): ResultadoValidacion {
     return { valido: false, error: 'Cuerpo de la solicitud inválido.' };
   }
 
-  const { contenido, categoria } = cuerpo as Record<string, unknown>;
+  const { contenido, categoria, nombre, anonima } = cuerpo as Record<string, unknown>;
 
   if (typeof contenido !== 'string') {
     return { valido: false, error: 'Falta el contenido de la historia.' };
@@ -83,5 +83,10 @@ function validarHistoria(cuerpo: unknown): ResultadoValidacion {
     return { valido: false, error: 'La categoría indicada no es válida.' };
   }
 
-  return { valido: true, contenido: normalizado, categoria };
+  const firma = resolverNombrePublico(nombre, anonima);
+  if (!firma.valido) {
+    return { valido: false, error: firma.error };
+  }
+
+  return { valido: true, contenido: normalizado, categoria, alias: firma.alias };
 }

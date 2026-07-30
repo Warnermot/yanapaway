@@ -9,11 +9,14 @@ function siguienteIp() {
   return `10.1.0.${ipDePrueba}`;
 }
 
-function crearPeticion(cuerpo: unknown) {
+// Por defecto se firma como anónima: los casos que prueban otra cosa (largo,
+// categoría, rate limit) no deberían tener que decidir sobre la firma. Los
+// tests que sí prueban la firma la pasan explícitamente.
+function crearPeticion(cuerpo: Record<string, unknown>) {
   return new Request('http://localhost/api/blog/historias', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cuerpo),
+    body: JSON.stringify({ anonima: true, ...cuerpo }),
   });
 }
 
@@ -28,18 +31,84 @@ describe('POST /api/blog/historias', () => {
     await detenerCmsDePrueba(servidor);
   });
 
-  it('acepta una historia válida y devuelve el alias generado', async () => {
+  it('acepta una historia firmada con el nombre que eligió quien la envía', async () => {
     const { POST } = await import('./historias');
 
     const respuesta = await POST({
-      request: crearPeticion({ contenido: TESTIMONIO, categoria: 'recuperacion' }),
+      request: crearPeticion({
+        contenido: TESTIMONIO,
+        categoria: 'recuperacion',
+        nombre: 'Rosa',
+        anonima: false,
+      }),
       clientAddress: siguienteIp(),
     } as never);
 
     expect(respuesta.status).toBe(201);
     const datos = await respuesta.json();
-    expect(datos.alias).toMatch(/#\d{4}$/);
+    expect(datos.alias).toBe('Rosa');
     expect(datos.pendienteDeRevision).toBe(true);
+  });
+
+  it('acepta una historia anónima y la firma como Anónima', async () => {
+    const { POST } = await import('./historias');
+
+    const respuesta = await POST({
+      request: crearPeticion({ contenido: TESTIMONIO, categoria: 'recuperacion', anonima: true }),
+      clientAddress: siguienteIp(),
+    } as never);
+
+    expect(respuesta.status).toBe(201);
+    const datos = await respuesta.json();
+    expect(datos.alias).toBe('Anónima');
+  });
+
+  // Anónima significa que en el CMS no queda ningún nombre guardado, no que se
+  // guarde la palabra "Anónima": si quedara un dato, habría algo que filtrar.
+  it('una historia anónima se guarda SIN alias en el CMS', async () => {
+    const { POST } = await import('./historias');
+
+    const contenidoUnico = `${TESTIMONIO} Sin firma ${Date.now()}`;
+
+    await POST({
+      request: crearPeticion({ contenido: contenidoUnico, categoria: 'general', anonima: true }),
+      clientAddress: siguienteIp(),
+    } as never);
+
+    const [guardada] = await servidor.strapi.documents('api::historia.historia').findMany({
+      filters: { contenido: contenidoUnico },
+      status: 'draft',
+    });
+
+    expect(guardada).toBeDefined();
+    expect(guardada.alias ?? null).toBeNull();
+  });
+
+  it('rechaza el envío si no se eligió nombre ni se marcó anónima', async () => {
+    const { POST } = await import('./historias');
+
+    const respuesta = await POST({
+      request: crearPeticion({ contenido: TESTIMONIO, categoria: 'general', anonima: false, nombre: '' }),
+      clientAddress: siguienteIp(),
+    } as never);
+
+    expect(respuesta.status).toBe(400);
+  });
+
+  it('rechaza un nombre con datos de contacto', async () => {
+    const { POST } = await import('./historias');
+
+    const respuesta = await POST({
+      request: crearPeticion({
+        contenido: TESTIMONIO,
+        categoria: 'general',
+        anonima: false,
+        nombre: 'rosa@correo.com',
+      }),
+      clientAddress: siguienteIp(),
+    } as never);
+
+    expect(respuesta.status).toBe(400);
   });
 
   // La prueba central del subproducto: sin login, lo único que impide que
