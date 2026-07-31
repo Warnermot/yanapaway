@@ -75,9 +75,17 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 	}
 
 	.contacts-field {
-		position: relative;
-		min-height: 480px;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 2.5rem 2rem;
 		margin-bottom: 2.5rem;
+		/* Espacio de sobra arriba/abajo para que la animación de flotar tenga
+		   dónde moverse sin que la tarjeta se corte ni choque con la fila de
+		   al lado (ver .card-N más abajo: cada una flota una cantidad
+		   distinta, siempre dentro de este margen). */
+		padding-block: 1.25rem;
 	}
 
 	.contact-card {
@@ -87,6 +95,7 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 		width: min(220px, 70vw);
 		box-shadow: 0 10px 30px rgba(26, 29, 33, 0.1);
 		animation: floaty 6s ease-in-out infinite;
+		will-change: transform;
 	}
 
 	.contact-top {
@@ -151,33 +160,26 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 		font-size: 0.78rem;
 	}
 
+	/* Cada tarjeta flota con su propio delay/duración para que el conjunto no
+	   se mueva "en bloque" — es solo variación de tiempo, no de posición, así
+	   que nunca se pueden superponer entre sí. */
 	.card-1 {
-		position: absolute;
-		left: 4%;
-		top: 2%;
 		animation-delay: 0s;
 	}
 
 	.card-2 {
-		position: absolute;
-		left: 54%;
-		top: 16%;
+		margin-top: 1.5rem;
 		animation-delay: 1.4s;
 		animation-duration: 7s;
 	}
 
 	.card-3 {
-		position: absolute;
-		left: 22%;
-		top: 44%;
 		animation-delay: 0.7s;
 		animation-duration: 6.5s;
 	}
 
 	.card-4 {
-		position: absolute;
-		left: 68%;
-		top: 50%;
+		margin-top: 1.5rem;
 		animation-delay: 2.1s;
 		animation-duration: 7.5s;
 	}
@@ -188,7 +190,7 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 			transform: translateY(0);
 		}
 		50% {
-			transform: translateY(-16px);
+			transform: translateY(-12px);
 		}
 	}
 
@@ -201,20 +203,20 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 
 	@media (max-width: 760px) {
 		.contacts-field {
-			min-height: auto;
-			display: flex;
 			flex-direction: column;
 			align-items: center;
 			gap: 1.5rem;
+			padding-block: 0;
 		}
 
-		.card-1,
-		.card-2,
-		.card-3,
-		.card-4 {
-			position: static;
+		.contact-card {
 			width: min(280px, 90vw);
 			animation: none;
+		}
+
+		.card-2,
+		.card-4 {
+			margin-top: 0;
 		}
 	}
 
