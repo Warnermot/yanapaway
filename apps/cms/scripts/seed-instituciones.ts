@@ -72,13 +72,18 @@ type SedeSeed = {
   longitud: number;
 };
 
+type TelefonoSeed = { numero: string; etiqueta?: string; esGratuito?: boolean };
+
 type InstitucionSeed = {
   nombre: string;
   tipo: TipoInstitucion;
   descripcion: string;
   direccion?: string;
   ciudad: string;
+  horario?: string;
   telefono?: string;
+  /** Para más de un canal (p. ej. línea + WhatsApp). Si está presente, gana sobre `telefono`. */
+  telefonosSeed?: TelefonoSeed[];
   esEmergencia?: boolean;
   latitud?: number;
   longitud?: number;
@@ -194,6 +199,46 @@ const INSTITUCIONES: InstitucionSeed[] = [
     imagenAlt: 'Acto público en el edificio de la Fiscalía Departamental de Chuquisaca, en Sucre.',
     tiposCasoAtendidos: ['grooming', 'sextorsion'],
   },
+  {
+    // Fuente: unicef.org/bolivia/familia-segura y cobertura de prensa (Los
+    // Tiempos, ABI, comunicacion.gob.bo). Horario verificado: 6:00-24:00,
+    // no 24h como a veces se repite de boca en boca.
+    nombre: 'Familia Segura (UNICEF)',
+    tipo: 'psicologico',
+    descripcion:
+      'Línea gratuita y confidencial de apoyo psico-emocional de UNICEF Bolivia, en ' +
+      'coordinación con el Colegio de Psicólogos de La Paz y la FELCV. Atiende a niñez, ' +
+      'adolescencia y personas adultas ante violencia de género, problemas familiares o de ' +
+      'pareja, ideación suicida u otras situaciones de angustia. Cobertura nacional, no solo Sucre.',
+    direccion: 'Línea telefónica nacional, sin sede física',
+    ciudad: 'Bolivia (línea nacional)',
+    horario: '6:00 a 24:00, los 7 días de la semana',
+    telefonosSeed: [
+      { numero: '800113040', etiqueta: 'Línea gratuita', esGratuito: true },
+      { numero: '77797667', etiqueta: 'WhatsApp', esGratuito: false },
+    ],
+    esEmergencia: true,
+    tiposCasoAtendidos: ['violencia_noviazgo', 'control_digital'],
+  },
+  {
+    // Fuente: abogado.bolivia.bo (sitio propio del despacho). Confirmado
+    // teléfono y correo; la zona "Sopocachi" viene del dato entregado por el
+    // equipo y no se pudo verificar de forma independiente al 100%: revisar
+    // antes de publicar si hay dudas.
+    nombre: 'LEX HONORIS — Abg. Orlando Navarro Canelas',
+    tipo: 'otro',
+    descripcion:
+      'Despacho legal privado (derecho civil, familiar, de propiedad y laboral). A diferencia ' +
+      'del resto de este directorio, NO es un servicio público ni gratuito: confirmar honorarios ' +
+      'antes de la consulta. Puede orientar en trámites de familia relacionados con una situación ' +
+      'de violencia (por ejemplo, divorcio o custodia), pero no reemplaza a la Fiscalía ni a la ' +
+      'FELCV para presentar una denuncia penal. Contacto adicional: orlandonavarro@abogado.bolivia.bo.',
+    direccion: 'Calle Jáuregui Nº 2248, Edificio Quipus, Piso 5, zona Sopocachi, La Paz',
+    ciudad: 'La Paz',
+    telefono: '+591 77782222',
+    esEmergencia: false,
+    tiposCasoAtendidos: [],
+  },
 ];
 
 function hoyISO(): string {
@@ -271,12 +316,17 @@ async function main(): Promise<void> {
           descripcion: dato.descripcion,
           direccion: dato.direccion,
           ciudad: dato.ciudad,
+          horario: dato.horario,
           esEmergencia: dato.esEmergencia ?? false,
           verificadoEn: hoyISO(),
           activa: true,
           latitud: dato.latitud,
           longitud: dato.longitud,
-          telefonos: dato.telefono ? [{ numero: dato.telefono, esGratuito: false }] : [],
+          telefonos: dato.telefonosSeed
+            ? dato.telefonosSeed.map((t) => ({ ...t, esGratuito: t.esGratuito ?? false }))
+            : dato.telefono
+              ? [{ numero: dato.telefono, esGratuito: false }]
+              : [],
           imagen: imagenId,
           tiposCaso: tiposCasoIds,
         },

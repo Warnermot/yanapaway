@@ -22,13 +22,13 @@ try {
 	// Prioriza las que atienden emergencias para la vitrina.
 	instituciones = [...todas]
 		.sort((a, b) => Number(b.esEmergencia) - Number(a.esEmergencia))
-		.slice(0, 4);
+		.slice(0, 6);
 } catch (error) {
 	cmsCaido = true;
 	console.error('[home] No se pudieron cargar instituciones desde el CMS:', error);
 }
 
-const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
+const posiciones = ['card-1', 'card-2', 'card-3', 'card-4', 'card-5', 'card-6'];
 ---
 
 <section class="contacts-section" id="contactos">
@@ -184,6 +184,17 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 		animation-duration: 7.5s;
 	}
 
+	.card-5 {
+		animation-delay: 1s;
+		animation-duration: 6.8s;
+	}
+
+	.card-6 {
+		margin-top: 1.5rem;
+		animation-delay: 2.8s;
+		animation-duration: 7.2s;
+	}
+
 	@keyframes floaty {
 		0%,
 		100% {
@@ -215,7 +226,8 @@ const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 		}
 
 		.card-2,
-		.card-4 {
+		.card-4,
+		.card-6 {
 			margin-top: 0;
 		}
 	}

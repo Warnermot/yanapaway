@@ -272,6 +272,68 @@ const PAGINAS: PaginaSeed[] = [
       ),
     ],
   },
+  {
+    titulo: 'Celos y control no son amor',
+    slug: 'celos-y-control-no-son-amor',
+    resumen:
+      'Revisar el teléfono, exigir explicaciones por cada salida, decidir con quién puedes hablar: son comportamientos, no una prueba de cuánto te quieren. Cómo distinguir el cuidado real del control.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'sensible',
+    orden: 6,
+    contenido: [
+      PARRAFO(
+        'Es común escuchar que los celos son "una forma de demostrar interés". Pero hay una diferencia clara entre preocuparse por alguien y necesitar controlarlo. La segunda no es una versión intensa del amor: es un patrón de comportamiento distinto, y suele repetirse.'
+      ),
+      TITULO('Algunas formas que toma el control'),
+      LISTA([
+        'Revisar el teléfono, las redes o los mensajes sin permiso.',
+        'Exigir explicaciones detalladas por cada salida, retraso o gasto.',
+        'Decidir, directa o indirectamente, con quién puedes hablar o pasar tiempo.',
+        'Interrogatorios frecuentes disfrazados de "solo quiero saber cómo estás".',
+        'Hacerte sentir culpable por pasar tiempo con otras personas.',
+      ]),
+      TITULO('Por qué es importante nombrarlo así'),
+      PARRAFO(
+        'Cuando estos comportamientos se repiten, suelen desgastar la relación mucho antes de que aparezca cualquier otro tipo de violencia. Reconocerlos a tiempo, y no como "su forma de ser" o "cuánto le importas", es un primer paso para protegerte.'
+      ),
+      TITULO('Esto no es un diagnóstico'),
+      PARRAFO(
+        'Nombrar un patrón de control no es hacer un diagnóstico clínico de nadie, y no hace falta uno para pedir ayuda. Si esta descripción te resulta familiar, el directorio de instituciones y el asistente de este sitio pueden orientarte sobre los siguientes pasos, a tu ritmo.'
+      ),
+    ],
+  },
+  {
+    titulo: '"Así es su carácter" no es una excusa',
+    slug: 'asi-es-su-caracter-no-es-excusa',
+    resumen:
+      'Justificar un maltrato porque "así es" o "así se crio" confunde una explicación con una excusa. Por qué el origen de un comportamiento no lo vuelve aceptable.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'general',
+    orden: 7,
+    contenido: [
+      PARRAFO(
+        'Parte de lo que somos viene de fábrica —el temperamento— y parte se construye con la crianza, la cultura y las experiencias —el carácter—. Es una distinción real, pero se usa mal con frecuencia: "así es su carácter" o "así lo criaron" suelen aparecer para justificar un trato que lastima.'
+      ),
+      TITULO('Explicar no es justificar'),
+      PARRAFO(
+        'Entender de dónde viene un comportamiento puede ayudar a una persona a trabajar en sí misma, pero no traslada la responsabilidad hacia quien lo recibe. El origen de una conducta no decide si es aceptable tratarte mal; lo decide el efecto que tiene en ti.'
+      ),
+      TITULO('Lo que sí importa: el patrón, no la explicación'),
+      LISTA([
+        '¿Se repite, aunque cambien las circunstancias?',
+        '¿Se intensifica con el tiempo, en vez de mejorar?',
+        '¿Alterna con arrepentimiento, promesas de cambio y vuelta a lo mismo?',
+        '¿Te deja sintiendo que caminas con cuidado para no "provocarlo"?',
+      ]),
+      PARRAFO(
+        'Si respondiste que sí a varias de estas preguntas, no se trata de "su carácter": es un patrón, y los patrones se pueden nombrar sin necesidad de un diagnóstico.'
+      ),
+      TITULO('Un cambio real toma más que una promesa'),
+      PARRAFO(
+        'Un cambio genuino, si llega a darse, suele necesitar tiempo, trabajo profesional y resultados sostenidos, no solo una disculpa después del último episodio. Mientras tanto, tu seguridad no depende de que esa persona cambie: el directorio de instituciones de este sitio está para acompañarte, cambie o no.'
+      ),
+    ],
+  },
 ];
 
 const MIME_POR_EXTENSION: Record<string, string> = {
