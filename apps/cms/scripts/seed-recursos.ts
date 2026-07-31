@@ -12,6 +12,12 @@
  */
 import { createStrapi, compileStrapi } from '@strapi/strapi';
 import type { Modules } from '@strapi/strapi';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Las imágenes viven en apps/web (assets de Astro); el CMS las sube a su
+// propia media library una sola vez, en el primer seed.
+const ASSETS_DIR = path.resolve(__dirname, '../../web/src/assets/images');
 
 const CATEGORIA_UID = 'api::categoria-recurso.categoria-recurso';
 const PAGINA_UID = 'api::pagina.pagina';
@@ -79,6 +85,9 @@ type PaginaSeed = {
   nivelSensibilidad: 'general' | 'sensible';
   orden: number;
   contenido: BloquesContenido;
+  /** Ruta relativa a ASSETS_DIR (p. ej. "contenido/foo.png"). Opcional. */
+  portadaArchivo?: string;
+  portadaAlt?: string;
 };
 
 const PAGINAS: PaginaSeed[] = [
@@ -116,7 +125,186 @@ const PAGINAS: PaginaSeed[] = [
       ),
     ],
   },
+  {
+    titulo: 'El feminicidio no es un caso aislado',
+    slug: 'feminicidio-no-es-caso-aislado',
+    resumen:
+      'El feminicidio es el punto más extremo de la violencia de género, casi nunca sin avisos previos. Por qué las marchas como "Ni una menos" importan y qué hacer antes de que sea tarde.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'sensible',
+    orden: 2,
+    portadaArchivo: 'contenido/contenido1.png',
+    portadaAlt: 'Mujeres en una protesta sosteniendo un cartel que dice "Alto al feminicidio, #Ni una menos".',
+    contenido: [
+      PARRAFO(
+        'El feminicidio es el asesinato de una mujer por el hecho de serlo, casi siempre después de un historial de violencia previa. No suele ser un hecho repentino ni imposible de anticipar: en la mayoría de los casos hubo señales, denuncias no atendidas a tiempo o ciclos de violencia que se fueron intensificando.'
+      ),
+      TITULO('Por qué se sale a marchar'),
+      PARRAFO(
+        'Consignas como "Ni una menos" no son solo un reclamo simbólico: buscan que los casos se investiguen, que las instituciones respondan a tiempo y que la sociedad deje de tratar la violencia contra las mujeres como un asunto privado. Visibilizar el problema es parte de prevenirlo.'
+      ),
+      TITULO('Qué hacer antes de que sea tarde'),
+      PARRAFO(
+        'Si identificas señales de riesgo — amenazas, aislamiento, control, agresiones que escalan — no esperes a que la situación se resuelva sola. El directorio de este sitio reúne instituciones que reciben denuncias y brindan protección; si prefieres una primera orientación antes de dar ese paso, el asistente también está disponible.'
+      ),
+    ],
+  },
+  {
+    titulo: 'Acompañar a quienes perdieron a alguien por violencia',
+    slug: 'acompanar-a-quienes-perdieron-a-alguien',
+    resumen:
+      'Cuando la violencia termina en una pérdida, la familia y la comunidad necesitan otro tipo de apoyo. Qué ayuda de verdad y qué evitar al acompañar el duelo.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'sensible',
+    orden: 3,
+    portadaArchivo: 'contenido/contendio2.png',
+    portadaAlt: 'Una mujer mayor junto a una niña, sentadas frente a una tumba en un cementerio.',
+    contenido: [
+      PARRAFO(
+        'Cuando la violencia termina en la pérdida de alguien, el dolor no se queda solo en quienes fueron víctimas directas: alcanza a madres, abuelas, hijas e hijos, y a toda una comunidad. Acompañar ese duelo requiere paciencia y cuidado, no respuestas rápidas.'
+      ),
+      TITULO('Qué ayuda de verdad'),
+      LISTA([
+        'Escuchar sin apurar el proceso ni imponer plazos para "superarlo".',
+        'Ofrecer presencia concreta: acompañar a trámites, cocinar, cuidar a otros hijos o hijas.',
+        'Nombrar a la persona que se perdió, si la familia lo permite: el silencio suele doler más.',
+        'Respetar los tiempos y las formas de duelo de cada quien, incluidas las costumbres propias de su comunidad.',
+      ]),
+      TITULO('Qué evitar'),
+      LISTA([
+        'Frases como "ya pasó tiempo" o "todo pasa por algo".',
+        'Preguntas sobre los detalles de lo ocurrido, salvo que la persona quiera hablar de eso.',
+        'Dejar de acompañar una vez que pasan los primeros días: el duelo continúa mucho después.',
+      ]),
+      TITULO('Cuidar a quien cuida'),
+      PARRAFO(
+        'Acompañar un duelo así también desgasta. Buscar apoyo psicológico para quienes sostienen a la familia no es un lujo, es parte de sostener el acompañamiento en el tiempo. Las instituciones del directorio de este sitio también orientan a familiares y personas cercanas, no solo a quien vive la violencia de forma directa.'
+      ),
+    ],
+  },
+  {
+    titulo: 'Reconocer la violencia física antes de que escale',
+    slug: 'reconocer-violencia-fisica-antes-de-escalar',
+    resumen:
+      'La violencia física casi nunca aparece de un día para otro: suele seguir un patrón que se repite y se intensifica. Aprende a reconocerlo a tiempo.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'sensible',
+    orden: 4,
+    portadaArchivo: 'contenido/contra.png',
+    portadaAlt: 'Un puño cerrado frente a una mano abierta en señal de alto.',
+    contenido: [
+      PARRAFO(
+        'La violencia física rara vez es el primer paso: suele llegar después de violencia psicológica, control o amenazas que ya venían ocurriendo. Reconocer el patrón antes de que se intensifique puede marcar la diferencia.'
+      ),
+      TITULO('El patrón de escalada'),
+      PARRAFO('Presta atención si la situación incluye alguna de estas señales:'),
+      LISTA([
+        'Empujones, sacudidas o "accidentes" que dejan marcas.',
+        'Objetos lanzados o golpeados cerca de ti, aunque no te toquen directamente.',
+        'Amenazas de daño hacia ti, hacia otras personas o hacia mascotas.',
+        'Impedirte salir de un lugar, encerrarte o bloquear una puerta.',
+        'Cualquier golpe, aunque después haya arrepentimiento o promesas de que no se repetirá.',
+      ]),
+      TITULO('Qué hacer si ya está pasando'),
+      PARRAFO(
+        'Si estás en peligro inmediato, usa el botón SOS de este sitio o comunícate directamente con la FELCV. Si necesitas pensar tus siguientes pasos con calma, el directorio de instituciones y el asistente están disponibles para orientarte sin presión.'
+      ),
+    ],
+  },
+  {
+    titulo: 'Buscar apoyo psicológico: qué esperar de la primera consulta',
+    slug: 'primera-consulta-apoyo-psicologico',
+    resumen:
+      'Dar el primer paso para pedir apoyo psicológico puede dar miedo. Esto es, en general, lo que suele pasar en una primera consulta.',
+    categoriaSlug: 'contenidos-educativos',
+    nivelSensibilidad: 'general',
+    orden: 5,
+    portadaArchivo: 'contactos/spicologo.png',
+    portadaAlt: 'Retrato de un profesional sonriendo en un consultorio.',
+    contenido: [
+      PARRAFO(
+        'Pedir apoyo psicológico por primera vez genera dudas normales: ¿qué le voy a decir?, ¿me va a juzgar?, ¿tengo que contarlo todo de una vez? No existe una única forma correcta de empezar, pero esto suele ser habitual.'
+      ),
+      TITULO('Qué suele pasar en la primera sesión'),
+      PARRAFO(
+        'Generalmente la persona profesional pregunta qué te trae a la consulta y escucha, sin exigir que cuentes todo de inmediato. Puedes ir a tu ritmo: no hace falta llegar con un relato ordenado ni con todos los detalles resueltos.'
+      ),
+      TITULO('La confidencialidad es la regla'),
+      PARRAFO(
+        'Lo que hables en consulta es confidencial, salvo situaciones de riesgo grave donde la ley exige actuar para protegerte a ti o a otras personas. Si tienes dudas sobre esto, es válido preguntarlo directamente en la primera cita.'
+      ),
+      TITULO('No tienes que tener todo claro antes de ir'),
+      PARRAFO(
+        'No necesitas estar segura de qué es lo que te pasa, ni tener un diagnóstico previo. El servicio legal integral municipal (SLIM) y otras instituciones del directorio ofrecen orientación psicológica gratuita como primer paso.'
+      ),
+    ],
+  },
+  {
+    titulo: 'Documentar lo que estás viviendo, sin ponerte en más riesgo',
+    slug: 'documentar-sin-ponerte-en-riesgo',
+    resumen:
+      'Guardar registros — mensajes, fechas, fotos — puede ayudar más adelante en una denuncia. Cómo hacerlo sin que ese registro te ponga en peligro.',
+    categoriaSlug: 'aspectos-legales',
+    nivelSensibilidad: 'sensible',
+    orden: 1,
+    portadaArchivo: 'contactos/foto.png',
+    portadaAlt: 'Una mujer trabajando en su laptop.',
+    contenido: [
+      PARRAFO(
+        'Tener un registro de lo que ha ocurrido —fechas, mensajes, fotos de lesiones o daños— puede ser útil si en algún momento decides hacer una denuncia. No es obligatorio hacerlo, y nunca debe ponerte en más riesgo del que ya estás.'
+      ),
+      TITULO('Qué conviene guardar'),
+      LISTA([
+        'Capturas de pantalla de mensajes o llamadas con fecha visible.',
+        'Fotos de lesiones o daños materiales, con fecha.',
+        'Un registro simple con fecha, hora y qué ocurrió, aunque sea breve.',
+        'Nombres de testigos, si los hay y si es seguro mencionarlos.',
+      ]),
+      TITULO('Cómo guardarlo de forma segura'),
+      LISTA([
+        'En un correo electrónico o nube a la que solo tú tengas acceso, no en el celular compartido.',
+        'Con una persona de confianza que pueda guardarlo por ti, si tu dispositivo no es seguro.',
+        'Evita guardar el registro donde la persona agresora pueda encontrarlo o borrarlo.',
+      ]),
+      TITULO('Esto no es obligatorio'),
+      PARRAFO(
+        'No tener pruebas guardadas no invalida lo que estás viviendo, y no es un requisito para pedir ayuda. La Fiscalía y la FELCV pueden orientarte sobre qué necesitan en tu caso concreto, sin que tengas que resolverlo todo por tu cuenta primero.'
+      ),
+    ],
+  },
 ];
+
+const MIME_POR_EXTENSION: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+};
+
+/** Sube un archivo local a la media library de Strapi y devuelve su id. */
+async function subirImagen(
+  app: Awaited<ReturnType<typeof createStrapi>>,
+  rutaRelativa: string,
+  alternativeText: string,
+): Promise<number> {
+  const rutaAbsoluta = path.join(ASSETS_DIR, rutaRelativa);
+  const stats = fs.statSync(rutaAbsoluta);
+  const extension = path.extname(rutaAbsoluta).toLowerCase();
+  const mimetype = MIME_POR_EXTENSION[extension] ?? 'application/octet-stream';
+
+  const uploadService = app.plugin('upload').service('upload');
+  const [archivo] = await uploadService.upload({
+    data: { fileInfo: { alternativeText } },
+    files: {
+      filepath: rutaAbsoluta,
+      originalFilename: path.basename(rutaAbsoluta),
+      mimetype,
+      size: stats.size,
+    },
+  });
+
+  return archivo.id;
+}
 
 async function main(): Promise<void> {
   const appContext = await compileStrapi();
@@ -139,9 +327,15 @@ async function main(): Promise<void> {
         continue;
       }
 
-      const { categoriaSlug, ...datos } = def;
+      const { categoriaSlug, portadaArchivo, portadaAlt, ...datos } = def;
+
+      let portadaId: number | undefined;
+      if (portadaArchivo) {
+        portadaId = await subirImagen(app, portadaArchivo, portadaAlt ?? '');
+      }
+
       await app.documents(PAGINA_UID).create({
-        data: { ...datos, categoria: categorias[categoriaSlug] },
+        data: { ...datos, categoria: categorias[categoriaSlug], portada: portadaId },
         status: 'published',
       });
       app.log.info(`[seed:recursos] Página "/recursos/${def.slug}": creada y publicada.`);
