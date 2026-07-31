@@ -1,4 +1,5 @@
 import { ErrorStrapi, strapiGet } from './strapi';
+import { urlAbsolutaDeMedia } from './media';
 
 export const TIPOS_INSTITUCION = [
   'defensoria',
@@ -40,6 +41,8 @@ export type Institucion = {
   activa: boolean;
   telefono?: string;
   telefonos: TelefonoInstitucion[];
+  imagenUrl?: string;
+  imagenAlt?: string;
   latitud?: number;
   longitud?: number;
   sedes: SedeInstitucion[];
@@ -71,6 +74,7 @@ type InstitucionStrapiCruda = {
   latitud?: number | null;
   longitud?: number | null;
   telefonos?: TelefonoInstitucion[];
+  imagen?: { url: string; alternativeText?: string | null } | null;
   sedes?: Array<{
     documentId: string;
     nombre: string;
@@ -95,6 +99,8 @@ function normalizarInstitucion(cruda: InstitucionStrapiCruda): Institucion {
     activa: cruda.activa,
     telefono: cruda.telefonos?.[0]?.numero,
     telefonos: cruda.telefonos ?? [],
+    imagenUrl: cruda.imagen ? urlAbsolutaDeMedia(cruda.imagen.url) : undefined,
+    imagenAlt: cruda.imagen?.alternativeText ?? undefined,
     latitud: cruda.latitud ?? undefined,
     longitud: cruda.longitud ?? undefined,
     sedes: (cruda.sedes ?? []).map((sede) => ({
@@ -113,7 +119,7 @@ function normalizarInstitucion(cruda: InstitucionStrapiCruda): Institucion {
   };
 }
 
-const POPULATE = 'populate[telefonos]=true&populate[sedes]=true&populate[tiposCaso]=true';
+const POPULATE = 'populate[telefonos]=true&populate[sedes]=true&populate[tiposCaso]=true&populate[imagen]=true';
 const RADIO_TIERRA_KM = 6371;
 
 function distanciaKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

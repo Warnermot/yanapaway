@@ -1,7 +1,6 @@
 ---
-import { Image } from 'astro:assets';
-import contraImage from '../assets/images/contenido/contra.png';
-import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+import TarjetaRecurso from './recursos/TarjetaRecurso.astro';
+import { listarPaginasRecursos, type PaginaRecurso } from '../lib/recursos';
 import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -11,40 +10,37 @@ interface Props {
 const { lang = defaultLang } = Astro.props;
 const t = useTranslations(lang);
 
-const items = Array.from({ length: 6 }, (_, index) => ({
-	title: 'Lorem ipsum dolor sit',
-	cta: t('content.cta'),
-	id: index,
-	image: index === 0 ? contraImage : undefined,
-	alt: index === 0 ? 'Un puño cerrado frente a una mano abierta en señal de alto' : '',
-	placeholderVariant: getPlaceholderVariant(index),
-}));
+// Vitrina de recursos en el home; el listado completo (agrupado por
+// categoría) vive en /recursos. Si el CMS no responde, la sección se oculta
+// sola: es peor mostrar una landing que revienta que una landing más corta.
+let paginas: PaginaRecurso[] = [];
+let cmsCaido = false;
+
+try {
+	paginas = (await listarPaginasRecursos()).slice(0, 6);
+} catch (error) {
+	cmsCaido = true;
+	console.error('[home] No se pudieron cargar recursos desde el CMS:', error);
+}
 ---
 
-{/* id="contenido": la sección de vista previa del home. El listado real de
-	recursos vive en la ruta /recursos, así que el ancla no debe competir con ella. */}
 <section class="content-section" id="contenido">
 	<div class="wrapper">
 		<h2 class="section-heading">{t('content.heading')}</h2>
-		<div class="content-grid">
-			{
-				items.map((item) => (
-					<article class="content-card">
-						{item.image ? (
-							<Image src={item.image} alt={item.alt} class="card-image" />
-						) : (
-							<div class={`card-image img-placeholder ${item.placeholderVariant}`} />
-						)}
-						<div class="card-body">
-							<p class="card-title">{item.title}</p>
-							<a href="/recursos" class="pill-btn card-cta">
-								{item.cta}
-							</a>
-						</div>
-					</article>
-				))
-			}
-		</div>
+
+		{
+			!cmsCaido && paginas.length > 0 && (
+				<div class="content-grid">
+					{paginas.map((pagina, indice) => (
+						<TarjetaRecurso pagina={pagina} indice={indice} />
+					))}
+				</div>
+			)
+		}
+
+		<a href="/recursos" class="pill-btn content-ver-todos">
+			{t('content.viewAll')}
+		</a>
 	</div>
 </section>
 
@@ -58,41 +54,13 @@ const items = Array.from({ length: 6 }, (_, index) => ({
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 2rem;
+		margin-bottom: 2rem;
 	}
 
-	.content-card {
-		background: white;
-		border-radius: 16px;
-		overflow: hidden;
-		box-shadow: 0 6px 20px rgba(26, 26, 23, 0.06);
-	}
-
-	.card-image {
-		display: block;
-		width: 100%;
-		height: auto;
-		aspect-ratio: 4 / 3;
-		object-fit: cover;
-	}
-
-	.card-body {
-		padding: 1.25rem 1.5rem 1.75rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		text-align: center;
-	}
-
-	.card-title {
-		font-size: 0.9rem;
-		color: var(--color-ink-soft);
-	}
-
-	.card-cta {
+	.content-ver-todos {
 		background: var(--color-secondary);
 		color: white;
-		padding: 0.55rem 2.5rem;
+		padding: 0.7rem 1.8rem;
 		font-weight: 500;
 	}
 
