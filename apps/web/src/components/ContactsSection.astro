@@ -1,7 +1,6 @@
 ---
-import { Image } from 'astro:assets';
-import fotoImage from '../assets/images/contactos/foto.png';
-import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+import { listarInstituciones, type Institucion } from '../lib/instituciones';
+import { TIPO_INSTITUCION_LABELS } from '../lib/etiquetas';
 import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -11,52 +10,62 @@ interface Props {
 const { lang = defaultLang } = Astro.props;
 const t = useTranslations(lang);
 
-const contacts = [
-	{
-		name: 'Lorem ipsum',
-		detail: 'Lorem ipsum dolor sit amet consectetur.',
-		position: 'card-1',
-		image: fotoImage,
-		alt: 'Mujer trabajando en su laptop',
-	},
-	{
-		name: 'Lorem ipsum',
-		detail: 'Lorem ipsum dolor sit amet consectetur.',
-		position: 'card-2',
-		placeholderVariant: getPlaceholderVariant(1),
-	},
-	{
-		name: 'Lorem ipsum',
-		detail: 'Lorem ipsum dolor sit amet consectetur.',
-		position: 'card-3',
-		placeholderVariant: getPlaceholderVariant(2),
-	},
-];
+// Vitrina flotante de 3 instituciones en el home (diseño decorativo); el
+// directorio completo, con buscador, mapa y ficha detallada, vive en
+// /instituciones. Si el CMS no responde, la sección se oculta sola en vez de
+// romper la landing (mismo criterio que ContentSection.astro).
+let instituciones: Institucion[] = [];
+let cmsCaido = false;
+
+try {
+	const todas = await listarInstituciones();
+	// Prioriza las que atienden emergencias para la vitrina.
+	instituciones = [...todas]
+		.sort((a, b) => Number(b.esEmergencia) - Number(a.esEmergencia))
+		.slice(0, 4);
+} catch (error) {
+	cmsCaido = true;
+	console.error('[home] No se pudieron cargar instituciones desde el CMS:', error);
+}
+
+const posiciones = ['card-1', 'card-2', 'card-3', 'card-4'];
 ---
 
 <section class="contacts-section" id="contactos">
 	<div class="wrapper">
 		<h2 class="section-heading">{t('contacts.heading')}</h2>
-		<div class="contacts-field">
-			{
-				contacts.map((contact) => (
-					<article class={`contact-card ${contact.position}`}>
-						{contact.image ? (
-							<Image src={contact.image} alt={contact.alt ?? ''} class="contact-image" />
-						) : (
-							<div class={`contact-image img-placeholder ${contact.placeholderVariant}`} />
-						)}
-						<div class="contact-body">
-							<p class="contact-name">{contact.name}</p>
-							<p class="contact-detail">{contact.detail}</p>
-							<a href="#" class="pill-btn contact-cta">
-								{t('contacts.cta')}
-							</a>
-						</div>
-					</article>
-				))
-			}
-		</div>
+
+		{
+			!cmsCaido && instituciones.length > 0 && (
+				<div class="contacts-field">
+					{instituciones.map((institucion, index) => (
+						<article class={`contact-card ${posiciones[index]}`}>
+							<div class="contact-top" class:list={[{ 'has-image': !!institucion.imagenUrl }]}>
+								{institucion.imagenUrl && (
+									<img
+										class="contact-top-img"
+										src={institucion.imagenUrl}
+										alt={institucion.imagenAlt ?? ''}
+										loading="lazy"
+									/>
+								)}
+								<span class="contact-tag">{TIPO_INSTITUCION_LABELS[institucion.tipo]}</span>
+							</div>
+							<div class="contact-body">
+								<p class="contact-name">{institucion.nombre}</p>
+								<a href={`/instituciones/${institucion.id}`} class="pill-btn contact-cta">
+									{t('contacts.viewProfile')}
+								</a>
+							</div>
+						</article>
+					))}
+				</div>
+			)
+		}
+
+		<a href="/instituciones" class="pill-btn contacts-ver-todas">
+			{t('contacts.viewAll')}
+		</a>
 	</div>
 </section>
 
@@ -67,50 +76,79 @@ const contacts = [
 
 	.contacts-field {
 		position: relative;
-		min-height: 520px;
+		min-height: 480px;
+		margin-bottom: 2.5rem;
 	}
 
 	.contact-card {
 		background: white;
 		border-radius: 16px;
 		overflow: hidden;
-		width: min(260px, 80vw);
-		box-shadow: 0 10px 30px rgba(26, 26, 23, 0.1);
+		width: min(220px, 70vw);
+		box-shadow: 0 10px 30px rgba(26, 29, 33, 0.1);
 		animation: floaty 6s ease-in-out infinite;
 	}
 
-	.contact-image {
-		display: block;
-		width: 100%;
-		height: auto;
+	.contact-top {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		padding: 0.85rem;
 		aspect-ratio: 16 / 10;
+		background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+		overflow: hidden;
+	}
+
+	.contact-top-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
 	}
 
+	.contact-top.has-image::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.05) 60%);
+	}
+
+	.contact-top .contact-tag {
+		position: relative;
+		z-index: 1;
+	}
+
+	.contact-tag {
+		display: inline-flex;
+		background: rgba(255, 255, 255, 0.9);
+		color: var(--color-primary-dark);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		padding: 0.25rem 0.6rem;
+		border-radius: 999px;
+	}
+
 	.contact-body {
-		padding: 1.25rem 1.5rem 1.75rem;
+		padding: 1.1rem 1.25rem 1.4rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		align-items: flex-start;
 	}
 
 	.contact-name {
 		font-weight: 600;
-	}
-
-	.contact-detail {
-		font-size: 0.85rem;
-		color: var(--color-ink-soft);
-		line-height: 1.5;
+		font-size: 0.95rem;
+		line-height: 1.35;
 	}
 
 	.contact-cta {
-		background: var(--color-primary);
+		background: var(--color-secondary);
 		color: white;
-		padding: 0.5rem 1.4rem;
-		font-size: 0.8rem;
-		margin-top: 0.25rem;
+		padding: 0.45rem 1.2rem;
+		font-size: 0.78rem;
 	}
 
 	.card-1 {
@@ -130,10 +168,18 @@ const contacts = [
 
 	.card-3 {
 		position: absolute;
-		left: 26%;
-		top: 46%;
+		left: 22%;
+		top: 44%;
 		animation-delay: 0.7s;
 		animation-duration: 6.5s;
+	}
+
+	.card-4 {
+		position: absolute;
+		left: 68%;
+		top: 50%;
+		animation-delay: 2.1s;
+		animation-duration: 7.5s;
 	}
 
 	@keyframes floaty {
@@ -146,20 +192,29 @@ const contacts = [
 		}
 	}
 
+	.contacts-ver-todas {
+		background: var(--color-primary);
+		color: white;
+		padding: 0.7rem 1.8rem;
+		font-weight: 500;
+	}
+
 	@media (max-width: 760px) {
 		.contacts-field {
 			min-height: auto;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			gap: 2rem;
+			gap: 1.5rem;
 		}
 
 		.card-1,
 		.card-2,
-		.card-3 {
+		.card-3,
+		.card-4 {
 			position: static;
-			width: min(320px, 90vw);
+			width: min(280px, 90vw);
+			animation: none;
 		}
 	}
 
