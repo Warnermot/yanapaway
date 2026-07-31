@@ -45,7 +45,7 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 
 				<div class="mensajes" id="mensajes-container" aria-live="polite">
 					<BurbujaChat
-						mensaje="Hola, soy Yanapaway. Estoy aquí para escucharte y ayudarte, sin juzgar. Podés contarme cómo te sentís o pedirme información sobre recursos de ayuda."
+						mensaje="Hola, soy Yanapaway. Estoy aquí para escucharte y ayudarte, sin juzgar. Puedes contarme cómo te sientes o pedirme información sobre recursos de ayuda."
 						remitente="ia"
 						timestamp={new Date().toISOString()}
 					/>
@@ -73,9 +73,24 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 	(function () {
 		const API = `${CMS_URL}/api`;
 
-		// Identificador de usuario provisional mientras no exista autenticación
-		// (SEC-01: todas las consultas filtran por este usuarioId).
+		// Identificador de usuario con Firebase Auth (SEC-01).
+		// Si el usuario inició sesión con Google → hash determinista de su UID.
+		// Si no → fallback al ID aleatorio anterior (compatible hacia atrás).
 		function obtenerUsuarioId() {
+			const raw = localStorage.getItem('yanapaway_firebase_user');
+			if (raw) {
+				try {
+					const user = JSON.parse(raw);
+					if (user.uid) {
+						let hash = 0;
+						for (let i = 0; i < user.uid.length; i++) {
+							hash = ((hash << 5) - hash) + user.uid.charCodeAt(i);
+							hash = hash | 0;
+						}
+						return Math.abs(hash);
+					}
+				} catch (_) {}
+			}
 			const clave = 'yanapaway_usuario_id';
 			let id = Number(localStorage.getItem(clave));
 			if (!id) {
@@ -83,6 +98,19 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 				localStorage.setItem(clave, String(id));
 			}
 			return id;
+		}
+
+		// Mostrar nombre del usuario en sidebar si está autenticado
+		const usuarioFirebaseRaw = localStorage.getItem('yanapaway_firebase_user');
+		if (usuarioFirebaseRaw) {
+			try {
+				const fbUser = JSON.parse(usuarioFirebaseRaw);
+				const nombre = fbUser.displayName ?? fbUser.email ?? 'Usuario';
+				const avatarEl = document.querySelector('.aviso-privacidad');
+				if (avatarEl && nombre !== 'Usuario') {
+					avatarEl.textContent = 'Sesión iniciada: ' + nombre;
+				}
+			} catch (_) {}
 		}
 
 		const usuarioId = obtenerUsuarioId();
