@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import SelectorEmocion from '../components/SelectorEmocion.astro';
+import LoginButton from '../components/LoginButton.astro';
 
 // URL base del CMS Strapi (configurable con PUBLIC_CMS_URL)
 const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
@@ -11,6 +12,26 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 <Layout title="Yanapa — Diario personal" description="Tu diario personal privado: registra cómo te sientes cada día.">
 	<Navbar />
 	<main class="diario-wrapper wrapper">
+		<!-- Puerta de login — visible si no hay sesión de Firebase -->
+		<!-- Tarjeta centrada — visible solo SIN sesión -->
+		<div id="login-gate-centrado" class="login-gate-centrado" hidden>
+			<div class="login-card-centrada">
+				<span class="login-card-icon">🔒</span>
+				<h2>Tu diario personal</h2>
+				<p>Inicia sesión con Google para acceder a tu diario de forma segura. Solo tú puedes ver lo que escribes aquí.</p>
+				<LoginButton />
+			</div>
+		</div>
+
+		<!-- Barra de sesión compacta — visible solo CON sesión -->
+		<div id="barra-sesion" class="barra-sesion" hidden>
+			<span class="barra-sesion-icon">🔒</span>
+			<span class="barra-sesion-nombre" id="barra-sesion-nombre"></span>
+			<button type="button" id="btn-cerrar-sesion" class="btn-logout pill-btn">Cerrar sesión</button>
+		</div>
+
+		<!-- Contenido del diario — visible solo con sesión activa -->
+		<div id="contenido-diario" hidden>
 		<div class="diario-layout">
 			<section class="nueva-entrada">
 				<h2>¿Cómo estás hoy?</h2>
@@ -44,6 +65,7 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 				</div>
 			</section>
 		</div>
+		</div>
 	</main>
 
 	<!-- Modal global de confirmación de eliminación — tonos neutros, sin rojos (RD-01) -->
@@ -64,9 +86,37 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 	(function () {
 		const API = `${CMS_URL}/api`;
 
-		// Identificador de usuario provisional mientras no exista autenticación
-		// (SEC-01: todas las consultas filtran por este usuarioId).
+		// Verificar autenticación — el diario requiere sesión con Firebase
+		const firebaseUserRaw = localStorage.getItem('yanapaway_firebase_user');
+		const isLoggedIn = !!firebaseUserRaw;
+		if (isLoggedIn) {
+			// Con sesión: barra compacta + diario completo
+			document.getElementById('barra-sesion').hidden = false;
+			document.getElementById('contenido-diario').hidden = false;
+		} else {
+			// Sin sesión: tarjeta centrada, el diario oculto
+			document.getElementById('login-gate-centrado').hidden = false;
+			return; // No seguir: solo se muestra la tarjeta de login
+		}
+
+		// Identificador de usuario con Firebase Auth (SEC-01).
+		// Si el usuario inició sesión con Google → hash determinista de su UID.
+		// Si no → fallback al ID aleatorio anterior (compatible hacia atrás).
 		function obtenerUsuarioId() {
+			const raw = localStorage.getItem('yanapaway_firebase_user');
+			if (raw) {
+				try {
+					const user = JSON.parse(raw);
+					if (user.uid) {
+						let hash = 0;
+						for (let i = 0; i < user.uid.length; i++) {
+							hash = ((hash << 5) - hash) + user.uid.charCodeAt(i);
+							hash = hash | 0;
+						}
+						return Math.abs(hash);
+					}
+				} catch (_) {}
+			}
 			const clave = 'yanapaway_usuario_id';
 			let id = Number(localStorage.getItem(clave));
 			if (!id) {
@@ -324,10 +374,110 @@ const CMS_URL = import.meta.env.PUBLIC_CMS_URL ?? 'http://localhost:1337';
 	})();
 </script>
 
+<script>
+	import { logout } from '../lib/auth';
+
+	// Mostrar nombre del usuario en la barra de sesión
+	const raw = localStorage.getItem('yanapaway_firebase_user');
+	if (raw) {
+		try {
+			const u = JSON.parse(raw);
+			const el = document.getElementById('barra-sesion-nombre');
+			if (el) el.textContent = u.displayName ?? u.email ?? '';
+		} catch {}
+	}
+
+	// Cerrar sesión
+	document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+		await logout();
+		location.reload();
+	});
+</script>
+
 <style is:global>
 	.diario-wrapper {
 		background: var(--color-bg-soft);
 		padding-block: 2.5rem 3.5rem;
+	}
+
+	/* Tarjeta de login centrada — sin sesión */
+	.login-gate-centrado {
+		display: flex;
+		justify-content: center;
+		padding-block: 4rem;
+	}
+
+	.login-gate-centrado[hidden] {
+		display: none;
+	}
+
+	.login-card-centrada {
+		background: var(--color-bg);
+		border-radius: 1.5rem;
+		padding: 2.5rem 2rem;
+		text-align: center;
+		max-width: 24rem;
+		box-shadow: 0 4px 20px rgba(26, 29, 33, 0.08);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.login-card-icon {
+		font-size: 2.2rem;
+	}
+
+	.login-card-centrada h2 {
+		font-size: 1.25rem;
+		font-weight: 600;
+	}
+
+	.login-card-centrada p {
+		font-size: 0.88rem;
+		color: var(--color-ink-soft);
+		line-height: 1.5;
+	}
+
+	/* Barra de sesión compacta — con sesión activa */
+	.barra-sesion {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		background: var(--color-bg);
+		border-radius: 1rem;
+		padding: 0.55rem 1.1rem;
+		margin-bottom: 1.5rem;
+		box-shadow: 0 1px 3px rgba(26, 29, 33, 0.06);
+	}
+
+	.barra-sesion[hidden] {
+		display: none;
+	}
+
+	.barra-sesion-nombre {
+		font-size: 0.85rem;
+		color: var(--color-ink);
+		flex: 1;
+	}
+
+	.btn-logout {
+		background: transparent;
+		color: var(--color-ink-soft);
+		border: 1.5px solid var(--color-ink-soft);
+		padding: 0.35rem 0.9rem;
+		font-size: 0.78rem;
+		cursor: pointer;
+		border-radius: 999px;
+		font-family: inherit;
+	}
+
+	.btn-logout:hover {
+		background: var(--color-bg-soft);
+	}
+
+	.barra-sesion-icon {
+		font-size: 1rem;
 	}
 
 	.diario-layout {

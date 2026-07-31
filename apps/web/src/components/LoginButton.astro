@@ -1,0 +1,87 @@
+---
+// Botón de login con Google (Firebase Auth).
+// Al iniciar sesión se recarga la página para que el usuarioId use el UID real.
+---
+
+<div id="login-container" class="login-container" aria-live="polite">
+	<button type="button" id="btn-login" class="btn-login pill-btn" disabled>Cargando…</button>
+</div>
+
+<script>
+	import { loginWithGoogle, logout, getStoredUser, onAuthChange } from '../lib/auth';
+
+	const btn = document.getElementById('btn-login');
+
+	const noAutenticado = () => {
+		btn.textContent = 'Entrar con Google';
+		btn.disabled = false;
+	};
+
+	const autenticado = (displayName?: string, email?: string) => {
+		btn.textContent = `Hola, ${displayName ?? email ?? 'usuario'} ↩`;
+		btn.disabled = false;
+	};
+
+	// Estado inicial
+	const stored = getStoredUser();
+	if (stored) {
+		autenticado(stored.displayName, stored.email);
+	} else {
+		noAutenticado();
+	}
+
+	btn.addEventListener('click', async () => {
+		btn.disabled = true;
+		if (getStoredUser()) {
+			btn.textContent = 'Saliendo…';
+			await logout();
+			location.reload();
+		} else {
+			btn.textContent = 'Conectando…';
+			try {
+				await loginWithGoogle();
+				location.reload();
+			} catch {
+				btn.disabled = false;
+				btn.textContent = 'Error. Reintentar.';
+			}
+		}
+	});
+
+	// Mantener el listener para futuros cambios (logout desde Firebase, etc.)
+	onAuthChange((user) => {
+		if (user) {
+			autenticado(user.displayName ?? undefined, user.email ?? undefined);
+		} else {
+			noAutenticado();
+		}
+	});
+</script>
+
+<style is:global>
+	.login-container {
+		display: flex;
+		justify-content: center;
+	}
+
+	.btn-login {
+		background: var(--color-bg-soft);
+		color: var(--color-ink);
+		padding: 0.6rem 1.4rem;
+		font-size: 0.88rem;
+		border: 2px solid var(--color-primary);
+		border-radius: 999px;
+		cursor: pointer;
+		font-family: inherit;
+		transition: background 0.15s ease;
+	}
+
+	.btn-login:hover:not(:disabled) {
+		background: var(--color-support-teal-tint);
+	}
+
+	.btn-login:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+</style>
