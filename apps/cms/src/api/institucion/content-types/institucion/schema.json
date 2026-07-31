@@ -39,6 +39,13 @@
       "required": true,
       "description": "Qué hace esta institución y qué tipo de ayuda ofrece."
     },
+    "imagen": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Foto o logo de la institución, opcional."
+    },
     "telefonos": {
       "type": "component",
       "component": "contacto.telefono",

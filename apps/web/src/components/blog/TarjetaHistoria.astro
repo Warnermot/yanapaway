@@ -1,0 +1,102 @@
+---
+import { formatearFecha } from '../../lib/fechas';
+import { etiquetaDeCategoria, type Historia } from '../../lib/historias';
+import { extracto } from '../../lib/texto';
+
+interface Props {
+  historia: Historia;
+}
+
+const { historia } = Astro.props;
+const apoyos = historia.cantidadComentarios;
+---
+
+<article class="tarjeta-historia">
+  <div class="meta">
+    <span class="alias">{historia.alias}</span>
+    <time datetime={historia.creadaEn}>{formatearFecha(historia.creadaEn)}</time>
+  </div>
+
+  <p class="contenido">{extracto(historia.contenido)}</p>
+
+  <div class="pie">
+    <span class="categoria">{etiquetaDeCategoria(historia.categoria)}</span>
+    <a href={`/blog/${historia.id}`}>
+      Leer la historia
+      <span class="apoyos">
+        {apoyos === 1 ? '1 mensaje de apoyo' : `${apoyos} mensajes de apoyo`}
+      </span>
+    </a>
+  </div>
+</article>
+
+<style>
+  .tarjeta-historia {
+    background: var(--color-bg);
+    border: 1px solid var(--color-bg-soft);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-soft);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 0.82rem;
+    color: var(--color-ink-soft);
+  }
+
+  .alias {
+    font-weight: 600;
+    color: var(--color-primary-dark);
+  }
+
+  .contenido {
+    line-height: 1.65;
+    color: var(--color-ink);
+    /* Los saltos de línea son de quien escribió: se respetan. */
+    white-space: pre-wrap;
+  }
+
+  .pie {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .categoria {
+    background: var(--color-support-teal-tint);
+    color: var(--color-primary-dark);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+
+  .pie a {
+    color: var(--color-primary-dark);
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+
+  .pie a:hover {
+    text-decoration: underline;
+  }
+
+  .apoyos {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--color-ink-soft);
+  }
+</style>

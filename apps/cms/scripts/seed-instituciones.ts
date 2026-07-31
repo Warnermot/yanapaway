@@ -14,6 +14,44 @@
  * seed:instituciones
  */
 import { createStrapi, compileStrapi } from '@strapi/strapi';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Las imágenes viven en apps/web (assets de Astro); el CMS las sube a su
+// propia media library una sola vez, en el primer seed (ver seed-recursos.ts,
+// que usa el mismo patrón para las portadas de Página).
+const ASSETS_DIR = path.resolve(__dirname, '../../web/src/assets/images');
+
+const MIME_POR_EXTENSION: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+};
+
+async function subirImagen(
+  app: Awaited<ReturnType<typeof createStrapi>>,
+  rutaRelativa: string,
+  alternativeText: string,
+): Promise<number> {
+  const rutaAbsoluta = path.join(ASSETS_DIR, rutaRelativa);
+  const stats = fs.statSync(rutaAbsoluta);
+  const extension = path.extname(rutaAbsoluta).toLowerCase();
+  const mimetype = MIME_POR_EXTENSION[extension] ?? 'application/octet-stream';
+
+  const uploadService = app.plugin('upload').service('upload');
+  const [archivo] = await uploadService.upload({
+    data: { fileInfo: { alternativeText } },
+    files: {
+      filepath: rutaAbsoluta,
+      originalFilename: path.basename(rutaAbsoluta),
+      mimetype,
+      size: stats.size,
+    },
+  });
+
+  return archivo.id;
+}
 
 type TipoInstitucion =
   | 'defensoria'
@@ -46,6 +84,9 @@ type InstitucionSeed = {
   longitud?: number;
   tiposCasoAtendidos: string[];
   sedes?: SedeSeed[];
+  /** Ruta relativa a ASSETS_DIR (p. ej. "contactos/foo.png"). Opcional. */
+  imagenArchivo?: string;
+  imagenAlt?: string;
 };
 
 const TIPOS_CASO: Array<{ nombre: string; descripcion: string }> = [
@@ -69,6 +110,8 @@ const INSTITUCIONES: InstitucionSeed[] = [
     ciudad: 'Sucre',
     telefono: '800140348',
     esEmergencia: true,
+    imagenArchivo: 'contactos/flcv.png',
+    imagenAlt: 'Oficiales de la FELCV formados frente a su edificio en Sucre.',
     tiposCasoAtendidos: ['grooming', 'sextorsion', 'control_digital', 'violencia_noviazgo'],
     sedes: [
       {
@@ -147,6 +190,8 @@ const INSTITUCIONES: InstitucionSeed[] = [
     telefono: '4-6453661',
     latitud: -19.042940139770508,
     longitud: -65.26390075683594,
+    imagenArchivo: 'contactos/fiscalia-sucre.png',
+    imagenAlt: 'Acto público en el edificio de la Fiscalía Departamental de Chuquisaca, en Sucre.',
     tiposCasoAtendidos: ['grooming', 'sextorsion'],
   },
 ];
@@ -173,18 +218,51 @@ async function main(): Promise<void> {
 
     let creadas = 0;
     let omitidas = 0;
+    let imagenesRellenadas = 0;
 
     for (const dato of INSTITUCIONES) {
-      const existente = await app.documents(institucionUID).findFirst({ filters: { nombre: dato.nombre } });
+      const existente = await app
+        .documents(institucionUID)
+        .findFirst({ filters: { nombre: dato.nombre } });
 
       if (existente) {
         omitidas += 1;
+
+        // Chequea el estado PUBLICADO (que es el que sirve la API pública),
+        // no el borrador: update() por sí solo no publica, así que el
+        // borrador puede tener la imagen puesta de una corrida anterior
+        // mientras la versión pública seguía sin ella.
+        const publicado = await app
+          .documents(institucionUID)
+          .findOne({ documentId: existente.documentId, status: 'published', populate: ['imagen'] });
+
+        // El registro ya existía (de una corrida anterior del seed, antes de
+        // que el schema tuviera campo `imagen`): si ahora tenemos una foto
+        // real para él y la versión publicada no la tiene, se la agregamos
+        // sin tocar el resto de sus datos.
+        if (dato.imagenArchivo && !publicado?.imagen) {
+          const imagenId = await subirImagen(app, dato.imagenArchivo, dato.imagenAlt ?? '');
+          await app.documents(institucionUID).update({
+            documentId: existente.documentId,
+            data: { imagen: imagenId },
+          });
+          // update() solo toca el borrador; hay que publicar aparte para que
+          // el cambio se refleje en la API pública que usa el sitio.
+          await app.documents(institucionUID).publish({ documentId: existente.documentId });
+          imagenesRellenadas += 1;
+        }
+
         continue;
       }
 
       const tiposCasoIds = dato.tiposCasoAtendidos
         .map((nombre) => tiposCasoIdPorNombre.get(nombre))
         .filter((id): id is string => Boolean(id));
+
+      let imagenId: number | undefined;
+      if (dato.imagenArchivo) {
+        imagenId = await subirImagen(app, dato.imagenArchivo, dato.imagenAlt ?? '');
+      }
 
       const institucion = await app.documents(institucionUID).create({
         data: {
@@ -199,6 +277,7 @@ async function main(): Promise<void> {
           latitud: dato.latitud,
           longitud: dato.longitud,
           telefonos: dato.telefono ? [{ numero: dato.telefono, esGratuito: false }] : [],
+          imagen: imagenId,
           tiposCaso: tiposCasoIds,
         },
         status: 'published',
@@ -215,7 +294,9 @@ async function main(): Promise<void> {
       creadas += 1;
     }
 
-    app.log.info(`[seed-instituciones] Completo: ${creadas} creadas, ${omitidas} ya existían.`);
+    app.log.info(
+      `[seed-instituciones] Completo: ${creadas} creadas, ${omitidas} ya existían (${imagenesRellenadas} de esas se les agregó imagen).`,
+    );
   } finally {
     await app.destroy();
   }

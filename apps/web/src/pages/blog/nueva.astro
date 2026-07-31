@@ -1,0 +1,243 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import { CATEGORIAS_HISTORIA } from '../../lib/historias';
+
+// El formulario no depende del CMS para renderizarse: el envío pasa por
+// /api/blog/historias, que es quien habla con Strapi.
+export const prerender = false;
+
+const CONTENIDO_MAX = 8000;
+---
+
+<Layout
+  title="Compartir mi historia — yanapaway"
+  description="Comparte tu experiencia de forma anónima. Nadie te pedirá tu nombre."
+>
+  <Navbar rutaActiva="/blog" />
+
+  <div class="wrapper contenido-nueva">
+    <a class="volver" href="/blog">← Volver a las historias</a>
+
+    <h1>Comparte tu historia</h1>
+
+    <div class="aviso">
+      <p>
+        No te pediremos tu nombre ni ningún dato que te identifique. Tu historia aparecerá firmada
+        con un seudónimo que se genera automáticamente.
+      </p>
+      <p>
+        <strong>Antes de publicarse, una persona del equipo la revisa.</strong> No es censura: es
+        para cuidar que este espacio siga siendo seguro para quien lo lee. Puede tardar un tiempo en
+        aparecer.
+      </p>
+      <p>
+        Escribe con el detalle que quieras, pero evita nombres, direcciones o datos que puedan
+        identificarte a ti o a otras personas.
+      </p>
+    </div>
+
+    <form id="form-historia" class="formulario">
+      <div class="campo">
+        <label for="categoria">¿Sobre qué quieres contar?</label>
+        <select id="categoria" name="categoria">
+          {CATEGORIAS_HISTORIA.map((categoria) => <option value={categoria.valor}>{categoria.etiqueta}</option>)}
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="contenido">Tu historia</label>
+        <textarea
+          id="contenido"
+          name="contenido"
+          rows="12"
+          minlength="20"
+          maxlength={CONTENIDO_MAX}
+          placeholder="Tómate el tiempo que necesites. Este espacio es anónimo."
+          required></textarea>
+        <span class="contador">
+          <span id="contador-caracteres">0</span> / {CONTENIDO_MAX} caracteres (mínimo 20)
+        </span>
+      </div>
+
+      <button type="submit" class="pill-btn">Enviar para revisión</button>
+
+      <p id="mensaje-estado" class="mensaje-estado" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+
+  <Footer />
+</Layout>
+
+<script>
+  const form = document.getElementById('form-historia');
+  const textarea = document.getElementById('contenido');
+  const select = document.getElementById('categoria');
+  const contador = document.getElementById('contador-caracteres');
+  const mensaje = document.getElementById('mensaje-estado');
+
+  if (
+    form instanceof HTMLFormElement &&
+    textarea instanceof HTMLTextAreaElement &&
+    select instanceof HTMLSelectElement &&
+    contador &&
+    mensaje
+  ) {
+    const boton = form.querySelector('button[type="submit"]');
+
+    textarea.addEventListener('input', () => {
+      contador.textContent = String(textarea.value.length);
+    });
+
+    form.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+
+      if (boton instanceof HTMLButtonElement) {
+        boton.disabled = true;
+      }
+      mensaje.textContent = '';
+      mensaje.className = 'mensaje-estado';
+
+      try {
+        const respuesta = await fetch('/api/blog/historias', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contenido: textarea.value, categoria: select.value }),
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+          throw new Error(datos.error || 'No pudimos enviar tu historia.');
+        }
+
+        mensaje.textContent = `Recibimos tu historia y quedará firmada como "${datos.alias}". Una persona del equipo la revisará antes de que aparezca en el listado. Gracias por compartirla.`;
+        mensaje.classList.add('exito');
+        form.reset();
+        contador.textContent = '0';
+      } catch (error) {
+        mensaje.textContent = error instanceof Error ? error.message : 'No pudimos enviar tu historia.';
+        mensaje.classList.add('error');
+      } finally {
+        if (boton instanceof HTMLButtonElement) {
+          boton.disabled = false;
+        }
+      }
+    });
+  }
+</script>
+
+<style>
+  .contenido-nueva {
+    padding-block: 2.5rem 4.5rem;
+    max-width: 680px;
+  }
+
+  .volver {
+    color: var(--color-ink-soft);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .volver:hover {
+    color: var(--color-primary-dark);
+  }
+
+  h1 {
+    margin-top: 0.9rem;
+    font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .aviso {
+    margin-top: 1.25rem;
+    background: var(--color-support-teal-tint);
+    border-radius: var(--radius-m);
+    padding: 1.2rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+    font-size: 0.94rem;
+  }
+
+  .formulario {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  label {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--radius-m);
+    border: 1px solid var(--color-placeholder);
+    background: var(--color-bg);
+    color: var(--color-ink);
+    resize: vertical;
+  }
+
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  .contador {
+    align-self: flex-end;
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+  }
+
+  .pill-btn {
+    align-self: flex-start;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .pill-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .mensaje-estado {
+    min-height: 1.2rem;
+    font-size: 0.94rem;
+    line-height: 1.6;
+  }
+
+  .mensaje-estado.exito {
+    background: var(--color-support-teal-tint);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-m);
+    padding: 0.9rem 1.1rem;
+    color: var(--color-ink);
+  }
+
+  .mensaje-estado.error {
+    background: var(--color-red-soft);
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-m);
+    padding: 0.9rem 1.1rem;
+    color: var(--color-ink);
+  }
+</style>

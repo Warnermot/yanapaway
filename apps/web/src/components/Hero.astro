@@ -1,7 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import stopViolenceImage from '../assets/images/carousel/stop-violence-against-women-photo.webp';
-import { getPlaceholderVariant } from '../lib/imagePlaceholders';
+import parejaDistress from '../assets/images/carousel/carusel2.png';
+import parejaDiscusion from '../assets/images/carousel/carusel.png';
 import { useTranslations, defaultLang, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -29,7 +30,8 @@ const slides = [
 			{ text: t('hero.slide2.heading.accent'), accent: true },
 		],
 		text: t('hero.slide2.text'),
-		placeholderVariant: getPlaceholderVariant(1),
+		image: parejaDistress,
+			alt: '',
 	},
 	{
 		badge: t('hero.slide3.badge'),
@@ -38,7 +40,8 @@ const slides = [
 			{ text: t('hero.slide3.heading.accent'), accent: true },
 		],
 		text: t('hero.slide3.text'),
-		placeholderVariant: getPlaceholderVariant(2),
+		image: parejaDiscusion,
+			alt: '',
 	},
 ];
 
@@ -79,7 +82,7 @@ const slidesText = slides.map(({ badge, heading, text }) => ({ badge, heading, t
 
 		<div class="hero-actions">
 			<a href="#asistente" class="pill-btn hero-cta-primary">{t('hero.cta.primary')}</a>
-			<a href="#recursos" class="pill-btn hero-cta-secondary">{t('hero.cta.secondary')}</a>
+			<a href="/recursos" class="pill-btn hero-cta-secondary">{t('hero.cta.secondary')}</a>
 		</div>
 
 		<div class="hero-dots">

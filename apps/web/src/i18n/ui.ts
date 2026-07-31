@@ -35,10 +35,11 @@ export const ui = {
 			'Aprende a identificar señales de alerta y cómo actuar de forma segura y a tiempo.',
 
 		'content.heading': 'contenido',
-		'content.cta': 'Ver más',
+		'content.viewAll': 'Ver todos los recursos',
 
 		'contacts.heading': 'contactos',
-		'contacts.cta': 'Contactar',
+		'contacts.viewAll': 'Ver directorio completo',
+		'contacts.viewProfile': 'Ver ficha',
 
 		'footer.contactos.title': 'Contactos',
 		'footer.ayuda.title': 'Ayuda',
@@ -87,10 +88,11 @@ export const ui = {
 		'hero.slide3.text': 'Learn to recognize warning signs and how to act safely and in time.',
 
 		'content.heading': 'resources',
-		'content.cta': 'See more',
+		'content.viewAll': 'See all resources',
 
 		'contacts.heading': 'contacts',
-		'contacts.cta': 'Contact',
+		'contacts.viewAll': 'See full directory',
+		'contacts.viewProfile': 'View profile',
 
 		'footer.contactos.title': 'Contacts',
 		'footer.ayuda.title': 'Help',
@@ -140,10 +142,11 @@ export const ui = {
 		'hero.slide3.text':
 			"Yachakuy peligrota rikuchiq unanchakunata, hinaspa imaynatas segurolla ima ratollapi ruwakunanta.",
 		'content.heading': 'yachaykuna',
-		'content.cta': 'Astawan rikuy',
+		'content.viewAll': 'Tukuy yachaykunata rikuy',
 
 		'contacts.heading': 'rimanakuna',
-		'contacts.cta': 'Rimapayay',
+		'contacts.viewAll': 'Tukuy tarinata rikuy',
+		'contacts.viewProfile': 'Qillqata rikuy',
 
 		'footer.contactos.title': 'Rimanakuna',
 		'footer.ayuda.title': 'Yanapay',

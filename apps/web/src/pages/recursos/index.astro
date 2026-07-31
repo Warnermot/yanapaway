@@ -1,0 +1,166 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import TarjetaRecurso from '../../components/recursos/TarjetaRecurso.astro';
+import { agruparPorCategoria, listarCategoriasRecurso, listarPaginasRecursos } from '../../lib/recursos';
+
+export const prerender = false;
+
+// La página no depende del CMS para existir: título, descripción y navegación
+// se sirven siempre. Las tarjetas son el contenido que se suma solo, a medida
+// que se publican Páginas en el panel. Si el CMS no responde (caído, token sin
+// permisos, red), esta ruta degrada a su versión estática en vez de tirar un
+// 500: es una página de apoyo, y quedarse sin nada es el peor resultado.
+let grupos: ReturnType<typeof agruparPorCategoria> = [];
+let cmsCaido = false;
+
+try {
+  const [paginas, categorias] = await Promise.all([listarPaginasRecursos(), listarCategoriasRecurso()]);
+  grupos = agruparPorCategoria(paginas, categorias);
+} catch (error) {
+  cmsCaido = true;
+  console.error('[recursos] No se pudieron cargar los recursos desde el CMS:', error);
+}
+---
+
+<Layout
+  title="Recursos — yanapaway"
+  description="Contenidos educativos, datos estadísticos y material de apoyo sobre violencia de pareja."
+>
+  <Navbar rutaActiva="/recursos" />
+
+  <section class="hero-recursos">
+    <div class="wrapper">
+      <h1>Recursos</h1>
+      <p>
+        Material para entender qué es la violencia, reconocer sus señales y saber qué hacer.
+        Puedes leer a tu ritmo, sin que quede registro de tu recorrido.
+      </p>
+    </div>
+  </section>
+
+  <div class="wrapper contenido-recursos">
+    {
+      cmsCaido ? (
+        <div class="aviso-cms">
+          <p>
+            En este momento no podemos mostrar el listado de recursos. Es un problema nuestro, no
+            tuyo, y ya estamos trabajando en resolverlo.
+          </p>
+          <p>
+            Si necesitas ayuda ahora, el <a href="/instituciones">directorio de instituciones</a> y el{' '}
+            <a href="/asistente">asistente</a> siguen disponibles.
+          </p>
+        </div>
+      ) : grupos.length === 0 ? (
+        <p class="sin-recursos">
+          Todavía no hay recursos publicados. Vuelve pronto: estamos preparando el material.
+        </p>
+      ) : (
+        grupos.map((grupo) => (
+          <section class="grupo-recursos">
+            {grupo.categoria && (
+              <header class="grupo-encabezado">
+                <h2>{grupo.categoria.nombre}</h2>
+                {grupo.categoria.descripcion && <p>{grupo.categoria.descripcion}</p>}
+              </header>
+            )}
+
+            <div class="grilla-recursos">
+              {grupo.paginas.map((pagina, indice) => (
+                <TarjetaRecurso pagina={pagina} indice={indice} />
+              ))}
+            </div>
+          </section>
+        ))
+      )
+    }
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  .hero-recursos {
+    background: var(--color-support-teal-tint);
+    padding-block: 3.25rem;
+  }
+
+  .hero-recursos h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .hero-recursos p {
+    margin-top: 0.85rem;
+    max-width: 56ch;
+    color: var(--color-ink-soft);
+    line-height: 1.65;
+  }
+
+  .contenido-recursos {
+    padding-block: 3rem 4.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  .grupo-encabezado {
+    margin-bottom: 1.5rem;
+  }
+
+  .grupo-encabezado h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .grupo-encabezado p {
+    margin-top: 0.35rem;
+    color: var(--color-ink-soft);
+    font-size: 0.95rem;
+    max-width: 62ch;
+  }
+
+  .grilla-recursos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .sin-recursos {
+    color: var(--color-ink-soft);
+  }
+
+  .aviso-cms {
+    background: var(--color-red-soft);
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-m);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+    max-width: 62ch;
+  }
+
+  .aviso-cms a {
+    color: var(--color-secondary);
+    font-weight: 500;
+  }
+
+  @media (max-width: 860px) {
+    .grilla-recursos {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 540px) {
+    .grilla-recursos {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

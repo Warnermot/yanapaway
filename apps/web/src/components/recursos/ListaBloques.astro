@@ -1,0 +1,43 @@
+---
+import type { NodoLista } from '../../lib/bloques';
+import { inlineDe, listasAnidadasDe } from '../../lib/bloques';
+import TextoInline from './TextoInline.astro';
+
+interface Props {
+	lista: NodoLista;
+}
+
+const { lista } = Astro.props;
+const Etiqueta = lista.format === 'ordered' ? 'ol' : 'ul';
+---
+
+<Etiqueta class="lista-contenido">
+	{
+		lista.children.map((item) => (
+			<li>
+				<TextoInline nodos={inlineDe(item)} />
+				{/* El editor permite sublistas dentro de un ítem: se recurre en el propio componente. */}
+				{listasAnidadasDe(item).map((sublista) => (
+					<Astro.self lista={sublista} />
+				))}
+			</li>
+		))
+	}
+</Etiqueta>
+
+<style>
+	.lista-contenido {
+		padding-left: 1.35rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	ul.lista-contenido {
+		list-style: disc;
+	}
+
+	ol.lista-contenido {
+		list-style: decimal;
+	}
+</style>
