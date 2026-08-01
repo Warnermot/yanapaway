@@ -61,7 +61,7 @@ const PERMISOS_ESPERADOS = [
 // `action`. Se acepta cualquiera de las dos formas para no depender de ese
 // detalle interno de Strapi.
 type PermisoToken = string | { action: string };
-type TokenExistente = { id: number; permissions?: PermisoToken[] | null };
+type TokenExistente = { id: number; type?: string; permissions?: PermisoToken[] | null };
 
 function accionDe(permiso: PermisoToken): string {
   return typeof permiso === 'string' ? permiso : permiso.action;
@@ -132,6 +132,25 @@ export async function asegurarTokenIntegracionWeb({ strapi }: { strapi: Core.Str
   const existente = await servicio.getByName(NOMBRE_TOKEN);
 
   if (existente) {
+    // Strapi rechaza fijar `permissions` en un token que no sea "custom"
+    // (ValidationError: "Non-custom tokens should not reference
+    // permissions"), y tumbaba el arranque entero. Si el token existente no
+    // es custom, probablemente se creó a mano desde el panel con el tipo
+    // equivocado — eso además le da a apps/web más acceso del que debería
+    // tener (o, si es read-only, menos). No se corrige solo: cambiar el tipo
+    // de un token implica recrearlo, lo que rota su valor y obliga a
+    // actualizar apps/web/.env. Se deja como advertencia explícita en cada
+    // arranque hasta que alguien lo revise a propósito.
+    if (existente.type !== 'custom') {
+      strapi.log.error(
+        `[bootstrap] El token "${NOMBRE_TOKEN}" (id ${existente.id}) es de tipo "${existente.type}", ` +
+          `no "custom". Hay que recrearlo manualmente en Settings → API Tokens como tipo Custom con ` +
+          `exactamente estos permisos: ${PERMISOS_ESPERADOS.join(', ')}. Recrearlo genera un valor nuevo: ` +
+          `también hay que actualizar STRAPI_API_TOKEN en apps/web/.env cuando se haga.`
+      );
+      return;
+    }
+
     await reconciliarPermisos({ strapi, servicio, token: existente });
     return;
   }
